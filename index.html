@@ -1,0 +1,90 @@
+<html>
+    <head>
+        <Title>Fürdőszoba vezérlő</Title>
+        <meta charset="UTF-8" />
+
+        <link rel="stylesheet" type="text/css" href="style/style.css" />
+        <link rel="stylesheet" type="text/css" href="style/slider.css" />
+        <link rel="stylesheet" media="screen" type="text/css" href="style/colorpicker.css" />
+
+        <script type="text/javascript" src="scripts/jquery.js"></script>
+        <script type="text/javascript" src="scripts/colorpicker.js"></script>
+        <script type="text/javascript" src="scripts/controll.js"></script>
+        
+        <script>
+            !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+        </script>
+    </head>
+    <body>
+
+        <div id="weather">
+            <a class="weatherwidget-io" href="https://forecast7.com/hu/46d4318d78/tolna/" data-label_1="TOLNA" data-label_2="Időjárás" data-font="Roboto Slab" data-icons="Climacons Animated" data-days="5" data-theme="weather_one">TOLNA Időjárás</a>
+        </div>
+
+        <div id="lights">
+            <table>
+                <tr>
+                    <th>Szín</th>
+                    <th>Fényerő</th>
+                    <th class="v" rowspan="2">Villany</th>
+                </tr>
+                <tr>
+                    <td>
+                        <script> 
+                                $( "#colorSelector" ).ColorPicker({
+                                    color: '#ff0000',
+                                    onShow: function (colpkr) {
+                                        console.log("Shit called")
+                                        $(colpkr).fadeIn(500);
+                                        return false;
+                                    },
+                                    onHide: function (colpkr) {
+                                        $(colpkr).fadeOut(500);
+                                        return false;
+                                    },
+                                    onChange: function (hsb, hex, rgb) {
+                                        $( "#colorSelector div" ).css('backgroundColor', '#' + hex);
+                                    }
+                                });
+                        </script>
+                        <div id="colorSelector">
+                            <div id="selected_color" style="background-color: #ff0000"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="range" id="brightness" min="0" max="12" value="0"> <label id="brightness_number">00</label>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Fürdőkád</th>
+                    <td>Szekrény</td>
+                    <td class="v" rowspan="2">
+                        <label class="switch">
+                            <input id="room" type="checkbox">
+                            <span class="slider round"></span>
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="switch">
+                            <input id="bath_tub" type="checkbox">
+                            <span class="slider round"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="switch">
+                            <input id="cabinet" type="checkbox">
+                            <span class="slider round"></span>
+                        </label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="alerts" class="modal">
+            <div id='error' class="modal-content"><span id='error_message'>test</span><br><input  type='button' id='Dismiss' value='Rendben'></div>
+            <div id='message' class="modal-content"><span id='message_message'>test</span><br><input  type='button' id='Ok' value='OK'> <input  type='button' id='Cancle' value='Mégsem'></div>
+        </div>
+    </body>
+</html>

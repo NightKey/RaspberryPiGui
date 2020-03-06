@@ -1,0 +1,206 @@
+OPENED AT 2020-03-06 09:44:09.129530
+09:44:09.133528 - Server started at 127.0.0.1:6969
+09:45:23.042008 - Server stopped by user
+CLOSED AT 2020-03-06 09:45:23.044005
+OPENED AT 2020-03-06 09:45:34.356031
+09:45:34.358030 - Server started at 127.0.0.1:6969
+09:48:27.874957 - Server stopped by user
+CLOSED AT 2020-03-06 09:48:27.875957
+OPENED AT 2020-03-06 09:48:33.044340
+---ERROR OCCURED!---
+09:48:33.045343 - '_WindowsSelectorEventLoop' object has no attribute 'get_event_loop'
+CLOSED AT 2020-03-06 09:48:33.046339
+OPENED AT 2020-03-06 09:50:19.377266
+---ERROR OCCURED!---
+09:50:19.378265 - '_WindowsSelectorEventLoop' object has no attribute 'get_event_loop'
+CLOSED AT 2020-03-06 09:50:19.380263
+OPENED AT 2020-03-06 09:50:49.087725
+09:50:49.089727 - Server started at 127.0.0.1:6969
+09:51:18.401305 - Server stopped by user
+CLOSED AT 2020-03-06 09:51:18.402306
+OPENED AT 2020-03-06 09:52:01.018577
+09:52:01.028566 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 09:58:26.218387
+09:58:26.226382 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 10:09:50.903850
+OPENED AT 2020-03-06 10:10:16.714752
+OPENED AT 2020-03-06 10:10:57.808894
+OPENED AT 2020-03-06 10:17:58.417547
+OPENED AT 2020-03-06 10:19:06.582203
+OPENED AT 2020-03-06 10:20:16.210048
+OPENED AT 2020-03-06 10:20:50.351126
+OPENED AT 2020-03-06 10:22:46.086950
+10:22:46.162904 - Server started at 127.0.0.1:6969
+10:22:52.029267 - Stopped by user
+CLOSED AT 2020-03-06 10:22:52.059250
+OPENED AT 2020-03-06 10:23:16.511434
+10:23:16.523427 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 10:26:12.836788
+10:26:12.847781 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 10:34:00.557034
+10:34:00.584016 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 10:35:24.152551
+10:35:24.169540 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 10:36:31.801407
+10:36:31.815401 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 10:38:59.953429
+10:38:59.999400 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 10:40:53.715447
+10:40:53.729440 - Server started at 127.0.0.1:6969
+OPENED AT 2020-03-06 10:43:39.441371
+10:43:39.443370 - Main thred started!
+10:43:39.449367 - Listener started
+10:43:39.453364 - Sender started
+OPENED AT 2020-03-06 10:44:02.942487
+10:44:02.944486 - Main thred started!
+10:44:02.949482 - Listener started
+10:44:02.950481 - Sender started
+OPENED AT 2020-03-06 10:56:13.213454
+10:56:13.217452 - Main thred started!
+10:56:13.219450 - Listener started
+10:56:13.222449 - Sender started
+OPENED AT 2020-03-06 11:07:26.560692
+11:07:26.561690 - Main thred started!
+11:07:26.565688 - Listener started
+11:07:26.569195 - Sender started
+OPENED AT 2020-03-06 11:09:48.884642
+11:09:48.885642 - Main thred started!
+11:09:48.888640 - Listener started
+11:09:48.888640 - Sender started
+OPENED AT 2020-03-06 11:12:06.284951
+11:12:06.285950 - Main thred started!
+11:12:06.288949 - Listener started
+11:12:06.291946 - Sender started
+OPENED AT 2020-03-06 11:12:38.526571
+11:12:38.528570 - Main thred started!
+11:12:38.531568 - Listener started
+11:12:38.531568 - Sender started
+OPENED AT 2020-03-06 11:12:58.790888
+11:12:58.793886 - Main thred started!
+11:12:58.798883 - Listener started
+11:12:58.801881 - Sender started
+OPENED AT 2020-03-06 11:13:55.500025
+11:13:55.501025 - Main thred started!
+11:13:55.509018 - Listener started
+11:13:55.513016 - Sender started
+OPENED AT 2020-03-06 11:14:05.649984
+11:14:05.649984 - Main thred started!
+11:14:05.651983 - Listener started
+11:14:05.652982 - Sender started
+OPENED AT 2020-03-06 11:15:36.845793
+11:15:36.846793 - Main thred started!
+11:15:36.848791 - Listener started
+11:15:36.849791 - Sender started
+OPENED AT 2020-03-06 11:16:04.787378
+11:16:04.798371 - Main thred started!
+11:16:04.804369 - Listener started
+11:16:04.811365 - Sender started
+11:16:54.091143 - Stopped by user
+CLOSED AT 2020-03-06 11:16:54.159100
+OPENED AT 2020-03-06 11:22:52.920385
+11:22:52.921385 - Main thred started!
+11:22:52.934376 - Listener started
+11:22:52.950367 - Sender started
+OPENED AT 2020-03-06 11:24:27.301708
+11:24:27.302708 - Main thred started!
+11:24:27.304707 - Listener started
+11:24:27.305706 - Sender started
+OPENED AT 2020-03-06 11:24:59.030241
+11:24:59.031241 - Main thred started!
+11:24:59.034238 - Listener started
+11:24:59.035238 - Sender started
+OPENED AT 2020-03-06 12:44:23.362041
+12:44:23.383027 - Main thred started!
+12:44:23.384026 - Listener started
+12:44:23.391024 - Sender started
+12:45:26.734070 - Stopped by user
+CLOSED AT 2020-03-06 12:45:26.806025
+OPENED AT 2020-03-06 12:46:57.039920
+12:46:57.039920 - Main thred started!
+12:46:57.041919 - Listener started
+12:46:57.042918 - Sender started
+12:47:36.637919 - Connection lost
+12:48:39.801490 - Connection lost
+12:54:15.400493 - Connection lost
+12:56:09.040246 - Connection lost
+12:58:43.868997 - Connection lost
+12:59:28.801646 - Connection lost
+CLOSED AT 2020-03-06 13:03:03.377691
+OPENED AT 2020-03-06 13:03:27.049341
+13:03:27.049341 - Main thred started!
+13:03:27.051338 - Listener started
+13:03:27.051338 - Sender started
+13:03:32.527442 - Stopped by user
+---ERROR OCCURED!---
+13:03:32.575411 - 
+CLOSED AT 2020-03-06 13:03:32.689341
+OPENED AT 2020-03-06 13:09:08.356155
+13:09:08.357154 - Main thred started!
+13:09:08.358156 - Listener started
+13:09:08.358156 - Sender started
+13:09:19.441557 - Stopped by user
+OPENED AT 2020-03-06 13:31:54.718505
+13:31:54.719505 - Main thred started!
+13:31:54.725501 - Listener started
+13:31:54.735495 - Sender started
+13:32:00.987796 - Stopped by user
+OPENED AT 2020-03-06 13:32:39.910412
+13:32:39.912412 - Main thred started!
+13:32:39.914411 - Listener started
+13:32:39.936396 - Sender started
+13:32:44.289880 - Stopped by user
+OPENED AT 2020-03-06 13:35:40.621541
+13:35:40.625537 - Main thred started!
+13:35:40.627535 - Listener started
+13:35:40.627535 - Sender started
+OPENED AT 2020-03-06 13:37:34.328310
+13:37:38.977080 - Main thred started!
+13:37:48.964168 - Listener started
+13:37:49.056408 - Sender started
+OPENED AT 2020-03-06 13:39:36.173386
+13:39:38.786552 - Main thred started!
+13:39:45.916746 - Listener started
+13:39:47.427214 - Sender started
+13:39:57.294217 - Stopped by user
+CLOSED AT 2020-03-06 13:39:57.326200
+OPENED AT 2020-03-06 13:40:29.907599
+13:40:29.912596 - Main thred started!
+13:40:29.914594 - Listener started
+13:40:29.915594 - Sender started
+13:40:32.416079 - Stopped by user
+CLOSED AT 2020-03-06 13:40:47.277871
+OPENED AT 2020-03-06 13:41:18.439622
+13:41:18.445620 - Main thred started!
+13:41:18.449616 - Listener started
+13:41:18.459610 - Sender started
+13:41:22.102012 - Stopped by user
+CLOSED AT 2020-03-06 13:41:22.133992
+OPENED AT 2020-03-06 13:42:12.042263
+13:42:12.045262 - Main thred started!
+13:42:12.047260 - Listener started
+13:42:12.048260 - Sender started
+13:42:14.387423 - Stopped by user
+OPENED AT 2020-03-06 13:47:24.340192
+13:47:24.346189 - Main thred started!
+13:47:24.349187 - Listener started
+13:47:24.350187 - Sender started
+13:47:28.563343 - Stopped by user
+OPENED AT 2020-03-06 13:47:38.283163
+13:47:38.285163 - Main thred started!
+13:47:38.287161 - Listener started
+13:47:38.287161 - Sender started
+13:47:54.313201 - Stopped by user
+CLOSED AT 2020-03-06 13:47:54.331190
+OPENED AT 2020-03-06 13:48:02.556625
+13:48:02.560621 - Main thred started!
+13:48:02.562621 - Listener started
+13:48:02.563620 - Sender started
+13:48:07.732426 - Stopped by user
+CLOSED AT 2020-03-06 13:48:07.768578
+OPENED AT 2020-03-06 13:56:04.928670
+13:56:04.934668 - Main thred started!
+13:56:04.953655 - Listener started
+13:56:04.961650 - Sender started
+13:56:13.926257 - Stopped by user
+CLOSED AT 2020-03-06 13:56:13.953241
+13:56:19.861627 - Connection lost
