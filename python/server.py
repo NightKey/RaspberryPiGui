@@ -1,4 +1,9 @@
-import asyncio, websockets, writer, logger, threading, sys
+try:
+    import RPi.GPIO as GPIO
+except:
+    import FakeRPi.GPIO as GPIO
+import asyncio, websockets, writer, logger, threading, sys, os
+from time import sleep
 
 log = logger.logger("RaspberryPiServerLog")
 main = writer.writer("RaspberryPiServer").write
@@ -13,6 +18,13 @@ link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main}
 muted = False
 killswitch = False
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+GPIO.setup(2, GPIO.OUT, initial=GPIO.LOW)               #Lámpa
+GPIO.setup(3, GPIO.OUT, initial=GPIO.LOW)               #Fürdőkád
+GPIO.setup(4, GPIO.OUT, initial=GPIO.LOW)               #Szekrény
+GPIO.setup(5, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)      #Ajtó kapcsoló
 
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
@@ -40,14 +52,17 @@ def brightness(value):
 def room(is_on):
     is_on = (is_on == 'true')
     print("The room lights should {}be on!".format('' if (is_on) else 'not '), 'Listener')
+    GPIO.output(2, (GPIO.HIGH if is_on else GPIO.LOW))
 
 def bath_tub(is_on):
     is_on = (is_on == 'true')
     print("The bath tub lights should {}be on!".format('' if (is_on) else 'not '), 'Listener')
+    GPIO.output(3, (GPIO.HIGH if is_on else GPIO.LOW))
 
 def cabinet(is_on):
     is_on = (is_on == 'true')
     print("The cabinet lights should {}be on!".format('' if (is_on) else 'not '), 'Listener')
+    GPIO.output(4, (GPIO.HIGH if is_on else GPIO.LOW))
 
 def color(color):
     print(f"The color the led's should be is #{color}", 'Listener')
@@ -81,7 +96,6 @@ async def status_checker():
         if to_send != []:
             await message_sender(to_send[0])
             del to_send[0]
-    await message_sender('kill')
 
 def sender_starter():
     log.log("Sender started")
@@ -126,13 +140,16 @@ if __name__=="__main__":
                 muted = False
             elif text == 'lights':
                 to_send.append('lights')
+            elif text == 'update':
+                import updater
             elif text == 'help':
                 text = """Avaleable commands:
 exit - Stops the server
 send - Sends a response to the webpage
 mute - mutes the server output (to the console)
 unmute - unmutes the server output
-lights - emulates a dooropening"""
+lights - emulates a dooropening
+update - update from github (restarts the system)"""
                 print(text, 'Main')
         sys.exit(0)
     except Exception as ex:
