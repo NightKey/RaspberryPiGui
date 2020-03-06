@@ -21,10 +21,10 @@ killswitch = False
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-GPIO.setup(2, GPIO.OUT, initial=GPIO.LOW)               #Lampa
-GPIO.setup(3, GPIO.OUT, initial=GPIO.LOW)               #Furdokad
-GPIO.setup(4, GPIO.OUT, initial=GPIO.LOW)               #Szekreny
-GPIO.setup(5, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)      #Ajto kapcsolo
+GPIO.setup(5, GPIO.OUT, initial=GPIO.LOW)               #Lampa
+GPIO.setup(6, GPIO.OUT, initial=GPIO.LOW)               #Furdokad
+GPIO.setup(13, GPIO.OUT, initial=GPIO.LOW)               #Szekreny
+GPIO.setup(4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)      #Ajto kapcsolo
 
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
