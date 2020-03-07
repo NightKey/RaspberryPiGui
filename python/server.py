@@ -64,9 +64,13 @@ options = {
 
 def timer():
     global temp_room
+    global to_send
     sleep(120)
+    print('Timer stopped', 'Main')
     if temp_room:
+        print('Lights off', 'Main')
         options['room']('false')
+        to_send.append('room')
         temp_room = False
 
 timer_thread = threading.Thread(target=timer)
@@ -102,13 +106,12 @@ async def status_checker():
         if killswitch:
             print('Killswitch', 'Sender')
             break
-        if controller.get_door_status() == True:
+        if controller.get_door_status() == True and not controller.get_status('room'):
             to_send.append('room')
             options['room']('true')
             temp_room = True
-            if not controller.get_status('room'):
-                if not timer_thread.is_alive():
-                    timer_thread.start()
+            if not timer_thread.is_alive():
+                timer_thread.start()
         if counter % 10 == 0 and not temp_failed:
             temp_failed = temp_checker()
         if to_send != []:
