@@ -2,7 +2,7 @@ try:
     import RPi.GPIO as GPIO
 except:
     import FakeRPi.GPIO as GPIO
-import asyncio, websockets, writer, logger, threading, sys, os
+import asyncio, websockets, writer, logger, threading, sys, os, psutil, pin_controll
 from time import sleep
 
 log = logger.logger("RaspberryPiServerLog")
@@ -17,22 +17,21 @@ to_print = []
 link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main}
 muted = False
 killswitch = False
+temp_room = False
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
-lamp_pin = 5
-tub_pin = 6
-cabinet_pin = 7
-door_pin = 4
-
-GPIO.setup(lamp_pin, GPIO.OUT, initial=GPIO.LOW)        #Lampa
-GPIO.setup(tub_pin, GPIO.OUT, initial=GPIO.LOW)         #Furdokad
-GPIO.setup(cabinet_pin, GPIO.OUT, initial=GPIO.LOW)     #Szekreny
-GPIO.setup(door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)      #Ajto kapcsolo
+controller = pin_controll.controller()
 
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
+timer_thread = threading.Thread(target=timer)
+
+
+def temp_checker():
+    try:
+        temp = psutil.sensors_temperatures()['coretemp'][0]['current']
+        print(f'CPU temp: {temp}C', 'Temp checker')
+    except Exception as ex:
+        print(ex, 'Temp checker')
 
 def screen_handler():
     global to_print
@@ -51,41 +50,32 @@ def printer(text, sender):
 
 print = printer
 
-def brightness(value):
-    print(f"Incoming for brightness {value}", 'Listener')
+options = {
+    'cabinet':controller.cabinet, 
+    'room':controller.room, 
+    'brightness':controller.brightness, 
+    'bath_tub':controller.bath_tub, 
+    'color':controller.color }
 
-def room(is_on):
-    is_on = (is_on == 'true')
-    print("The room lights should {}be on!".format('' if (is_on) else 'not '), 'Listener')
-    try:
-        GPIO.output(lamp_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-    except Exception as ex:
-        print(f'Exception: {ex}', 'Room switch')
-
-def bath_tub(is_on):
-    is_on = (is_on == 'true')
-    print("The bath tub lights should {}be on!".format('' if (is_on) else 'not '), 'Listener')
-    GPIO.output(tub_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-
-def cabinet(is_on):
-    is_on = (is_on == 'true')
-    print("The cabinet lights should {}be on!".format('' if (is_on) else 'not '), 'Listener')
-    GPIO.output(cabinet_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-
-def color(color):
-    print(f"The color the led's should be is #{color}", 'Listener')
-
-options = {'cabinet':cabinet, 'room':room, 'brightness':brightness, 'bath_tub':bath_tub, 'color':color}
+def timer():
+    global temp_room
+    sleep(120)
+    if temp_room:
+        options['room']('true')
+        temp_room = False
 
 async def handler(websocket, path):
     try:
         global ws
+        global temp_room
         ws = websocket
         await websocket.send("Connected!")
         while True:
             data = await websocket.recv()
             data = data.split(',')
             options[data[0]](data[1])
+            if data[0] == room and temp_room:
+                temp_room = False
             await ws.send('Accepted')
     except:
         log.log('Connection lost')
@@ -97,15 +87,27 @@ async def message_sender(message):
 
 async def status_checker():
     global to_send
+    global temp_room
+    counter = 0
     while True:
         if killswitch:
             print('Killswitch', 'Sender')
             break
-        if GPIO.input(door_pin) == True:
-            to_send.append('lights')
+        if GPIO.input(controller.get_door_status()) == True:
+            to_send.append('room')
+            options['room']('true')
+            temp_room = True
+            if not controller.get_status('room'):
+                if not timer_thread.is_alive():
+                    timer_thread.start()
+        if counter % 10 == 0:
+            temp_checker()
         if to_send != []:
             await message_sender(to_send[0])
             del to_send[0]
+        counter += 1
+        if counter > 100:
+            counter = 0
 
 def sender_starter():
     log.log("Sender started")
@@ -148,8 +150,8 @@ if __name__=="__main__":
                 muted = True
             elif text == 'unmute':
                 muted = False
-            elif text == 'lights':
-                to_send.append('lights')
+            elif text == 'room':
+                to_send.append('room')
             elif text == 'update':
                 import updater
             elif text == 'help':
@@ -158,7 +160,7 @@ exit - Stops the server
 send - Sends a response to the webpage
 mute - mutes the server output (to the console)
 unmute - unmutes the server output
-lights - emulates a dooropening
+room - emulates a dooropening
 update - update from github (restarts the system)"""
                 print(text, 'Main')
         sys.exit(0)
