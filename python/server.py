@@ -23,7 +23,6 @@ controller = pin_controll.controller()
 
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
-timer_thread = threading.Thread(target=timer)
 
 
 def temp_checker():
@@ -63,6 +62,8 @@ def timer():
     if temp_room:
         options['room']('true')
         temp_room = False
+
+timer_thread = threading.Thread(target=timer)
 
 async def handler(websocket, path):
     try:
