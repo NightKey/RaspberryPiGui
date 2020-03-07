@@ -18,6 +18,9 @@ class controller():
         GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.LOW)             #Furdokad
         GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.LOW)         #Szekreny
         GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)     #Ajto kapcsolo
+        GPIO.setup(pins.red_pin, GPIO.OUT)                               #Red color
+        GPIO.setup(pins.green_pin, GPIO.OUT)                               #Green color
+        GPIO.setup(pins.blue_pin, GPIO.OUT)                               #Blue color
         self.red = GPIO.PWM(pins.red_pin, 60)
         self.green = GPIO.PWM(pins.green_pin, 60)
         self.blue = GPIO.PWM(pins.blue_pin, 60)
