@@ -28,7 +28,7 @@ sender_loop = asyncio.new_event_loop()
 
 def temp_checker():
     try:
-        temp = psutil.sensors_temperatures()['coretemp'][0]._asdict()['current']
+        temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
         if temp > 60:
             print(f'CPU temp: {temp}C', 'Temp')
     except Exception as ex:

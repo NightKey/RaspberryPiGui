@@ -17,8 +17,9 @@ window.onload = function(){
         todo = event.data;
         console.log(todo);
         switch (todo) {
-            case 'lights':
+            case 'room':
                 show_message('Az ajtó nyutva, a fények égnek 2 percig.<br>Maradjanak égve?');
+                break;
         }
     }
 
