@@ -89,6 +89,14 @@ body {
     to {top: 0; opacity: 1}
 }
 
+input {
+    border-radius: 50px;
+}
+
+#color {
+    border-radius: 80px;
+}
+
 table {
     color: #FFFFFF;
     width: 100%;
