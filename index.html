@@ -5,10 +5,7 @@
 
         <link rel="stylesheet" type="text/css" href="style/style.css" />
         <link rel="stylesheet" type="text/css" href="style/slider.css" />
-        <link rel="stylesheet" media="screen" type="text/css" href="style/colorpicker.css" />
 
-        <script type="text/javascript" src="scripts/jquery.js"></script>
-        <script type="text/javascript" src="scripts/colorpicker.js"></script>
         <script type="text/javascript" src="scripts/controll.js"></script>
         
         <script>
@@ -30,26 +27,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <script> 
-                                $( "#colorSelector" ).ColorPicker({
-                                    color: '#ff0000',
-                                    onShow: function (colpkr) {
-                                        console.log("Shit called")
-                                        $(colpkr).fadeIn(500);
-                                        return false;
-                                    },
-                                    onHide: function (colpkr) {
-                                        $(colpkr).fadeOut(500);
-                                        return false;
-                                    },
-                                    onChange: function (hsb, hex, rgb) {
-                                        $( "#colorSelector div" ).css('backgroundColor', '#' + hex);
-                                    }
-                                });
-                        </script>
-                        <div id="colorSelector">
-                            <div id="selected_color" style="background-color: #ff0000"></div>
-                        </div>
+                        <input type="color" id='color' value='#ffffff'>
                     </td>
                     <td>
                         <input type="range" id="brightness" min="0" max="12" value="0"> <label id="brightness_number">00</label>
