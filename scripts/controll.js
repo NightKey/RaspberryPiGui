@@ -18,7 +18,7 @@ window.onload = function(){
         console.log(todo);
         switch (todo) {
             case 'room':
-                show_message('Az ajtó nyutva, a fények égnek 2 percig.<br>Maradjanak égve?');
+                show_message('Az ajtó nyitva, a fények égnek 2 percig.<br>Maradjanak égve?');
                 break;
         }
     }
@@ -91,7 +91,7 @@ window.onload = function(){
     work = function(ansver) {
         console.log('Todo: '+todo+'\tAnsver: '+ansver);
         switch (todo) {
-            case 'lights':
+            case 'room':
                 room.checked = ansver;
                 event = document.createEvent('Event');
                 event.initEvent('change', true, true);

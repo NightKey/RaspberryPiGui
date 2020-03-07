@@ -31,8 +31,10 @@ def temp_checker():
         temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
         if temp > 60:
             print(f'CPU temp: {temp}C', 'Temp')
+        return False
     except Exception as ex:
         print(ex, 'Temp')
+        return True
 
 def screen_handler():
     global to_print
@@ -64,7 +66,7 @@ def timer():
     global temp_room
     sleep(120)
     if temp_room:
-        options['room']('true')
+        options['room']('false')
         temp_room = False
 
 timer_thread = threading.Thread(target=timer)
@@ -95,6 +97,7 @@ async def status_checker():
     global to_send
     global temp_room
     counter = 0
+    temp_failed = False
     while True:
         if killswitch:
             print('Killswitch', 'Sender')
@@ -106,8 +109,8 @@ async def status_checker():
             if not controller.get_status('room'):
                 if not timer_thread.is_alive():
                     timer_thread.start()
-        if counter % 10 == 0:
-            temp_checker()
+        if counter % 10 == 0 and not temp_failed:
+            temp_failed = temp_checker()
         if to_send != []:
             await message_sender(to_send[0])
             del to_send[0]
@@ -158,6 +161,8 @@ if __name__=="__main__":
                 muted = False
             elif text == 'room':
                 to_send.append('room')
+                options['room']('true')
+                temp_room = True
             elif text == 'update':
                 import updater
             elif text == 'help':
