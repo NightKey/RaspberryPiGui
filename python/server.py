@@ -94,7 +94,7 @@ async def status_checker():
         if killswitch:
             print('Killswitch', 'Sender')
             break
-        if GPIO.input(controller.get_door_status()) == True:
+        if controller.get_door_status() == True:
             to_send.append('room')
             options['room']('true')
             temp_room = True
