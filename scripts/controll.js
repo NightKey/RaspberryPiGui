@@ -30,6 +30,21 @@ window.onload = function(){
         modal.style.display = 'block';
     }
 
+    work = function(ansver) {
+        console.log('Todo: '+todo+'\tAnsver: '+ansver);
+        switch (todo) {
+            case 'room':
+                room.checked = ansver;
+                event = document.createEvent('Event');
+                event.initEvent('change', true, true);
+                room.dispatchEvent(event);
+                break;
+            case 'kill':
+                connection.send('kill');
+                break;
+        }
+    }
+
     /* Connection */
     let connection = new this.WebSocket("ws://127.0.0.1:6969");
     let todo;
@@ -46,11 +61,18 @@ window.onload = function(){
     }
 
     connection.onmessage = function(event){
-        todo = event.data;
-        console.log(todo);
-        switch (todo) {
+        console.log(event.data);
+        switch (event.data) {
             case 'room':
-                show_message('Az ajtó nyitva, a fények égnek 2 percig.<br>Maradjanak égve?');
+                if (todo == '') {
+                    todo = event.data;
+                    console.log('room on');
+                    show_message('Az ajtó nyitva, a fények égnek 2 percig.<br>Maradjanak égve?');
+                }
+                else {
+                    console.log('room off');
+                    work(false);
+                }
                 break;
         }
     }
@@ -95,21 +117,6 @@ window.onload = function(){
         let data = 'cabinet,'+cabinet_on;
         connection.send(data);
     }, false);
-
-    work = function(ansver) {
-        console.log('Todo: '+todo+'\tAnsver: '+ansver);
-        switch (todo) {
-            case 'room':
-                room.checked = ansver;
-                event = document.createEvent('Event');
-                event.initEvent('change', true, true);
-                room.dispatchEvent(event);
-                break;
-            case 'kill':
-                connection.send('kill');
-                break;
-        }
-    }
 
     dismiss.addEventListener('click', function() {
         error_msg.innerHTML = '';
