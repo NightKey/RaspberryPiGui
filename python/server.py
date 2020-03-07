@@ -79,12 +79,13 @@ async def handler(websocket, path):
             data = await websocket.recv()
             data = data.split(',')
             options[data[0]](data[1])
-            if data[0] == room and temp_room:
+            if data[0] == "room" and temp_room:
                 temp_room = False
             await ws.send('Accepted')
-    except:
+    except Exception as ex:
         log.log('Connection lost')
         print('Connection lost', 'Listener')
+        print(f'Exception: {ex}', 'Listener')
 
 async def message_sender(message):
     print(f"Sending message '{message}'", 'Sender')
