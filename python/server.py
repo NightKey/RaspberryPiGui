@@ -7,14 +7,15 @@ from time import sleep
 
 log = logger.logger("RaspberryPiServerLog")
 main = writer.writer("RaspberryPiServer").write
-listener_print = writer.writer("Listener_status").write
-sender_print = writer.writer("Sender_status").write
+listener_print = writer.writer("Listener status").write
+sender_print = writer.writer("Sender status").write
+temp_print = writer.writer('Temp Checker').write
 ws = None
 ip="127.0.0.1"
 port = 6969
 to_send=[]
 to_print = []
-link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main}
+link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':temp_print}
 muted = False
 killswitch = False
 temp_room = False
@@ -28,9 +29,9 @@ sender_loop = asyncio.new_event_loop()
 def temp_checker():
     try:
         temp = psutil.sensors_temperatures()['coretemp'][0]['current']
-        print(f'CPU temp: {temp}C', 'Temp checker')
+        print(f'CPU temp: {temp}C', 'Temp')
     except Exception as ex:
-        print(ex, 'Temp checker')
+        print(ex, 'Temp')
 
 def screen_handler():
     global to_print
@@ -39,8 +40,10 @@ def screen_handler():
             break
         if to_print != []:
             if not muted:
-                out = link[to_print[0][0]]
-                out(to_print[0][1])
+                try:
+                    link[to_print[0][0]](to_print[0][1])
+                except Exception as ex:
+                    link['Main'](ex)
             del to_print[0]
 
 def printer(text, sender):
