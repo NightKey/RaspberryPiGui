@@ -16,7 +16,7 @@ window.onload = function(){
     let cabinet = document.getElementById("cabinet");
     let bath_tub = document.getElementById("bath_tub");
     let room = document.getElementById("room");
-    let message = false;
+    let message_shown = false;
 
     /*Functions*/
     show_error = function(msg) {
@@ -26,7 +26,7 @@ window.onload = function(){
     }
 
     show_message = function(msg) {
-        message = true
+        message_shown = true
         message_msg.innerHTML = msg;
         message.style.display = 'block';
         modal.style.display = 'block';
@@ -40,7 +40,7 @@ window.onload = function(){
                 event = document.createEvent('Event');
                 event.initEvent('change', true, true);
                 room.dispatchEvent(event);
-                message=false;
+                message_shown=false;
                 break;
             case 'kill':
                 connection.send('kill');
@@ -67,7 +67,7 @@ window.onload = function(){
         console.log(event.data);
         switch (event.data) {
             case 'room':
-                if (!message) {
+                if (!message_shown) {
                     todo = event.data;
                     console.log('room on');
                     show_message('Az ajtó nyitva, a fények égnek 2 percig.<br>Maradjanak égve?');
