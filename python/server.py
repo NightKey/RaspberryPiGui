@@ -19,6 +19,7 @@ link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':t
 muted = False
 killswitch = False
 temp_room = False
+temp_sent = False
 
 controller = pin_controll.controller()
 
@@ -26,11 +27,19 @@ listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
 
 
-def temp_checker():
+def temp_checker(test=False):
+    global temp_sent
     try:
         temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
-        if temp > 60:
+        if test and not temp_sent:
+            temp = 76
+        elif test:
+            temp = 60
+        if temp > 75 and not temp_sent:
             print(f'CPU temp: {temp}C', 'Temp')
+            to_send.append('temp')
+        elif temp < 70 and temp_sent:
+            temp_sent = False
         return False
     except Exception as ex:
         print(ex, 'Temp')
@@ -148,6 +157,7 @@ if __name__=="__main__":
         listener.start()
         sender.start()
         print_handler.start()
+        lights_command = False
         while True:
             text = input()
             if text == 'exit':
@@ -162,10 +172,14 @@ if __name__=="__main__":
                 muted = True
             elif text == 'unmute':
                 muted = False
+            elif text == 'lights':
+                controller.room('false' if lights_command else 'true')
             elif text == 'room':
                 to_send.append('room')
                 options['room']('true')
                 temp_room = True
+            elif text == 'temp':
+                temp_checker(test=True)
             elif text == 'update':
                 import updater
             elif text == 'help':
@@ -174,7 +188,9 @@ exit - Stops the server
 send - Sends a response to the webpage
 mute - mutes the server output (to the console)
 unmute - unmutes the server output
+lights - turns on/off the lights (if UI doesn't work)
 room - emulates a dooropening
+temp - simulates high temperatures
 update - update from github (restarts the system)"""
                 print(text, 'Main')
         sys.exit(0)

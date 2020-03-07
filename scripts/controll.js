@@ -77,6 +77,9 @@ window.onload = function(){
                     work(false);
                 }
                 break;
+            case 'temp':
+            show_error('A Pi hőmérséklete túl magas!');
+            break;
         }
     }
 
