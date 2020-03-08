@@ -1,4 +1,9 @@
 from os import system as run
+from os import remove
 
-run('git pull')
-run('sudo shutdown -r now')
+run('git pull -> update.lg')
+with open('update.lg', 'r') as f:
+    c = f.read(-1).split('\n')
+remove('update.log')
+if len(c) > 2:
+    run('sudo shutdown -r now')
