@@ -84,7 +84,7 @@ def timer():
         print('Lights off', 'Main')
         options['room']('false')
         to_send.append('room')
-        temp_room = False
+    temp_room = False
 
 timer_thread = threading.Thread(target=timer)
 
