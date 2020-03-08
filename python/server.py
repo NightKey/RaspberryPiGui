@@ -2,7 +2,7 @@ try:
     import RPi.GPIO as GPIO
 except:
     import FakeRPi.GPIO as GPIO
-import asyncio, websockets, writer, logger, threading, sys, os, psutil, pin_controll
+import asyncio, websockets, writer, logger, threading, sys, os, psutil, pin_controll, updater
 from time import sleep
 
 def printer(text, sender):
@@ -64,12 +64,16 @@ def screen_handler():
                     link['Main'](ex)
             del to_print[0]
 
+def update(nothing=None):
+    updater.main()
+
 options = {
     'cabinet':controller.cabinet, 
     'room':controller.room, 
     'brightness':controller.brightness, 
     'bath_tub':controller.bath_tub, 
-    'color':controller.color }
+    'color':controller.color,
+    'update':update }
 
 def timer():
     global temp_room
@@ -181,7 +185,7 @@ if __name__=="__main__":
             elif text == 'temp':
                 temp_checker(test=True)
             elif text == 'update':
-                import updater
+                update()
             elif text == 'help':
                 text = """Avaleable commands:
 exit - Stops the server

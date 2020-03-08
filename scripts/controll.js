@@ -17,6 +17,8 @@ window.onload = function(){
     let bath_tub = document.getElementById("bath_tub");
     let room = document.getElementById("room");
     let message_shown = false;
+    let update = document.getElementById('update');
+    let refresh = document.getElementById('refresh');
 
     /*Functions*/
     show_error = function(msg) {
@@ -78,8 +80,8 @@ window.onload = function(){
                 }
                 break;
             case 'temp':
-            show_error('A Pi hőmérséklete túl magas!');
-            break;
+                show_error('A Pi hőmérséklete túl magas!');
+                break;
         }
     }
 
@@ -149,6 +151,15 @@ window.onload = function(){
         picker.style.backgroundColor = event.target.value;
         console.log('Selected color: '+picker.value);
         connection.send('color,'+event.target.value);
+    }, false);
+
+    update.addEventListener('click', function(){
+        console.log('Update clicked!');
+        connection.send('update, None');
+    }, false);
+
+    refresh.addEventListener('click', function(){
+        location.reload(true);
     }, false);
 
 }

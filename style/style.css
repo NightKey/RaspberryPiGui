@@ -38,6 +38,12 @@ body {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
+#controll {
+    border-style: solid;
+    grid-row-start: lerts;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
 
 #error {
     z-index: 1;
