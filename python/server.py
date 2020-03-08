@@ -5,6 +5,12 @@ except:
 import asyncio, websockets, writer, logger, threading, sys, os, psutil, pin_controll
 from time import sleep
 
+def printer(text, sender):
+    global to_print
+    to_print.append([sender, text])
+
+print = printer
+
 log = logger.logger("RaspberryPiServerLog")
 main = writer.writer("RaspberryPiServer").write
 listener_print = writer.writer("Listener status").write
@@ -36,7 +42,7 @@ def temp_checker(test=False):
         elif test:
             temp = 60
         if temp > 75 and not temp_sent:
-            print(f'CPU temp: {temp}C', 'Temp')
+            print(f'CPU temp: {temp} C', 'Temp')
             to_send.append('temp')
         elif temp < 70 and temp_sent:
             temp_sent = False
@@ -57,12 +63,6 @@ def screen_handler():
                 except Exception as ex:
                     link['Main'](ex)
             del to_print[0]
-
-def printer(text, sender):
-    global to_print
-    to_print.append([sender, text])
-
-print = printer
 
 options = {
     'cabinet':controller.cabinet, 
