@@ -128,8 +128,11 @@ async def status_checker():
         if counter % 10 == 0 and not temp_failed:
             temp_failed = temp_checker()
         if to_send != []:
-            await message_sender(to_send[0])
-            del to_send[0]
+            try:
+                await message_sender(to_send[0])
+                del to_send[0]
+            except Exception as ex:
+                print(f'Error in sending message: {ex}', 'Sender')
         counter += 1
         if counter > 100:
             counter = 0
