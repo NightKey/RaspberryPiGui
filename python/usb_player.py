@@ -53,11 +53,10 @@ def start(directory):
                 pass
             if fail_count != 0:
                 fail_count = 0
-        except (OSError, IOError):
-            return 0
         except Exception as ex:
             print('Exception occured during playback')
             print(f'Exception: {ex}')
+            fail_count += 1
 
 def pause(a=None):
     global paused
