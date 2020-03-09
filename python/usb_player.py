@@ -5,7 +5,8 @@ def start(directory):
     print('Player called')
     files = []
     for (dirpath, _, filenames) in os.walk(directory):
-        files.extend(os.path.join(dirpath, filenames))
+        for file in filenames:
+            files.append(os.path.join(dirpath, file))
     print('Got all files')
     for filename, i in enumerate(filenames):
         if filename.split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
