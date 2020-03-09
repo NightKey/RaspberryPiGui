@@ -37,8 +37,10 @@ def start(directory):
                     skipped = False
                 if paused:
                     mixer.music.pause()
+                    was_paused=True
                 elif was_paused:
                     mixer.music.unpause()
+                    was_paused=False
                 pass
         except FileNotFoundError:
             return 0
