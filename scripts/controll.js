@@ -7,7 +7,6 @@ window.onload = function(){
     weather_creator();
 
     /*Variables*/
-    let weather = document.getElementById('weatherwidget-io-js');
     let brightness = document.getElementById('brightness');
     let brightness_text = document.getElementById("brightness_number");
     let bvalue = brightness.value;
@@ -29,6 +28,8 @@ window.onload = function(){
     let pause = document.getElementById('pause');
     let skip = document.getElementById('skip');
     let is_playing = false;
+    let volume_nob = document.getElementById('volume');
+    let volume_num = document.getElementById('volume_number');
 
     /*Functions*/
     show_error = function(msg) {
@@ -180,7 +181,7 @@ window.onload = function(){
 
     update.addEventListener('click', function(){
         console.log('Update clicked!');
-        connection.send('update, None');
+        connection.send('update,None');
     }, false);
 
     refresh.addEventListener('click', function(){
@@ -194,16 +195,22 @@ window.onload = function(){
 
     skip.addEventListener('click', function(){
         console.log('Skip clicked!');
-        connection.send('skip, None');
+        connection.send('skip,None');
     }, false);
 
     pause.addEventListener('click', function(){
         console.log('Pause clicked!');
-        connection.send('pause, None');
+        connection.send('pause,None');
         if (pause.value == 'Pause'){
             pause.value = 'Play';
         }
         else { pause.value = 'Pause'; }
+    }, false);
+
+    volume_nob.addEventListener('input', function() {
+        console.log('Volume at '+volume_nob.value);
+        connection.send('volume,'+volume_nob.value);
+        volume_num.innerHTML = volume_nob.value;
     }, false);
 
 }

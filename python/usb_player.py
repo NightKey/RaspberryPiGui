@@ -3,6 +3,7 @@ from pygame import mixer
 
 skipped = False
 paused = False
+volume = 1.0
 
 def start(directory):
     global paused
@@ -24,8 +25,11 @@ def start(directory):
         try:
             print(f'Now playing {item}')
             mixer.music.load(item)
+            mixer.music.set_volume(volume)
             mixer.music.play()
             while True:
+                if mixer.music.get_volume() != volume:
+                    mixer.music.set_volume(volume)
                 if not mixer.music.get_busy() and not paused:
                     break
                 if skipped:
@@ -44,8 +48,12 @@ def start(directory):
 
 def pause(a=None):
     global paused
-    paused = True
+    paused = not paused
 
 def skip(a=None):
     global skipped
     skipped = True
+
+def set_volume(_volume):
+    global volume
+    volume = (_volume/100)
