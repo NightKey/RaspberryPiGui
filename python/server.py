@@ -38,8 +38,8 @@ def usb_listener():
     while True:
         try:
             drives = os.listdir('/media/pi')
-            print(f'Drives: {drives}', 'USB')
             if drives != []:
+                print('Inside', 'USB')
                 for drive in drives:
                     if os.path.isdir(drive):
                         print(f'USB drive found at {drive}', 'USB')
