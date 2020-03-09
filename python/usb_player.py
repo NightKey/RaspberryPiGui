@@ -53,7 +53,7 @@ def start(directory):
                 pass
             if fail_count != 0:
                 fail_count = 0
-        except OSError:
+        except (OSError, IOError):
             return 0
         except Exception as ex:
             print('Exception occured during playback')
