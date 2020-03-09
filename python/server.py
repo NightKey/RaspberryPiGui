@@ -39,11 +39,9 @@ def usb_listener():
         try:
             drives = os.listdir('/media/pi')
             if drives != []:
-                print('Inside', 'USB')
                 for drive in drives:
-                    if os.path.isdir(drive):
-                        print(f'USB drive found at {drive}', 'USB')
-                        usb_player.start(os.path.join('/media/pi', drive))
+                    print(f'USB drive found at {drive}', 'USB')
+                    usb_player.start(os.path.join('/media/pi', drive))
         except Exception as ex:
             print(f'Exception: {ex}', 'USB')
 
