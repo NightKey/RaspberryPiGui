@@ -19,6 +19,9 @@ window.onload = function(){
     let message_shown = false;
     let update = document.getElementById('update');
     let refresh = document.getElementById('refresh');
+    let pause = document.getElementById('pause');
+    let skip = document.getElementById('skip');
+    let is_playing = false;
 
     /*Functions*/
     show_error = function(msg) {
@@ -47,6 +50,19 @@ window.onload = function(){
             case 'kill':
                 connection.send('kill');
                 break;
+        }
+    }
+
+    music() = function() {
+        if (is_playing) {
+            skip.disabled=true;
+            pause.disabled=true;
+            is_playing = false;
+        }
+        else {
+            skip.disabled=false;
+            pause.disabled=false;
+            is_playing = true;
         }
     }
 
@@ -81,6 +97,9 @@ window.onload = function(){
                 break;
             case 'temp':
                 show_error('A Pi hőmérséklete túl magas!');
+                break;
+            case 'music':
+                music();
                 break;
         }
     }
@@ -159,6 +178,20 @@ window.onload = function(){
 
     refresh.addEventListener('click', function(){
         location.reload(true);
+    }, false);
+
+    skip.addEventListener('click', function(){
+        console.log('Skip clicked!');
+        connection.send('skip, None');
+    }, false);
+
+    pause.addEventListener('click', function(){
+        console.log('Pause clicked!');
+        connection.send('pause, None');
+        if (pause.value == 'Pause'){
+            pause.value = 'Play';
+        }
+        else { pause.value = 'Pause'; }
     }, false);
 
 }

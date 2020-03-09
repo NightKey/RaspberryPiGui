@@ -41,9 +41,12 @@ def usb_listener():
             if drives != []:
                 for drive in drives:
                     print(f'USB drive found at {drive}', 'USB')
+                    to_send.append('music')
                     usb_player.start(os.path.join('/media/pi', drive))
         except Exception as ex:
             print(f'Exception: {ex}', 'USB')
+        finally:
+            to_send.append('music')
 
 def temp_checker(test=False):
     global temp_sent
@@ -85,7 +88,9 @@ options = {
     'brightness':controller.brightness, 
     'bath_tub':controller.bath_tub, 
     'color':controller.color,
-    'update':update }
+    'update':update,
+    'skip':usb_player.skip,
+    'pause':usb_player.pause }
 
 def timer():
     global temp_room
