@@ -1,6 +1,7 @@
 window.onload = function(){
 
     /*Variables*/
+    let weather = document.getElementById('weather');
     let brightness = document.getElementById('brightness');
     let brightness_text = document.getElementById("brightness_number");
     let bvalue = brightness.value;
@@ -177,7 +178,11 @@ window.onload = function(){
     }, false);
 
     refresh.addEventListener('click', function(){
-        location.reload(true);
+        let tmp = weather.innerHTML;
+        weather.innerHTML = tmp;
+        if (connection.readyState == WebSocket.CLOSED) {
+            connection = new this.WebSocket("ws://127.0.0.1:6969");
+        }
     }, false);
 
     skip.addEventListener('click', function(){
