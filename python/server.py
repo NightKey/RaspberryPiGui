@@ -46,7 +46,6 @@ def usb_listener():
                     to_send.append('music')
         except Exception as ex:
             print(f'Exception: {ex}', 'USB')
-            to_send.append('music')
 
 def temp_checker(test=False):
     global temp_sent

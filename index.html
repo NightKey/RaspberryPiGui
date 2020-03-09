@@ -7,10 +7,6 @@
         <link rel="stylesheet" type="text/css" href="style/slider.css" />
 
         <script type="text/javascript" src="scripts/controll.js"></script>
-        
-        <script>
-            !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-        </script>
     </head>
     <body>
 
@@ -67,10 +63,11 @@
             <table width='100%' height='100%'>
                 <tr>
                     <td><input type='button' id='update' value='Frissítés és újraindítás'></td>
-                    <td><input type='button' id='skip' value='Skip' disabled></td>
+                    <td rowspan="2"><input type='button' id='skip' value='Skip' disabled> &nbsp; <input type='button' id='pause' value='Pause' disabled></td>
                 </tr>
-                <tr><td><input type='button' id='refresh' value='Kezelőfelület frissítése'></td></tr>
-                <td><input type='button' id='pause' value='Pause' disabled></td>
+                <tr>
+                    <td><input type='button' id='refresh' value='Kezelőfelület frissítése'></td>
+                </tr>
             </table>
         </div>
     </body>

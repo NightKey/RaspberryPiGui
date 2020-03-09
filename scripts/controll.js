@@ -1,7 +1,13 @@
 window.onload = function(){
 
+    weather_creator = function() {
+        var js,fjs=document.getElementsByTagName('script')[0];if(!document.getElementById('weatherwidget-io-js')){js=document.createElement('script');js.id='weatherwidget-io-js';js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}
+    }
+
+    weather_creator();
+
     /*Variables*/
-    let weather = document.getElementById('weather');
+    let weather = document.getElementById('weatherwidget-io-js');
     let brightness = document.getElementById('brightness');
     let brightness_text = document.getElementById("brightness_number");
     let bvalue = brightness.value;
@@ -178,10 +184,11 @@ window.onload = function(){
     }, false);
 
     refresh.addEventListener('click', function(){
-        let tmp = weather.innerHTML;
-        weather.innerHTML = tmp;
-        if (connection.readyState == WebSocket.CLOSED) {
-            connection = new this.WebSocket("ws://127.0.0.1:6969");
+        if (connection.readyState == WebSocket.OPEN) {
+            weather_creator();
+        }
+        else {
+            location.reload();
         }
     }, false);
 
