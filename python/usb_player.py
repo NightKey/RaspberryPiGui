@@ -1,5 +1,5 @@
 import os
-from playsound import playsound
+from pygame import mixer
 
 def start(directory):
     print('Player called')
@@ -14,8 +14,12 @@ def start(directory):
     print('Sorted for audio files')
     for item in files:
         try:
+            mixer.init()
             print(f'Now playing {item}')
-            playsound(item)
+            mixer.music.load(item)
+            mixer.music.play()
+            while mixer.music.get_busy():
+                pass
         except FileNotFoundError:
             return 0
         except Exception as ex:
