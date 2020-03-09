@@ -5,7 +5,7 @@ except:
 
 import pins
 from time import sleep
-from server import verbose
+from print_handler import verbose
 
 pins = pins.pins()
 

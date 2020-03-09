@@ -1,6 +1,7 @@
 import os
-from server import printer
 from pygame import mixer
+from print_handler import printer
+
 
 skipped = False
 previous = False

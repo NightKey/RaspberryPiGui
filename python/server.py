@@ -2,42 +2,27 @@ try:
     import RPi.GPIO as GPIO
 except:
     import FakeRPi.GPIO as GPIO
-import asyncio, websockets, writer, logger, threading, sys, os, psutil, pin_controll, updater, usb_player
+import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, updater, usb_player
 from time import sleep
-
-def printer(text, sender):
-    global to_print
-    to_print.append([sender, text])
+from print_handler import printer, screen_handler, verbose
+import print_handler
 
 print = printer
 
 log = logger.logger("RaspberryPiServerLog")
-main = writer.writer("RaspberryPiServer").write
-listener_print = writer.writer("Listener Status").write
-sender_print = writer.writer("Sender Status").write
-temp_print = writer.writer('Temp Checker').write
-USB = writer.writer('USB Listener').write
-PINS = writer.writer('PIN controller').write
 ws = None
 ip="127.0.0.1"
 port = 6969
 to_send=[]
 to_print = []
-link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':temp_print, 'USB':USB, 'PINS':PINS}
 muted = False
 killswitch = False
 temp_room = False
 temp_sent = False
-is_verbose = False
 
 controller = pin_controll.controller()
-
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
-
-def verbose(text, sender):
-    if is_verbose:
-        print(text, sender)
 
 def usb_listener():
     print('USB listener started', 'USB')
@@ -71,19 +56,6 @@ def temp_checker(test=False):
     except Exception as ex:
         print(ex, 'Temp')
         return True
-
-def screen_handler():
-    global to_print
-    while True:
-        if killswitch:
-            exit()
-        if to_print != []:
-            if not muted:
-                try:
-                    link[to_print[0][0]](to_print[0][1])
-                except Exception as ex:
-                    link['Main'](ex)
-            del to_print[0]
 
 def update(nothing=None):
     updater.main()
@@ -182,7 +154,7 @@ if __name__=="__main__":
         log.log("Main thred started!")
         listener = threading.Thread(target=listener_starter)
         sender = threading.Thread(target=sender_starter)
-        print_handler = threading.Thread(target=screen_handler)
+        print_handler_thread = threading.Thread(target=screen_handler)
         usb_thread = threading.Thread(target=usb_listener)
         usb_thread.name='USB'
         listener.name = "Listener"
@@ -190,7 +162,7 @@ if __name__=="__main__":
         print_handler.name = "Printer"
         listener.start()
         sender.start()
-        print_handler.start()
+        print_handler_thread.start()
         usb_thread.start()
         lights_command = False
         while True:
@@ -200,14 +172,14 @@ if __name__=="__main__":
                 killswitch = True
                 listener_loop.stop()
                 sender_loop.stop()
-                print_handler._stop()
+                print_handler_thread._stop()
                 break
             elif 'send ' in text:
                 to_send.append(text.replace("send ", ''))
             elif text == 'mute':
-                muted = True
+                print_handler.muted = True
             elif text == 'unmute':
-                muted = False
+                print_handler.muted = False
             elif text == 'lights':
                 controller.room('false' if lights_command else 'true')
             elif text == 'room':
@@ -219,7 +191,7 @@ if __name__=="__main__":
             elif text == 'update':
                 update()
             elif text == 'verbose':
-                is_verbose = not is_verbose
+                print_handler.is_verbose = not print_handler.is_verbose
             elif text == 'help':
                 text = """Avaleable commands:
 exit - Stops the server
