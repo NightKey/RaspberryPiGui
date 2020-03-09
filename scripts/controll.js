@@ -187,14 +187,14 @@ window.onload = function(){
     }, false);
 
     skip.addEventListener('click', function(){
-        if (is_playing) {
+        if (is_music_on) {
             console.log('Skip clicked!');
             connection.send('skip,None');
         }
     }, false);
 
     prev.addEventListener('click', function(){
-        if (is_playing) {
+        if (is_music_on) {
             console.log('Prev clicked!');
             connection.send('prev,None');
         }
@@ -218,7 +218,7 @@ window.onload = function(){
     volume_nob.addEventListener('input', function() {
         console.log('Volume at '+volume_nob.value);
         connection.send('volume,'+volume_nob.value);
-        volume_num.innerHTML = volume_nob.value;
+        volume_num.innerHTML = 'Hangerő: '+volume_nob.value;
     }, false);
 
 }
