@@ -8,7 +8,7 @@ def start(directory):
         for file in filenames:
             files.append(os.path.join(dirpath, file))
     print('Got all files')
-    for filename, i in enumerate(filenames):
+    for i, filename in enumerate(filenames):
         if filename.split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
             del files[i]
     print('Sorted for audio files')
