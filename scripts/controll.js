@@ -147,7 +147,6 @@ window.onload = function(){
     }, false);
 
     picker.addEventListener('change', function(event){
-        picker.value = event.target.value;
         picker.style.backgroundColor = event.target.value;
         console.log('Selected color: '+picker.value);
         connection.send('color,'+event.target.value);
