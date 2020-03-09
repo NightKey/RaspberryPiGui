@@ -11,21 +11,21 @@ def start(directory):
     global skipped
     global previous
     was_paused = False
-    print('Player called')
     files = []
     for (dirpath, _, filenames) in os.walk(directory):
         for file in filenames:
             files.append(os.path.join(dirpath, file))
-    print('Got all files')
-    for i, filename in enumerate(filenames):
+    for i, filename in enumerate(files):
         if filename.split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
             del files[i]
-    print('Sorted for audio files')
     
     mixer.init()
     i = 0
+    fail_count = 0
     while i < len(files):
         try:
+            if fail_count > 5:
+                break
             item = files[i]
             i+=1
             print(f'Now playing {item}')
@@ -51,6 +51,8 @@ def start(directory):
                     mixer.music.stop()
                     previous = False
                 pass
+            if fail_count != 0:
+                fail_count = 0
         except FileNotFoundError:
             return 0
         except Exception as ex:
