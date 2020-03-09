@@ -53,7 +53,7 @@ window.onload = function(){
         }
     }
 
-    music() = function() {
+    music = function() {
         if (is_playing) {
             skip.disabled=true;
             pause.disabled=true;

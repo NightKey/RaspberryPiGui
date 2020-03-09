@@ -43,9 +43,9 @@ def usb_listener():
                     print(f'USB drive found at {drive}', 'USB')
                     to_send.append('music')
                     usb_player.start(os.path.join('/media/pi', drive))
+                    to_send.append('music')
         except Exception as ex:
             print(f'Exception: {ex}', 'USB')
-        finally:
             to_send.append('music')
 
 def temp_checker(test=False):
