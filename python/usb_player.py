@@ -25,7 +25,9 @@ def start(directory):
             print(f'Now playing {item}')
             mixer.music.load(item)
             mixer.music.play()
-            while mixer.music.get_busy():
+            while True:
+                if not mixer.music.get_busy() and not paused:
+                    break
                 if skipped:
                     mixer.music.stop()
                     skipped = False
