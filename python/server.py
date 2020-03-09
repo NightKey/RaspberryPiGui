@@ -34,6 +34,7 @@ listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
 
 def usb_listener():
+    print('USB listener started', 'USB')
     while True:
         try:
             drives = os.listdir('/media/pi')
