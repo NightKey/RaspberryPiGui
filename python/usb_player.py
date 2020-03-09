@@ -56,4 +56,4 @@ def skip(a=None):
 
 def set_volume(_volume):
     global volume
-    volume = (_volume/100)
+    volume = (float(_volume)/100)
