@@ -2,7 +2,7 @@ try:
     import RPi.GPIO as GPIO
 except:
     import FakeRPi.GPIO as GPIO
-import asyncio, websockets, writer, logger, threading, sys, os, psutil, pin_controll, updater
+import asyncio, websockets, writer, logger, threading, sys, os, psutil, pin_controll, updater, usb_player
 from time import sleep
 
 def printer(text, sender):
@@ -13,15 +13,16 @@ print = printer
 
 log = logger.logger("RaspberryPiServerLog")
 main = writer.writer("RaspberryPiServer").write
-listener_print = writer.writer("Listener status").write
-sender_print = writer.writer("Sender status").write
+listener_print = writer.writer("Listener Status").write
+sender_print = writer.writer("Sender Status").write
 temp_print = writer.writer('Temp Checker').write
+USB = writer.writer('USB Listener').write
 ws = None
 ip="127.0.0.1"
 port = 6969
 to_send=[]
 to_print = []
-link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':temp_print}
+link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':temp_print, 'USB':USB}
 muted = False
 killswitch = False
 temp_room = False
@@ -32,6 +33,16 @@ controller = pin_controll.controller()
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
 
+def usb_listener():
+    while True:
+        try:
+            drives = os.listdir('/media/pi')
+            if drives != []:
+                for drive in drives:
+                    if os.path.isdir(drive):
+                        usb_player.start(os.path.join('/media/pi', drive))
+        except Exception as ex:
+            print(f'Exception: {ex}', 'USB')
 
 def temp_checker(test=False):
     global temp_sent
@@ -55,7 +66,7 @@ def screen_handler():
     global to_print
     while True:
         if killswitch:
-            break
+            exit()
         if to_print != []:
             if not muted:
                 try:
@@ -118,7 +129,7 @@ async def status_checker():
     while True:
         if killswitch:
             print('Killswitch', 'Sender')
-            break
+            exit()
         if controller.get_door_status() == True and not controller.get_status('room'):
             to_send.append('room')
             options['room']('true')
@@ -158,12 +169,15 @@ if __name__=="__main__":
         listener = threading.Thread(target=listener_starter)
         sender = threading.Thread(target=sender_starter)
         print_handler = threading.Thread(target=screen_handler)
+        usb_thread = threading.Thread(target=usb_listener)
+        usb_thread.name='USB'
         listener.name = "Listener"
         sender.name = "Sender"
         print_handler.name = "Printer"
         listener.start()
         sender.start()
         print_handler.start()
+        usb_thread.start()
         lights_command = False
         while True:
             text = input()
@@ -172,6 +186,7 @@ if __name__=="__main__":
                 killswitch = True
                 listener_loop.stop()
                 sender_loop.stop()
+                print_handler._stop()
                 break
             elif 'send ' in text:
                 to_send.append(text.replace("send ", ''))
