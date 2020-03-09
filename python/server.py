@@ -17,30 +17,37 @@ listener_print = writer.writer("Listener Status").write
 sender_print = writer.writer("Sender Status").write
 temp_print = writer.writer('Temp Checker').write
 USB = writer.writer('USB Listener').write
+PINS = writer.writer('PIN controller').write
 ws = None
 ip="127.0.0.1"
 port = 6969
 to_send=[]
 to_print = []
-link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':temp_print, 'USB':USB}
+link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':temp_print, 'USB':USB, 'PINS':PINS}
 muted = False
 killswitch = False
 temp_room = False
 temp_sent = False
+is_verbose = False
 
 controller = pin_controll.controller()
 
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
 
+def verbose(text, sender):
+    if is_verbose:
+        print(text, sender)
+
 def usb_listener():
     print('USB listener started', 'USB')
     while True:
         try:
             drives = os.listdir('/media/pi')
+            verbose(f'Drives found: {drives}', 'USB')
             if drives != []:
                 for drive in drives:
-                    print(f'USB drive found at {drive}', 'USB')
+                    verbose(f'USB drive found at {drive}', 'USB')
                     to_send.append('music')
                     usb_player.start(os.path.join('/media/pi', drive))
                     to_send.append('music')
@@ -97,9 +104,9 @@ def timer():
     global temp_room
     global to_send
     sleep(120)
-    print('Timer stopped', 'Main')
+    verbose('Timer stopped', 'Main')
     if temp_room:
-        print('Lights off', 'Main')
+        verbose('Lights off', 'Main')
         options['room']('false')
         to_send.append('room')
     temp_room = False
@@ -111,6 +118,7 @@ async def handler(websocket, path):
         global ws
         global temp_room
         ws = websocket
+        verbose('Incoming connection', 'Listener')
         await websocket.send("Connected!")
         while True:
             data = await websocket.recv()
@@ -125,7 +133,7 @@ async def handler(websocket, path):
         print(f'Exception: {ex}', 'Listener')
 
 async def message_sender(message):
-    print(f"Sending message '{message}'", 'Sender')
+    verbose(f"Sending message '{message}'", 'Sender')
     await ws.send(message)
 
 async def status_checker():
@@ -135,7 +143,6 @@ async def status_checker():
     temp_failed = False
     while True:
         if killswitch:
-            print('Killswitch', 'Sender')
             exit()
         if controller.get_door_status() == True and not controller.get_status('room'):
             to_send.append('room')
@@ -211,6 +218,8 @@ if __name__=="__main__":
                 temp_checker(test=True)
             elif text == 'update':
                 update()
+            elif text == 'verbose':
+                is_verbose = not is_verbose
             elif text == 'help':
                 text = """Avaleable commands:
 exit - Stops the server
@@ -220,7 +229,8 @@ unmute - unmutes the server output
 lights - turns on/off the lights (if UI doesn't work)
 room - emulates a dooropening
 temp - simulates high temperatures
-update - update from github (restarts the system)"""
+update - update from github (restarts the system)
+verbose - Prints more info from runtime """
                 print(text, 'Main')
         sys.exit(0)
     except Exception as ex:

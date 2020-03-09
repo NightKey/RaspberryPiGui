@@ -1,10 +1,13 @@
 import os
+from server import printer
 from pygame import mixer
 
 skipped = False
 previous = False
 paused = False
 volume = 1.0
+
+print = printer
 
 def start(directory):
     global paused
@@ -28,7 +31,7 @@ def start(directory):
                 break
             item = files[i]
             i+=1
-            print(f'Now playing {item}')
+            print(f'Now playing {item}', 'USB')
             mixer.music.load(item)
             mixer.music.set_volume(volume)
             mixer.music.play()
@@ -54,8 +57,8 @@ def start(directory):
             if fail_count != 0:
                 fail_count = 0
         except Exception as ex:
-            print('Exception occured during playback')
-            print(f'Exception: {ex}')
+            print('Exception occured during playback', 'USB')
+            print(f'Exception: {ex}', 'USB')
             fail_count += 1
 
 def pause(a=None):

@@ -5,6 +5,7 @@ except:
 
 import pins
 from time import sleep
+from server import verbose
 
 pins = pins.pins()
 
@@ -39,23 +40,23 @@ class controller():
         return self.status[what]
 
     def brightness(self, value):
-        print(f"Incoming for brightness {value}")
+        verbose(f"Incoming for brightness {value}", 'PINS')
 
     def room(self, is_on):
         is_on = (is_on == 'true')
-        print("The room lights should {}be on!".format('' if (is_on) else 'not '))
+        verbose("The room lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.lamp_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['room'] = is_on
 
     def bath_tub(self, is_on):
         is_on = (is_on == 'true')
-        print("The bath tub lights should {}be on!".format('' if (is_on) else 'not '))
+        verbose("The bath tub lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.tub_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['room'] = is_on
 
     def cabinet(self, is_on):
         is_on = (is_on == 'true')
-        print("The cabinet lights should {}be on!".format('' if (is_on) else 'not '))
+        verbose("The cabinet lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.cabinet_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['room'] = is_on
 
@@ -63,5 +64,5 @@ class controller():
     def color(self, color_v):
         color_v = color_v.replace('#', '')
         color_v = [int(color_v[:2], 16), int(color_v[2:4], 16), int(color_v[4:], 16)]
-        print(f"The color of the led's should be #{color_v}")
+        verbose(f"The color of the led's should be #{color_v}", 'PINS')
         self.status['color'] = color_v
