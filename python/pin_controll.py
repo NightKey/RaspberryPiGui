@@ -39,7 +39,7 @@ class controller():
         return self.status[what]
 
     def brightness(self, value):
-        print(f"Incoming for brightness {value}", 'Listener')
+        print(f"Incoming for brightness {value}")
 
     def room(self, is_on):
         is_on = (is_on == 'true')
@@ -63,5 +63,5 @@ class controller():
     def color(self, color_v):
         color_v = color_v.replace('#', '')
         color_v = [int(color_v[:2], 16), int(color_v[2:4], 16), int(color_v[4:], 16)]
-        print(f"The color the led's should be is #{color_v}", 'Listener')
+        print(f"The color of the led's should be #{color_v}")
         self.status['color'] = color_v
