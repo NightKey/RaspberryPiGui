@@ -27,7 +27,9 @@ window.onload = function(){
     let refresh = document.getElementById('refresh');
     let pause = document.getElementById('pause');
     let skip = document.getElementById('skip');
+    let prev = document.getElementById('prev');
     let is_playing = false;
+    let is_paused = false;
     let volume_nob = document.getElementById('volume');
     let volume_num = document.getElementById('volume_number');
 
@@ -62,16 +64,7 @@ window.onload = function(){
     }
 
     music = function() {
-        if (is_playing) {
-            skip.disabled=true;
-            pause.disabled=true;
-            is_playing = false;
-        }
-        else {
-            skip.disabled=false;
-            pause.disabled=false;
-            is_playing = true;
-        }
+        is_playing = !is_playing;
     }
 
     /* Connection */
@@ -194,17 +187,32 @@ window.onload = function(){
     }, false);
 
     skip.addEventListener('click', function(){
-        console.log('Skip clicked!');
-        connection.send('skip,None');
+        if (is_playing) {
+            console.log('Skip clicked!');
+            connection.send('skip,None');
+        }
+    }, false);
+
+    prev.addEventListener('click', function(){
+        if (is_playing) {
+            console.log('Prev clicked!');
+            connection.send('prev,None');
+        }
     }, false);
 
     pause.addEventListener('click', function(){
         console.log('Pause clicked!');
-        connection.send('pause,None');
-        if (pause.value == 'Pause'){
-            pause.value = 'Play';
+        if(is_playing) {
+            if (is_paused){
+                pause.src='images/play.png';
+                is_paused = false;
+            }
+            else { 
+                pause.src='images/pause.png'; 
+                is_paused = true;
+            }
+            connection.send('pause,None');
         }
-        else { pause.value = 'Pause'; }
     }, false);
 
     volume_nob.addEventListener('input', function() {

@@ -2,12 +2,14 @@ import os
 from pygame import mixer
 
 skipped = False
+previous = False
 paused = False
 volume = 1.0
 
 def start(directory):
     global paused
     global skipped
+    global previous
     was_paused = False
     print('Player called')
     files = []
@@ -21,8 +23,11 @@ def start(directory):
     print('Sorted for audio files')
     
     mixer.init()
-    for item in files:
+    i = 0
+    while i < len(files):
         try:
+            item = files[i]
+            i+=1
             print(f'Now playing {item}')
             mixer.music.load(item)
             mixer.music.set_volume(volume)
@@ -41,6 +46,10 @@ def start(directory):
                 elif was_paused:
                     mixer.music.unpause()
                     was_paused=False
+                if previous:
+                    i -= 2
+                    mixer.music.stop()
+                    previous = False
                 pass
         except FileNotFoundError:
             return 0
@@ -59,3 +68,7 @@ def skip(a=None):
 def set_volume(_volume):
     global volume
     volume = (float(_volume)/100)
+
+def prev(a=None):
+    global previous
+    previous = True
