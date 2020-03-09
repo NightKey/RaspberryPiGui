@@ -29,7 +29,7 @@ window.onload = function(){
     let skip = document.getElementById('skip');
     let prev = document.getElementById('prev');
     let is_playing = false;
-    let is_paused = false;
+    let is_music_on = false;
     let volume_nob = document.getElementById('volume');
     let volume_num = document.getElementById('volume_number');
 
@@ -64,7 +64,7 @@ window.onload = function(){
     }
 
     music = function() {
-        is_playing = !is_playing;
+        is_music_on = !is_music_on;
     }
 
     /* Connection */
@@ -202,14 +202,14 @@ window.onload = function(){
 
     pause.addEventListener('click', function(){
         console.log('Pause clicked!');
-        if(is_playing) {
-            if (is_paused){
+        if(is_music_on) {
+            if (!is_playing){
                 pause.src='images/play.png';
-                is_paused = false;
+                is_playing = true;
             }
             else { 
                 pause.src='images/pause.png'; 
-                is_paused = true;
+                is_playing = false;
             }
             connection.send('pause,None');
         }
