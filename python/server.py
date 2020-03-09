@@ -90,7 +90,8 @@ options = {
     'update':update,
     'skip':usb_player.skip,
     'pause':usb_player.pause,
-    'volume':usb_player.set_volume }
+    'volume':usb_player.set_volume,
+    'prev': usb_player.prev }
 
 def timer():
     global temp_room
