@@ -160,6 +160,7 @@ def listener_starter():
     exit(0)
 
 if __name__=="__main__":
+    update()
     try:        
         log.log("Main thred started!")
         listener = threading.Thread(target=listener_starter)
