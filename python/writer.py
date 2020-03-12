@@ -9,4 +9,4 @@ class writer():
     
     def write(self, txt, dest=os.sys.stdout):
         from datetime import datetime
-        dest.write("[{} @ {}]: {}\n".format(self.caller.upper(), datetime.now(), txt))
+        dest.write("\r[{} @ {}]: {}\n> ".format(self.caller.upper(), datetime.now(), txt))
