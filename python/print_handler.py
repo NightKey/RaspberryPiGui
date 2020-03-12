@@ -13,7 +13,7 @@ is_verbose = False
 
 def verbose(text, sender):
     if is_verbose:
-        print(text, sender)
+        to_print.append([sender, text])
 
 def printer(text, sender):
     global to_print
