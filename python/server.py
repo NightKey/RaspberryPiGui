@@ -185,18 +185,15 @@ if __name__=="__main__":
                 sender_loop.stop()
                 print_handler_thread._stop()
                 break
-            elif 'send ' in text:
-                to_send.append(text.replace("send ", ''))
             elif text == 'mute':
-                print_handler.muted = True
-            elif text == 'unmute':
-                print_handler.muted = False
+                print_handler.muted = not print_handler.muted
             elif text == 'lights':
                 controller.room('false' if lights_command else 'true')
             elif text == 'room':
                 to_send.append('room')
                 options['room']('true')
                 temp_room = True
+                timer_thread.start()
             elif text == 'temp':
                 temp_checker(test=True)
             elif text == 'update':
@@ -208,16 +205,17 @@ if __name__=="__main__":
             elif text == 'help':
                 text = """Avaleable commands:
 exit - Stops the server
-send - Sends a response to the webpage
 status - Reports about the pin, and temperature status
 mute - mutes the server output (to the console)
-unmute - unmutes the server output
 lights - turns on/off the lights (if UI doesn't work)
 room - emulates a dooropening
 temp - simulates high temperatures
 update - update from github (restarts the system)
-verbose - Prints more info from runtime """
+verbose - Prints more info from runtime
+help - This help message"""
                 print(text, 'Main')
+            else:
+                print("Invalid command! Type in 'help'", "Main")
         sys.exit(0)
     except Exception as ex:
         log.log(str(ex), True)
