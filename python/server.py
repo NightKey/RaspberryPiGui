@@ -24,6 +24,16 @@ controller = pin_controll.controller()
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
 
+def get_status():
+    try:
+        temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
+        pins = controller.status
+        print(f'CPU Temperature: {temp}', 'Main')
+        for key, value in pins:
+            print(f'{key} pin status: {value}', 'Main')
+    except Exception as ex:
+        print(f'Error in status check: {ex}', 'Main')
+
 def usb_listener():
     print('USB listener started', 'USB')
     while True:
@@ -190,12 +200,15 @@ if __name__=="__main__":
                 temp_checker(test=True)
             elif text == 'update':
                 update()
+            elif text == 'status':
+                get_status()
             elif text == 'verbose':
                 print_handler.is_verbose = not print_handler.is_verbose
             elif text == 'help':
                 text = """Avaleable commands:
 exit - Stops the server
 send - Sends a response to the webpage
+status - Reports about the pin, and temperature status
 mute - mutes the server output (to the console)
 unmute - unmutes the server output
 lights - turns on/off the lights (if UI doesn't work)
