@@ -39,8 +39,8 @@ def usb_listener():
     while True:
         try:
             drives = os.listdir('/media/pi')
-            verbose(f'Drives found: {drives}', 'USB')
             if drives != []:
+                verbose(f'Drives found: {drives}', 'USB')
                 for drive in drives:
                     verbose(f'USB drive found at {drive}', 'USB')
                     to_send.append('music')
