@@ -202,6 +202,7 @@ if __name__=="__main__":
                 get_status()
             elif text == 'verbose':
                 print_handler.is_verbose = not print_handler.is_verbose
+                print('Verbose is turned {}'.format('on' if print_handler.verbose else 'off'), 'Main')
             elif text == 'help':
                 text = """Avaleable commands:
 exit - Stops the server
