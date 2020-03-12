@@ -29,7 +29,7 @@ def get_status():
         temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
         pins = controller.status
         print(f'CPU Temperature: {temp}', 'Main')
-        for key, value in pins:
+        for key, value in pins.items():
             print(f'{key} pin status: {value}', 'Main')
     except Exception as ex:
         print(f'Error in status check: {ex}', 'Main')
