@@ -30,7 +30,9 @@ def save_timer():
         else:
             turn_on = False
             sleep_time = (last_interacted + timedelta(0,300) - datetime.now()).total_seconds()
-            print(f'Sleeping {sleep_time} secunds.', 'Power')
+        if sleep_time < 0: 
+            sleep_time = 0.2
+        print(f'Sleeping {sleep_time} secunds.', 'Power')
         tmp = datetime.now()
         sleep(sleep_time)
     print('Powersaver stopped.', 'Power')

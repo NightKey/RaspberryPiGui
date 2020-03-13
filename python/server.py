@@ -62,6 +62,10 @@ def temp_checker(test=False):
     global temp_sent
     try:
         temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
+        if temp > 60:
+            controller.fan(True)
+        elif temp < 40:
+            controller.fan(False)
         if test and not temp_sent:
             temp = 76
         elif test:

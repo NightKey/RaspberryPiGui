@@ -18,10 +18,11 @@ class controller():
         GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.LOW)            #Lampa
         GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.LOW)             #Furdokad
         GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.LOW)         #Szekreny
-        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)     #Ajto kapcsolo
+        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)   #Ajto kapcsolo
         GPIO.setup(pins.red_pin, GPIO.OUT)                               #Red color
-        GPIO.setup(pins.green_pin, GPIO.OUT)                               #Green color
-        GPIO.setup(pins.blue_pin, GPIO.OUT)                               #Blue color
+        GPIO.setup(pins.green_pin, GPIO.OUT)                             #Green color
+        GPIO.setup(pins.blue_pin, GPIO.OUT)                              #Blue color
+        GPIO.setup(pins.fan_controll, GPIO.OUT)                          #Fancontroller
         self.red = GPIO.PWM(pins.red_pin, 60)
         self.green = GPIO.PWM(pins.green_pin, 60)
         self.blue = GPIO.PWM(pins.blue_pin, 60)
@@ -30,7 +31,8 @@ class controller():
             'room':False,
             'bath_tub':False,
             'cabinet':False,
-            'color':[0,0,0]
+            'color':[0,0,0],
+            'fan':False
         }
 
     def get_door_status(self):
@@ -66,3 +68,10 @@ class controller():
         color_v = [int(color_v[:2], 16), int(color_v[2:4], 16), int(color_v[4:], 16)]
         verbose(f"The color of the led's should be #{color_v}", 'PINS')
         self.status['color'] = color_v
+
+    def fan(self, status=None):
+        if status == None:
+            self.status['fan'] = not self.status['fan']
+            status = self.status
+        verbose("Fan pin was set to {}".format((GPIO.HIGH if status else GPIO.LOW)), 'PINS')
+        GPIO.output(pins.fan_controll, (GPIO.HIGH if status else GPIO.LOW))

@@ -7,3 +7,4 @@ class pins():
         self.green_pin = 13
         self.red_pin = 12
         self.blue_pin = 18
+        self.fan_controll = 19
