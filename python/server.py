@@ -182,7 +182,8 @@ if __name__=="__main__":
     finally:
         to_send.append('alert')
         to_send.append(my_ip)
-    try:        
+    try:
+        print(my_ip, 'Main')
         log.log("Main thred started!")
         listener = threading.Thread(target=listener_starter)
         sender = threading.Thread(target=sender_starter)
