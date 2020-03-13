@@ -19,6 +19,8 @@ muted = False
 killswitch = False
 temp_room = False
 temp_sent = False
+my_ip = None
+is_connected = False
 
 controller = pin_controll.controller()
 listener_loop = asyncio.new_event_loop()
@@ -36,8 +38,12 @@ def get_status():
 
 def usb_listener():
     print('USB listener started', 'USB')
+    failcount = 0
     while True:
         try:
+            if failcount > 5:
+                print('USB listener failed too many times, shutting off.', 'USB')
+                break
             drives = os.listdir('/media/pi')
             if drives != []:
                 verbose(f'Drives found: {drives}', 'USB')
@@ -47,6 +53,7 @@ def usb_listener():
                     usb_player.start(os.path.join('/media/pi', drive))
                     to_send.append('music')
         except Exception as ex:
+            failcount += 1
             print(f'Exception: {ex}', 'USB')
 
 def temp_checker(test=False):
@@ -96,11 +103,13 @@ def timer():
 timer_thread = threading.Thread(target=timer)
 
 async def handler(websocket, path):
+    global is_connected
     try:
         global ws
         global temp_room
         ws = websocket
         verbose('Incoming connection', 'Listener')
+        is_connected = True
         await websocket.send("Connected!")
         while True:
             data = await websocket.recv()
@@ -111,6 +120,7 @@ async def handler(websocket, path):
             await ws.send('Accepted')
     except Exception as ex:
         log.log('Connection lost')
+        is_connected = False
         print('Connection lost', 'Listener')
         print(f'Exception: {ex}', 'Listener')
 
@@ -121,8 +131,18 @@ async def message_sender(message):
 async def status_checker():
     global to_send
     global temp_room
+    global my_ip
     counter = 0
     temp_failed = False
+    try:
+        import socket
+        my_ip = socket.gethostbyname(socket.gethostname())
+        del sys.modules['socket']
+    except:
+        my_ip = "Couldn't get the IP"
+    finally:
+        to_send.append('alert')
+        to_send.append(my_ip)
     while True:
         if killswitch:
             exit()
@@ -135,11 +155,12 @@ async def status_checker():
         if counter % 10 == 0 and not temp_failed:
             temp_failed = temp_checker()
         if to_send != []:
-            try:
-                await message_sender(to_send[0])
-                del to_send[0]
-            except Exception as ex:
-                print(f'Error in sending message: {ex}', 'Sender')
+            if is_connected:
+                try:
+                    await message_sender(to_send[0])
+                    del to_send[0]
+                except Exception as ex:
+                    print(f'Error in sending message: {ex}', 'Sender')
         counter += 1
         if counter > 100:
             counter = 0

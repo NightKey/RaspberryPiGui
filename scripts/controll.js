@@ -32,6 +32,7 @@ window.onload = function(){
     let is_music_on = false;
     let volume_nob = document.getElementById('volume');
     let volume_num = document.getElementById('volume_number');
+    let send_alert = false
 
     /*Functions*/
     show_error = function(msg) {
@@ -102,6 +103,14 @@ window.onload = function(){
             case 'music':
                 music();
                 break;
+            case 'alert':
+                send_alert = true;
+                break;
+            default:
+                if (send_alert) {
+                    alert(event.data);
+                    send_alert = false;
+                }
         }
     }
 
