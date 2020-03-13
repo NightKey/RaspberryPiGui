@@ -174,16 +174,10 @@ def listener_starter():
 if __name__=="__main__":
     update()
     try:
-        import socket
-        my_ip = 'IP address: {}'.format(socket.gethostbyname(socket.gethostname()))
-        del sys.modules['socket']
+        os.system('for /f "tokens=2 delims=[]" %%a in (\'ping -n 1 -4 ""\') do echo %%a')
     except:
-        my_ip = "Couldn't get the IP"
-    finally:
-        to_send.append('alert')
-        to_send.append(my_ip)
+        pass
     try:
-        print(my_ip, 'Main')
         log.log("Main thred started!")
         listener = threading.Thread(target=listener_starter)
         sender = threading.Thread(target=sender_starter)
