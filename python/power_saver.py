@@ -11,7 +11,7 @@ power_saver_enabled = True
 print = verbose
 
 def save_timer():
-    tmp = None
+    tmp = datetime.now() - timedelta(1,0)
     global turn_on
     sleep_time = 0
     screen_off = False
