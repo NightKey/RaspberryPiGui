@@ -16,6 +16,9 @@ def save_timer():
     sleep_time = 0
     screen_off = False
     while power_saver_enabled:
+        print(f'Sleep time: {sleep_time}', 'Power')
+        print(f'Screen off: {screen_off}', 'Power')
+        print(f'tmp: {tmp}', 'Power')
         if tmp == last_interacted and sleep_time != 0.2:
             os.system(off_command)
             screen_off = True
@@ -28,6 +31,7 @@ def save_timer():
             turn_on = False
             sleep_time = (last_interacted + timedelta(0,300) - datetime.now()).total_seconds()
             print(f'Sleeping {sleep_time} secunds.', 'Power')
+        tmp = datetime.now()
         sleep(sleep_time)
     print('Powersaver stopped.', 'Power')
 
