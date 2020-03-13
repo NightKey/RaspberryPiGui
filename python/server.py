@@ -175,7 +175,7 @@ if __name__=="__main__":
     update()
     try:
         import socket
-        my_ip = "IP address: {}".format(socket.gethostbyname(socket.getfqdn()))
+        my_ip = "IP addresses: \n{}".format(socket.gethostbyname_ex(socket.getfqdn()))
         del sys.modules['socket']
     except:
         my_ip = 'Failed to get IP address'
