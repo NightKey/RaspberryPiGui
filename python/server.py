@@ -134,15 +134,6 @@ async def status_checker():
     global my_ip
     counter = 0
     temp_failed = False
-    try:
-        import socket
-        my_ip = socket.gethostbyname(socket.gethostname())
-        del sys.modules['socket']
-    except:
-        my_ip = "Couldn't get the IP"
-    finally:
-        to_send.append('alert')
-        to_send.append(my_ip)
     while True:
         if killswitch:
             exit()
@@ -182,6 +173,15 @@ def listener_starter():
 
 if __name__=="__main__":
     update()
+    try:
+        import socket
+        my_ip = 'IP address: {}'.format(socket.gethostbyname(socket.gethostname()))
+        del sys.modules['socket']
+    except:
+        my_ip = "Couldn't get the IP"
+    finally:
+        to_send.append('alert')
+        to_send.append(my_ip)
     try:        
         log.log("Main thred started!")
         listener = threading.Thread(target=listener_starter)
