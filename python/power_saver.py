@@ -19,7 +19,7 @@ def save_timer():
         print(f'Sleep time: {sleep_time}', 'Power')
         print(f'Screen off: {screen_off}', 'Power')
         print(f'tmp: {tmp}', 'Power')
-        if tmp == last_interacted and sleep_time != 0.2:
+        if tmp >= last_interacted and sleep_time != 0.2:
             os.system(off_command)
             screen_off = True
             sleep_time = 0.2
