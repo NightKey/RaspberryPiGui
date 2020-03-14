@@ -6,8 +6,6 @@ import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, up
 from time import sleep
 from print_handler import printer, screen_handler, verbose
 import print_handler
-from power_saver import save_timer, set_now
-from power_saver import stop as power_saver_off
 
 print = printer
 
@@ -119,7 +117,6 @@ async def handler(websocket, path):
         await websocket.send("Connected!")
         while True:
             data = await websocket.recv()
-            set_now()
             data = data.split(',')
             options[data[0]](data[1])
             if data[0] == "room" and temp_room:
@@ -195,21 +192,17 @@ if __name__=="__main__":
         sender = threading.Thread(target=sender_starter)
         print_handler_thread = threading.Thread(target=screen_handler)
         usb_thread = threading.Thread(target=usb_listener)
-        power_thread = threading.Thread(target=save_timer)
         usb_thread.name='USB'
         listener.name = "Listener"
         sender.name = "Sender"
         print_handler.name = "Printer"
-        power_thread.name = 'Power management'
         listener.start()
         sender.start()
         print_handler_thread.start()
         usb_thread.start()
-        power_thread.start()
         lights_command = False
         while True:
             text = input()
-            set_now()
             if text == 'exit':
                 log.log("Stopped by user")
                 killswitch = True
@@ -235,9 +228,6 @@ if __name__=="__main__":
             elif text == 'verbose':
                 print_handler.is_verbose = not print_handler.is_verbose
                 print('Verbose is turned {}'.format('on' if print_handler.verbose else 'off'), 'Main')
-            elif text == 'testmode':
-                set_now()
-                power_saver_off()
             elif text == 'help':
                 text = """Avaleable commands:
 exit - Stops the server
@@ -248,7 +238,6 @@ room - emulates a dooropening
 temp - simulates high temperatures
 update - update from github (restarts the system)
 verbose - Prints more info from runtime
-testmode - Stops the powersaver from working
 help - This help message"""
                 print(text, 'Main')
             else:
@@ -257,6 +246,4 @@ help - This help message"""
     except Exception as ex:
         log.log(str(ex), True)
     finally:
-        set_now()
-        power_saver_off()
         log.close()
