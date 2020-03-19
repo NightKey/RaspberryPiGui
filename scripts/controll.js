@@ -227,7 +227,7 @@ window.onload = function(){
     volume_nob.addEventListener('input', function() {
         console.log('Volume at '+volume_nob.value);
         connection.send('volume,'+volume_nob.value);
-        volume_num.innerHTML = 'Hangerő: '+volume_nob.value;
+        volume_num.innerHTML = 'Hangerő: '+volume_nob.value+'%';
     }, false);
 
 }
