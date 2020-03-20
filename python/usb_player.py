@@ -19,9 +19,13 @@ def start(directory):
     for (dirpath, _, filenames) in os.walk(directory):
         for file in filenames:
             files.append(os.path.join(dirpath, file))
-    for i, filename in enumerate(files):
+    i = 0
+    for filename in files:
         if filename.split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
+            print(f'Deleting {files[i]}', 'USB')
             del files[i]
+        else:
+            i += 1
     
     mixer.init()
     i = 0

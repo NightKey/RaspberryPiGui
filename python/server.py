@@ -38,13 +38,17 @@ def get_status():
 
 def usb_listener():
     print('USB listener started', 'USB')
+    USB_Place = '/media/pi'
     failcount = 0
     while True:
         try:
             if failcount > 5:
                 print('USB listener failed too many times, shutting off.', 'USB')
                 break
-            drives = os.listdir('/media/pi')
+            if failcount == 3:
+                print('Trying test path', 'USB')
+                USB_Place = '../test'
+            drives = os.listdir(USB_Place)
             if drives != []:
                 verbose(f'Drives found: {drives}', 'USB')
                 for drive in drives:
