@@ -21,7 +21,7 @@ def start(directory):
             files.append(os.path.join(dirpath, file))
     i = 0
     for filename in files:
-        if filename.split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
+        if files[i].split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
             print(f'Deleting {files[i]}', 'USB')
             del files[i]
         else:
