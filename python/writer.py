@@ -7,6 +7,6 @@ class writer():
     def __init__(self, caller):
         self.caller = caller
     
-    def write(self, txt, dest=os.sys.stdout):
+    def write(self, txt, dest=os.sys.stdout, end='\n> '):
         from datetime import datetime
-        dest.write("\r[{} @ {}]: {}\n> ".format(self.caller.upper(), datetime.now(), txt))
+        dest.write("\r[{} @ {}]: {}{}".format(self.caller.upper(), datetime.now(), txt, end))

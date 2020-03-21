@@ -45,9 +45,6 @@ def usb_listener():
             if failcount > 5:
                 print('USB listener failed too many times, shutting off.', 'USB')
                 break
-            if failcount == 3:
-                print('Trying test path', 'USB')
-                USB_Place = '../test'
             drives = os.listdir(USB_Place)
             if drives != []:
                 verbose(f'Drives found: {drives}', 'USB')
@@ -58,6 +55,9 @@ def usb_listener():
                     to_send.append('music')
         except Exception as ex:
             failcount += 1
+            if failcount == 3:
+                print('Trying test path', 'USB')
+                USB_Place = '../test'
             print(f'Exception: {ex}', 'USB')
 
 def temp_checker(test=False):

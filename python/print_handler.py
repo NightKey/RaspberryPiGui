@@ -15,9 +15,9 @@ def verbose(text, sender):
     if is_verbose:
         to_print.append([sender, text])
 
-def printer(text, sender):
+def printer(text, sender, end='\n> '):
     global to_print
-    to_print.append([sender, text])
+    to_print.append([sender, text, end])
 
 def screen_handler():
     global to_print
@@ -25,7 +25,7 @@ def screen_handler():
         if to_print != []:
             if not muted:
                 try:
-                    link[to_print[0][0]](to_print[0][1])
+                    link[to_print[0][0]](to_print[0][1], end=to_print[0][2])
                 except Exception as ex:
                     link['Main'](ex)
             del to_print[0]

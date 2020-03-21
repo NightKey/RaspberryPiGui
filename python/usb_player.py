@@ -20,12 +20,12 @@ def start(directory):
         for file in filenames:
             files.append(os.path.join(dirpath, file))
     i = 0
-    for filename in files:
+    for _ in files:
         if files[i].split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
-            print(f'Deleting {files[i]}', 'USB')
             del files[i]
         else:
             i += 1
+        print(f'Size: {len(files)}', 'USB', end='')
     
     mixer.init()
     i = 0
@@ -81,3 +81,21 @@ def set_volume(_volume):
 def prev(a=None):
     global previous
     previous = True
+
+if __name__=="__main__":
+    def Player():
+        start('../test/Test')
+    import threading
+    player = threading.Thread(target=Player)
+    player.name = 'Player'
+    player.start()
+    while True:
+        a = input('> ')
+        if a == 'pause':
+            pause()
+        elif a == 'skip':
+            skip()
+        elif a == 'prev':
+            prev()
+        elif "volume" in a:
+            set_volume(a.split(' ')[-1])
