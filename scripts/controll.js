@@ -7,6 +7,7 @@ window.onload = function(){
     weather_creator();
 
     /*Variables*/
+    let init = false;
     let brightness = document.getElementById('brightness');
     let brightness_text = document.getElementById("brightness_number");
     let bvalue = brightness.value;
@@ -32,7 +33,9 @@ window.onload = function(){
     let is_music_on = false;
     let volume_nob = document.getElementById('volume');
     let volume_num = document.getElementById('volume_number');
-    let send_alert = false
+    let send_alert = false;
+    let fan = document.getElementById('fan_div');
+    let now_playing = document.getElementById('now_playing');
 
     /*Functions*/
     show_error = function(msg) {
@@ -41,11 +44,27 @@ window.onload = function(){
         modal.style.display = 'block';
     }
 
+    toggle_fan = function() {
+        if (fan.style.display == 'block') {
+            fan.style.display = 'none';
+        }
+        else {
+            fan.style.display = 'block';
+        }
+    }
+
     show_message = function(msg) {
         message_shown = true
         message_msg.innerHTML = msg;
         message.style.display = 'block';
         modal.style.display = 'block';
+    }
+
+    swtc = function(what) {
+        what.checked = true;
+        event = document.createEvent('Event');
+        event.initEvent('change', true, true);
+        what.dispatchEvent(event);
     }
 
     work = function(ansver) {
@@ -64,8 +83,15 @@ window.onload = function(){
         }
     }
 
-    music = function() {
-        is_music_on = !is_music_on;
+    music = function(data) {
+        if (data != 'None') {
+            is_music_on = true;
+            now_playing.innerHTML = 'Now playing: '+data
+        }
+        else {
+            is_music_on = false;
+            now_playing.innerHTML = '';
+        }
     }
 
     /* Connection */
@@ -76,6 +102,7 @@ window.onload = function(){
 
     connection.onopen = function() {
         console.log("Connection established");
+        init = true;
     }
 
     connection.onclose = function() {
@@ -87,29 +114,69 @@ window.onload = function(){
         console.log(event.data);
         switch (event.data) {
             case 'room':
-                if (!message_shown) {
-                    todo = event.data;
-                    console.log('room on');
-                    show_message('Az ajtó nyitva, a fények égnek 2 percig.<br>Maradjanak égve?');
+                if (!init) {
+                    if (!message_shown) {
+                        todo = event.data;
+                        console.log('room on');
+                        show_message('Az ajtó nyitva, a fények égnek 2 percig.<br>Maradjanak égve?');
+                    }
+                    else {
+                        console.log('room off');
+                        work(false);
+                    }
                 }
                 else {
-                    console.log('room off');
-                    work(false);
+                    todo = event.data;
+                    swtc(room);
                 }
+                break;
+            case 'bath_tub':
+                swtc(bath_tub);
+                break;
+            case 'cabinet':
+                swtc(cabinet);
                 break;
             case 'temp':
                 show_error('A Pi hőmérséklete túl magas!');
                 break;
-            case 'music':
-                music();
-                break;
             case 'alert':
                 send_alert = true;
+                break;
+            case 'finished':
+                init = false;
+                break;
+            case 'fan':
+                toggle_fan();
                 break;
             default:
                 if (send_alert) {
                     alert(event.data);
                     send_alert = false;
+                } else{
+                    switch (event.data.split('|')[0]) {
+                        case 'color':
+                            tmp = event.data.split(' ', 1)[1].replace('[', '').replace(']', '').split(', ')
+                            picker.value = "#"+tmp[0]+tmp[1]+tmp[2];
+                            event = document.createEvent('Event');
+                            event.initEvent('change', true, true);
+                            picker.dispatchEvent(event);
+                            break;
+                        case 'brightness':
+                            brightness.value = parseInt(event.data.split('|')[1]);
+                            event = document.createEvent('Event');
+                            event.initEvent('change', true, true);
+                            brightness.dispatchEvent(event);
+                            break;
+                        case 'volume':
+                            volume_nob.value = parseInt(event.data.split('|')[1]);
+                            event = document.createEvent('Event');
+                            event.initEvent('change', true, true);
+                            volume_nob.dispatchEvent(event);
+                            break;
+                        case 'music':
+                            music(event.data.split('|')[1]);
+                            break;
+                    }
                 }
         }
     }
@@ -131,28 +198,36 @@ window.onload = function(){
 
         brightness_text.innerHTML = bvalue;
         let data = 'brightness,'+bvalue;
-        connection.send(data);
+        if (!init) {
+            connection.send(data);
+        }
     }, false);
 
     room.addEventListener('change', function() {
         let room_on = room.checked;
         console.log("EventListener called for '"+lights.id+"' with value '"+room_on+"'");
         let data = 'room,'+room_on;
-        connection.send(data);
+        if (!init) {
+            connection.send(data);
+        }
     }, false);
 
     bath_tub.addEventListener('change', function() {
         let bath_tub_on = bath_tub.checked;
         console.log("EventListener called for '"+bath_tub.id+"' with value '"+bath_tub_on+"'");
         let data = 'bath_tub,'+bath_tub_on;
-        connection.send(data);
+        if (!init) {
+            connection.send(data);
+        }
     }, false);
 
     cabinet.addEventListener('change', function() {
         let cabinet_on = cabinet.checked;
         console.log("EventListener called for '"+cabinet.id+"' with value '"+cabinet_on+"'");
         let data = 'cabinet,'+cabinet_on;
-        connection.send(data);
+        if (!init) {
+            connection.send(data);
+        }
     }, false);
 
     dismiss.addEventListener('click', function() {
@@ -175,15 +250,19 @@ window.onload = function(){
         work(false);
     }, false);
 
-    picker.addEventListener('change', function(event){
-        picker.style.backgroundColor = event.target.value;
+    picker.addEventListener('change', function(){
+        picker.style.backgroundColor = picker.value;
         console.log('Selected color: '+picker.value);
-        connection.send('color,'+event.target.value);
+        if (!init) {
+            connection.send('color,'+picker.value);   
+        }
     }, false);
 
     update.addEventListener('click', function(){
         console.log('Update clicked!');
-        connection.send('update,None');
+        if (!init) {
+            connection.send('update,None');   
+        }
     }, false);
 
     refresh.addEventListener('click', function(){
@@ -198,14 +277,18 @@ window.onload = function(){
     skip.addEventListener('click', function(){
         if (is_music_on) {
             console.log('Skip clicked!');
-            connection.send('skip,None');
+            if (!init) {
+                connection.send('skip,None');
+            }
         }
     }, false);
 
     prev.addEventListener('click', function(){
         if (is_music_on) {
             console.log('Prev clicked!');
-            connection.send('prev,None');
+            if (!init) {
+                connection.send('prev,None');
+            }
         }
     }, false);
 
@@ -220,14 +303,18 @@ window.onload = function(){
                 pause.src='images/pause.png'; 
                 is_playing = false;
             }
-            connection.send('pause,None');
+            if (!init) {
+                connection.send('pause,None');
+            }
         }
     }, false);
 
     volume_nob.addEventListener('input', function() {
         console.log('Volume at '+volume_nob.value);
-        connection.send('volume,'+volume_nob.value);
         volume_num.innerHTML = 'Hangerő: '+volume_nob.value+'%';
+        if (!init) {
+            connection.send('volume,'+volume_nob.value);
+        }
     }, false);
 
 }

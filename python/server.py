@@ -50,9 +50,8 @@ def usb_listener():
                 verbose(f'Drives found: {drives}', 'USB')
                 for drive in drives:
                     verbose(f'USB drive found at {drive}', 'USB')
-                    to_send.append('music')
-                    usb_player.start(os.path.join('/media/pi', drive))
-                    to_send.append('music')
+                    usb_player.start(os.path.join(USB_Place, drive))
+                    to_send.append('music|none')
         except Exception as ex:
             failcount += 1
             if failcount == 3:
@@ -66,8 +65,10 @@ def temp_checker(test=False):
         temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
         if temp > 60 and not controller.status['fan']:
             controller.fan(True)
+            to_send.append('fan')
         elif temp < 40 and controller.status['fan']:
             controller.fan(False)
+            to_send.append('fan')
         if test and not temp_sent:
             temp = 76
         elif test:
@@ -118,7 +119,22 @@ async def handler(websocket, path):
         ws = websocket
         verbose('Incoming connection', 'Listener')
         is_connected = True
-        await websocket.send("Connected!")
+        controller.update_status()
+        tmp = controller.status
+        color = []
+        for item in tmp['color']:
+            color.append(hex(item).replace('0x', ''))
+        if tmp['room']:
+            await websocket.send('room')
+        if tmp['bath_tub']:
+            await websocket.send('bath_tub')
+        if tmp['cabinet']:
+            await websocket.send('cabinet')
+        await websocket.send(f"color|{color}")
+        await websocket.send(f"brightness|{tmp['brightness']}")
+        await websocket.send(f"volume|{int(usb_player.volume * 100)}")
+        await websocket.send("finished")
+        await websocket.send(f'music|{usb_player.now_playing}')
         while True:
             data = await websocket.recv()
             data = data.split(',')
@@ -140,6 +156,7 @@ async def status_checker():
     global to_send
     global temp_room
     global my_ip
+    now_playing = ""
     counter = 0
     temp_failed = False
     while True:
@@ -153,6 +170,10 @@ async def status_checker():
                 timer_thread.start()
         if counter % 10 == 0 and not temp_failed:
             temp_failed = temp_checker()
+        if usb_player.playing:
+            if now_playing != usb_player.now_playing:
+                now_playing = usb_player.now_playing
+                to_send.append(f'music|{now_playing}')
         if to_send != []:
             if is_connected:
                 try:
