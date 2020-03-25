@@ -34,12 +34,20 @@ class controller():
             'color':[0,0,0],
             'fan':False
         }
+        self.update_status()
 
     def get_door_status(self):
         return GPIO.input(pins.door_pin)
 
     def get_status(self, what):
         return self.status[what]
+
+    def update_status(self):
+        self.status['room'] = GPIO.input(pins.lamp_pin)
+        self.status['bath_tub'] = GPIO.input(pins.tub_pin)
+        self.status['cabinet'] = GPIO.input(pins.cabinet_pin)
+        self.status['fan'] = GPIO.input(pins.fan_controll)
+
 
     def brightness(self, value):
         verbose(f"Incoming for brightness {value}", 'PINS')
@@ -48,19 +56,19 @@ class controller():
         is_on = (is_on == 'true')
         verbose("The room lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.lamp_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-        self.status['room'] = is_on
+        self.status['room'] = GPIO.input(pins.lamp_pin)
 
     def bath_tub(self, is_on):
         is_on = (is_on == 'true')
         verbose("The bath tub lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.tub_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-        self.status['room'] = is_on
+        self.status['bath_tub'] = GPIO.input(pins.tub_pin)
 
     def cabinet(self, is_on):
         is_on = (is_on == 'true')
         verbose("The cabinet lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.cabinet_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-        self.status['room'] = is_on
+        self.status['cabinet'] = GPIO.input(pins.cabinet_pin)
 
 
     def color(self, color_v):
@@ -75,3 +83,7 @@ class controller():
             status = self.status
         verbose("Fan pin was set to {}".format((GPIO.HIGH if status else GPIO.LOW)), 'PINS')
         GPIO.output(pins.fan_controll, (GPIO.HIGH if status else GPIO.LOW))
+        self.status['fan'] = GPIO.input(pins.fan_controll)
+    
+    def clean(self):
+        GPIO.cleanup()
