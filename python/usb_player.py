@@ -24,7 +24,7 @@ def start(directory):
         for file in filenames:
             files.append(os.path.join(dirpath, file))
     i = 0
-    for _ in files:
+    while i < len(files) - 1:
         now = files[i]
         if now.split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
             del files[i]
@@ -91,9 +91,12 @@ def prev(a=None):
     global previous
     previous = True
 
+def show_now_playing():
+    print(now_playing, 'USB')
+
 if __name__=="__main__":
     def Player():
-        start('../test/Test')
+        start('./test/Test')
     import threading
     player = threading.Thread(target=Player)
     player.name = 'Player'
@@ -106,5 +109,7 @@ if __name__=="__main__":
             skip()
         elif a == 'prev':
             prev()
+        elif a == 'now playing':
+            show_now_playing()
         elif "volume" in a:
             set_volume(a.split(' ')[-1])
