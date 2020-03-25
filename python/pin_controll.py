@@ -51,6 +51,7 @@ class controller():
 
     def brightness(self, value):
         verbose(f"Incoming for brightness {value}", 'PINS')
+        self.status['brightness'] = int(value)
 
     def room(self, is_on):
         is_on = (is_on == 'true')
