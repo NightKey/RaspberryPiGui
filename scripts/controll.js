@@ -84,9 +84,9 @@ window.onload = function(){
     }
 
     music = function(data) {
-        if (data != 'None') {
+        if (data != 'none') {
             is_music_on = true;
-            now_playing.innerHTML = 'Now playing: '+data
+            now_playing.innerHTML = data
         }
         else {
             is_music_on = false;
@@ -155,8 +155,12 @@ window.onload = function(){
                 } else{
                     switch (event.data.split('|')[0]) {
                         case 'color':
-                            tmp = event.data.split(' ', 1)[1].replace('[', '').replace(']', '').split(', ')
-                            picker.value = "#"+tmp[0]+tmp[1]+tmp[2];
+                            let tmp = event.data.split('|')[1].replace('[', '').replace(']', '').split(', ');
+                            for (let i = 0; i < 3; i++) {
+                                tmp[i] = tmp[i].replace("'", '').replace("'", '');
+                            }
+                            console.log(tmp)
+                            picker.value = "#".concat(tmp[0], tmp[1], tmp[2]);
                             event = document.createEvent('Event');
                             event.initEvent('change', true, true);
                             picker.dispatchEvent(event);
@@ -164,13 +168,13 @@ window.onload = function(){
                         case 'brightness':
                             brightness.value = parseInt(event.data.split('|')[1]);
                             event = document.createEvent('Event');
-                            event.initEvent('change', true, true);
+                            event.initEvent('input', true, true);
                             brightness.dispatchEvent(event);
                             break;
                         case 'volume':
                             volume_nob.value = parseInt(event.data.split('|')[1]);
                             event = document.createEvent('Event');
-                            event.initEvent('change', true, true);
+                            event.initEvent('input', true, true);
                             volume_nob.dispatchEvent(event);
                             break;
                         case 'music':

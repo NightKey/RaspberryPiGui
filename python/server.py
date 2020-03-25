@@ -28,6 +28,7 @@ sender_loop = asyncio.new_event_loop()
 
 def get_status():
     try:
+        controller.update_status()
         temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
         pins = controller.status
         print(f'CPU Temperature: {temp}', 'Main')
@@ -56,7 +57,7 @@ def usb_listener():
             failcount += 1
             if failcount == 3:
                 print('Trying test path', 'USB')
-                USB_Place = '../test'
+                USB_Place = './test/'
             print(f'Exception: {ex}', 'USB')
 
 def temp_checker(test=False):
@@ -124,17 +125,29 @@ async def handler(websocket, path):
         color = []
         for item in tmp['color']:
             color.append(hex(item).replace('0x', ''))
+            if len(color[-1]) == 1:
+                color[-1] = f"0{color[-1]}"
+        verbose(f"Status: {tmp}", 'Listener')
+        verbose(f'Colors: {color}', 'Listener')
         if tmp['room']:
+            verbose('Sending room', 'Listener')
             await websocket.send('room')
         if tmp['bath_tub']:
+            verbose('Sending bath_tub', 'Listener')
             await websocket.send('bath_tub')
         if tmp['cabinet']:
+            verbose('Sending cabinet', 'Listener')
             await websocket.send('cabinet')
+        if tmp['fan']:
+            verbose('Sending fan', 'Listener')
+            await websocket.send('fan')
         await websocket.send(f"color|{color}")
         await websocket.send(f"brightness|{tmp['brightness']}")
         await websocket.send(f"volume|{int(usb_player.volume * 100)}")
         await websocket.send("finished")
         await websocket.send(f'music|{usb_player.now_playing}')
+        del tmp
+        del color
         while True:
             data = await websocket.recv()
             data = data.split(',')
