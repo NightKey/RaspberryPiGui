@@ -26,7 +26,7 @@
                         <input type="color" id='color' style='background-color: black; border-style: none;'>
                     </td>
                     <td>
-                        <input type="range" id="brightness" min="0" max="12" value="0"><br><label id="brightness_number">00</label>
+                        <input type="range" id="brightness" min="0" max="12" value="0"><br><br><label id="brightness_number">00</label>
                     </td>
                 </tr>
                 <tr>
@@ -68,7 +68,8 @@
                          &nbsp; 
                         <img src='images/pause.png' id='pause' height='25px'>
                         &nbsp;
-                        <img src='images/skip.png' id='skip' height='25px'>
+                        <img src='images/skip.png' id='skip' height='25px'><br>
+                        <spam id='now_playing'></spam>
                     </td>
                 </tr>
                 <tr>
@@ -76,6 +77,9 @@
                     <td><input id='volume' type='range' max='100' min='0' value='100'><br><br><label id='volume_number'>Hangerő: 100%</label></td>
                 </tr>
             </table>
+        </div>
+        <div id='fan_div' style="display: none;">
+            <img src='images/fan.png' id='fan' height='55px'>
         </div>
     </body>
 </html>

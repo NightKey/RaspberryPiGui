@@ -7,6 +7,8 @@ skipped = False
 previous = False
 paused = False
 volume = 1.0
+playing = False
+now_playing = "none"
 
 print = printer
 
@@ -14,6 +16,8 @@ def start(directory):
     global paused
     global skipped
     global previous
+    global now_playing
+    global playing
     was_paused = False
     files = []
     for (dirpath, _, filenames) in os.walk(directory):
@@ -21,7 +25,8 @@ def start(directory):
             files.append(os.path.join(dirpath, file))
     i = 0
     for _ in files:
-        if files[i].split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
+        now = files[i]
+        if now.split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
             del files[i]
         else:
             i += 1
@@ -36,10 +41,12 @@ def start(directory):
                 break
             item = files[i]
             i+=1
-            print(f'Now playing {item}', 'USB')
+            now_playing = os.path.basename(item)
+            print(f'Now playing {now_playing}', 'USB')
             mixer.music.load(item)
             mixer.music.set_volume(volume)
             mixer.music.play()
+            playing = True
             while True:
                 if mixer.music.get_volume() != volume:
                     mixer.music.set_volume(volume)
@@ -59,6 +66,8 @@ def start(directory):
                     mixer.music.stop()
                     previous = False
                 pass
+            playing = False
+            now_playing = "none"
             if fail_count != 0:
                 fail_count = 0
         except Exception as ex:
