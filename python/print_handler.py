@@ -11,9 +11,9 @@ to_print = []
 muted = False
 is_verbose = False
 
-def verbose(text, sender):
+def verbose(text, sender, end='\n> '):
     if is_verbose:
-        to_print.append([sender, text])
+        to_print.append([sender, text, end])
 
 def printer(text, sender, end='\n> '):
     global to_print
