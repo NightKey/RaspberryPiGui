@@ -15,9 +15,9 @@ class controller():
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.LOW)            #Lampa
-        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.LOW)             #Furdokad
-        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.LOW)         #Szekreny
+        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.HIGH)            #Lampa
+        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.HIGH)             #Furdokad
+        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.HIGH)         #Szekreny
         GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)   #Ajto kapcsolo
         GPIO.setup(pins.red_pin, GPIO.OUT)                               #Red color
         GPIO.setup(pins.green_pin, GPIO.OUT)                             #Green color
@@ -43,10 +43,10 @@ class controller():
         return self.status[what]
 
     def update_status(self):
-        self.status['room'] = GPIO.input(pins.lamp_pin)
-        self.status['bath_tub'] = GPIO.input(pins.tub_pin)
-        self.status['cabinet'] = GPIO.input(pins.cabinet_pin)
-        self.status['fan'] = GPIO.input(pins.fan_controll)
+        self.status['room'] = not bool(GPIO.input(pins.lamp_pin))
+        self.status['bath_tub'] = not bool(GPIO.input(pins.tub_pin))
+        self.status['cabinet'] = not bool(GPIO.input(pins.cabinet_pin))
+        self.status['fan'] = not bool(GPIO.input(pins.fan_controll))
 
 
     def brightness(self, value):
