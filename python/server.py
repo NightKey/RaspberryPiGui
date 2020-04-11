@@ -115,6 +115,8 @@ timer_thread = threading.Thread(target=timer)
 async def handler(websocket, path):
     global is_connected
     try:
+        if killswitch:
+            return
         global ws
         global temp_room
         ws = websocket

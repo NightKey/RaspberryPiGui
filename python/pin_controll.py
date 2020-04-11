@@ -73,19 +73,25 @@ class controller():
 
     def set_leds(self):
         try:
-            self.status['red'] = round((self.translate(self.status['color'][0], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 0)
+            self.status['red'] = round((self.translate(self.status['color'][0], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+            if self.status['red'] > 1:
+                self.status['red'] = 1/self.status['red']
         except:
             self.status['red'] = 0
         finally:
             self.red.ChangeDutyCycle(self.status['red'] * 100)
         try:
-            self.status['green'] = round((self.translate(self.status['color'][1], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 0)
+            self.status['green'] = round((self.translate(self.status['color'][1], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+            if self.status['green'] > 1:
+                self.status['green'] = 1/self.status['green']
         except:
             self.status['green'] = 0
         finally:
             self.green.ChangeDutyCycle(self.status['green'] * 100)
         try:
-            self.status['blue'] = round((self.translate(self.status['color'][2], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 0)
+            self.status['blue'] = round((self.translate(self.status['color'][2], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+            if self.status['blue'] > 1:
+                self.status['blue'] = 1/self.status['blue']
         except:
             self.status['blue'] = 0
         finally:
