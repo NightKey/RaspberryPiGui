@@ -35,7 +35,10 @@ class controller():
             'bath_tub':False,
             'cabinet':False,
             'color':[0,0,0],
-            'fan':False
+            'fan':False,
+            'red':0,
+            'green':0,
+            'blue':0
         }
         self.update_status()
 
@@ -69,9 +72,24 @@ class controller():
         self.set_leds()
 
     def set_leds(self):
-        self.red.ChangeDutyCycle((self.translate(self.status['color'][0], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)))
-        self.red.ChangeDutyCycle((self.translate(self.status['color'][1], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)))
-        self.red.ChangeDutyCycle((self.translate(self.status['color'][2], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)))
+        try:
+            self.status['red'] = (self.translate(self.status['color'][0], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100))
+        except:
+            self.status['red'] = 0
+        finally:
+            self.red.ChangeDutyCycle(self.status['red'])
+        try:
+            self.status['green'] = (self.translate(self.status['color'][1], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100))
+        except:
+            self.status['green'] = 0
+        finally:
+            self.green.ChangeDutyCycle(self.status['green'])
+        try:
+            self.status['blue'] = (self.translate(self.status['color'][2], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100))
+        except:
+            self.status['blue'] = 0
+        finally:
+            self.blue.ChangeDutyCycle(self.status['blue'])
 
     def room(self, is_on):
         is_on = (is_on == 'true')
