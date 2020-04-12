@@ -15,6 +15,14 @@ def verbose(text, sender, end='\n> '):
     if is_verbose:
         to_print.append([sender, text, end])
 
+def mute():
+    global muted
+    muted = not muted
+
+def ch_verbose():
+    global is_verbose
+    is_verbose = not is_verbose
+
 def printer(text, sender, end='\n> '):
     global to_print
     to_print.append([sender, text, end])

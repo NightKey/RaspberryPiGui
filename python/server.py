@@ -18,8 +18,8 @@ muted = False
 killswitch = False
 temp_room = False
 temp_sent = False
-my_ip = None
 is_connected = False
+dev_mode = False
 
 controller = pin_controll.controller()
 listener_loop = asyncio.new_event_loop()
@@ -61,27 +61,29 @@ def usb_listener():
 
 def temp_checker(test=False):
     global temp_sent
-    try:
-        temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
-        if temp > 60 and not controller.status['fan']:
-            controller.fan(True)
-            to_send.append('fan')
-        elif temp < 40 and controller.status['fan']:
-            controller.fan(False)
-            to_send.append('fan')
-        if test and not temp_sent:
-            temp = 76
-        elif test:
-            temp = 60
-        if temp > 75 and not temp_sent:
-            print(f'CPU temp: {temp} C', 'Temp')
-            to_send.append('temp')
-        elif temp < 70 and temp_sent:
-            temp_sent = False
-        return False
-    except Exception as ex:
-        print(ex, 'Temp')
-        return True
+    global dev_mode
+    if not dev_mode:
+        try:
+            temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
+            if temp > 60 and not controller.status['fan']:
+                controller.fan(True)
+                to_send.append('fan')
+            elif temp < 40 and controller.status['fan']:
+                controller.fan(False)
+                to_send.append('fan')
+            if test and not temp_sent:
+                temp = 76
+            elif test:
+                temp = 60
+            if temp > 75 and not temp_sent:
+                print(f'CPU temp: {temp} C', 'Temp')
+                to_send.append('temp')
+            elif temp < 70 and temp_sent:
+                temp_sent = False
+            return False
+        except Exception as ex:
+            print(ex, 'Temp')
+            return True
 
 def update(_=None):
     updater.main()
@@ -174,7 +176,6 @@ async def message_sender(message):
 async def status_checker():
     global to_send
     global temp_room
-    global my_ip
     now_playing = ""
     counter = 0
     temp_failed = False
@@ -225,18 +226,51 @@ def listener_starter():
     listener_loop.run_forever()
     exit(0)
 
+def _exit():
+    global killswitch
+    log.log("Stopped by user")
+    killswitch = True
+    listener_loop.stop()
+    sender_loop.stop()
+    print_handler_thread._stop()
+
+def developer_mode():
+    if temp_sent:
+        controller.fan(False)
+        to_send.append('fan')
+        print('Fan stopped!', 'Main')
+    print('--------LOG--------', 'Main')
+    with open("RaspberryPiServerLog.lg", 'r') as f:
+        tmp = f.read(-1)
+    tmp.split('\n')
+    print(tmp[-5:], 'Main')
+    print('------LOG END------', 'Main')
+    del tmp
+
+def help():
+    text = """Avaleable commands:
+developer - Disables the fan pin, and prints the last 5 element of the logs
+exit - Stops the server
+help - This help message
+mute - mutes the server output (to the console)
+status - Reports about the pin, and temperature status
+update - update from github (restarts the system)
+verbose - Prints more info from runtime"""
+    print(text, 'Main')
+
 if __name__=="__main__":
     update()
     log = logger.logger("RaspberryPiServerLog")
-    try:
-        import socket
-        my_ip = "IP addresses: \n{}".format(socket.gethostbyname_ex(socket.getfqdn()))
-        del sys.modules['socket']
-    except:
-        my_ip = 'Failed to get IP address'
-    finally:
-        to_send.append('alert')
-        to_send.append(my_ip)
+    menu = {
+        "developer":developer_mode,
+        "exit":_exit,
+        'help':help, 
+        'status':get_status, 
+        "mute":print_handler.mute, 
+        "update":update, 
+        'verbose':print_handler.ch_verbose
+    }
+    
     try:
         log.log("Main thred started!")
         listener = threading.Thread(target=listener_starter)
@@ -252,49 +286,15 @@ if __name__=="__main__":
         print_handler_thread.start()
         usb_thread.start()
         lights_command = False
-        while True:
+        while not killswitch:
             text = input()
-            if text == 'exit':
-                log.log("Stopped by user")
-                killswitch = True
-                listener_loop.stop()
-                sender_loop.stop()
-                print_handler_thread._stop()
-                break
-            elif text == 'mute':
-                print_handler.muted = not print_handler.muted
-            elif text == 'lights':
-                controller.room('false' if lights_command else 'true')
-            elif text == 'room':
-                to_send.append('room')
-                options['room']('true')
-                temp_room = True
-                if not timer_thread.is_alive():
-                    timer_thread = threading.Thread(target=timer)
-                    timer_thread.start()
-            elif text == 'temp':
-                temp_checker(test=True)
-            elif text == 'update':
-                update()
-            elif text == 'status':
-                get_status()
-            elif text == 'verbose':
-                print_handler.is_verbose = not print_handler.is_verbose
-                print('Verbose is turned {}'.format('on' if print_handler.verbose else 'off'), 'Main')
-            elif text == 'help':
-                text = """Avaleable commands:
-exit - Stops the server
-status - Reports about the pin, and temperature status
-mute - mutes the server output (to the console)
-lights - turns on/off the lights (if UI doesn't work)
-room - emulates a dooropening
-temp - simulates high temperatures
-update - update from github (restarts the system)
-verbose - Prints more info from runtime
-help - This help message"""
-                print(text, 'Main')
-            else:
-                print("Invalid command! Type in 'help'", "Main")
+            try:
+                if ' ' in text:
+                    menu[text.split(' ')[0]](text.split(' ')[1])
+                else:
+                    menu[text]()
+            except KeyError as ke:
+                print("It's not an option", 'Main')
         sys.exit(0)
     except Exception as ex:
         log.log(str(ex), True)
