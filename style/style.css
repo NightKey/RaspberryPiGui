@@ -169,7 +169,7 @@ td {
 
 #fan {
     z-index: 2;
-    left: 60;
+    left: 30;
     position: absolute;
     bottom: 30;
 }
