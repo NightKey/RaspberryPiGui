@@ -47,6 +47,7 @@ def usb_listener():
                 print('USB listener failed too many times, shutting off.', 'USB')
                 break
             drives = os.listdir(USB_Place)
+            thread_check()
             if drives != []:
                 verbose(f'Drives found: {drives}', 'USB')
                 for drive in drives:
@@ -110,7 +111,22 @@ def timer():
         to_send.append('room')
     temp_room = False
 
+def thread_check():
+    global print_handler_thread
+    global listener
+    global sender
+    if not listener.is_alive():
+        listener = threading.Thread(target=listener_starter)
+        listener.start()
+    if not sender.is_alive():
+        sender = threading.Thread(target=sender_starter)
+        sender.start()
+    if not print_handler_thread.is_alive():
+        print_handler_thread = threading.Thread(target=screen_handler)
+        print_handler_thread.start()
+
 timer_thread = threading.Thread(target=timer)
+timer_thread.name = "Timer"
 
 async def handler(websocket, path):
     global is_connected
@@ -157,6 +173,10 @@ async def handler(websocket, path):
             if data[0] == "room" and temp_room:
                 temp_room = False
             await ws.send('Accepted')
+            thread_check()
+            if killswitch:
+                exit()
+        thread_check()
     except Exception as ex:
         log.log('Connection lost')
         is_connected = False
@@ -177,11 +197,14 @@ async def status_checker():
     while True:
         if killswitch:
             exit()
+        thread_check()
         if controller.get_door_status() == True and not controller.get_status('room'):
             to_send.append('room')
             options['room']('true')
             temp_room = True
+            global timer_thread
             if not timer_thread.is_alive():
+                timer_thread = threading.Thread(target=timer)
                 timer_thread.start()
         if counter % 10 == 0 and not temp_failed:
             temp_failed = temp_checker()
@@ -258,7 +281,9 @@ if __name__=="__main__":
                 to_send.append('room')
                 options['room']('true')
                 temp_room = True
-                timer_thread.start()
+                if not timer_thread.is_alive():
+                    timer_thread = threading.Thread(target=timer)
+                    timer_thread.start()
             elif text == 'temp':
                 temp_checker(test=True)
             elif text == 'update':
