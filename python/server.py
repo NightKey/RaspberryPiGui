@@ -9,7 +9,6 @@ import print_handler
 
 print = printer
 
-log = logger.logger("RaspberryPiServerLog")
 ws = None
 ip="127.0.0.1"
 port = 6969
@@ -47,7 +46,6 @@ def usb_listener():
                 print('USB listener failed too many times, shutting off.', 'USB')
                 break
             drives = os.listdir(USB_Place)
-            thread_check()
             if drives != []:
                 verbose(f'Drives found: {drives}', 'USB')
                 for drive in drives:
@@ -85,7 +83,7 @@ def temp_checker(test=False):
         print(ex, 'Temp')
         return True
 
-def update(nothing=None):
+def update(_=None):
     updater.main()
 
 options = {
@@ -111,77 +109,63 @@ def timer():
         to_send.append('room')
     temp_room = False
 
-def thread_check():
-    global print_handler_thread
-    global listener
-    global sender
-    if not listener.is_alive():
-        listener = threading.Thread(target=listener_starter)
-        listener.start()
-    if not sender.is_alive():
-        sender = threading.Thread(target=sender_starter)
-        sender.start()
-    if not print_handler_thread.is_alive():
-        print_handler_thread = threading.Thread(target=screen_handler)
-        print_handler_thread.start()
-
 timer_thread = threading.Thread(target=timer)
 timer_thread.name = "Timer"
 
 async def handler(websocket, path):
     global is_connected
-    try:
-        if killswitch:
-            return
-        global ws
-        global temp_room
-        ws = websocket
-        verbose('Incoming connection', 'Listener')
-        is_connected = True
-        controller.update_status()
-        tmp = controller.status
-        color = []
-        for item in tmp['color']:
-            color.append(hex(item).replace('0x', ''))
-            if len(color[-1]) == 1:
-                color[-1] = f"0{color[-1]}"
-        verbose(f"Status: {tmp}", 'Listener')
-        verbose(f'Colors: {color}', 'Listener')
-        if tmp['room']:
-            verbose('Sending room', 'Listener')
-            await websocket.send('room')
-        if tmp['bath_tub']:
-            verbose('Sending bath_tub', 'Listener')
-            await websocket.send('bath_tub')
-        if tmp['cabinet']:
-            verbose('Sending cabinet', 'Listener')
-            await websocket.send('cabinet')
-        if tmp['fan']:
-            verbose('Sending fan', 'Listener')
-            await websocket.send('fan')
-        await websocket.send(f"color|{color}")
-        await websocket.send(f"brightness|{tmp['brightness']}")
-        await websocket.send(f"volume|{int(usb_player.volume * 100)}")
-        await websocket.send("finished")
-        await websocket.send(f'music|{usb_player.now_playing}')
-        del tmp
-        del color
-        while True:
-            data = await websocket.recv()
-            data = data.split(',')
-            options[data[0]](data[1])
-            if data[0] == "room" and temp_room:
-                temp_room = False
-            await ws.send('Accepted')
-            thread_check()
+    while True:
+        try:
             if killswitch:
                 exit()
-        thread_check()
-    except Exception as ex:
-        log.log('Connection lost')
-        is_connected = False
-        print('Connection lost', 'Listener')
-        print(f'Exception: {ex}', 'Listener')
+            global ws
+            global temp_room
+            ws = websocket
+            verbose('Incoming connection', 'Listener')
+            is_connected = True
+            controller.update_status()
+            tmp = controller.status
+            color = []
+            for item in tmp['color']:
+                color.append(hex(item).replace('0x', ''))
+                if len(color[-1]) == 1:
+                    color[-1] = f"0{color[-1]}"
+            verbose(f"Status: {tmp}", 'Listener')
+            verbose(f'Colors: {color}', 'Listener')
+            if tmp['room']:
+                verbose('Sending room', 'Listener')
+                await websocket.send('room')
+            if tmp['bath_tub']:
+                verbose('Sending bath_tub', 'Listener')
+                await websocket.send('bath_tub')
+            if tmp['cabinet']:
+                verbose('Sending cabinet', 'Listener')
+                await websocket.send('cabinet')
+            if tmp['fan']:
+                verbose('Sending fan', 'Listener')
+                await websocket.send('fan')
+            await websocket.send(f"color|{color}")
+            await websocket.send(f"brightness|{tmp['brightness']}")
+            await websocket.send(f"volume|{int(usb_player.volume * 100)}")
+            await websocket.send("finished")
+            await websocket.send(f'music|{usb_player.now_playing}')
+            del tmp
+            del color
+            while True:
+                data = await websocket.recv()
+                data = data.split(',')
+                options[data[0]](data[1])
+                if data[0] == "room" and temp_room:
+                    temp_room = False
+                await ws.send('Accepted')
+                if killswitch:
+                    exit()
+        except Exception as ex:
+            log.log('Connection lost')
+            log.log(f"Exception: {ex}")
+            is_connected = False
+            print('Connection lost', 'Listener')
+            print(f'Exception: {ex}', 'Listener')
 
 async def message_sender(message):
     verbose(f"Sending message '{message}'", 'Sender')
@@ -195,33 +179,36 @@ async def status_checker():
     counter = 0
     temp_failed = False
     while True:
-        if killswitch:
-            exit()
-        thread_check()
-        if controller.get_door_status() == True and not controller.get_status('room'):
-            to_send.append('room')
-            options['room']('true')
-            temp_room = True
-            global timer_thread
-            if not timer_thread.is_alive():
-                timer_thread = threading.Thread(target=timer)
-                timer_thread.start()
-        if counter % 10 == 0 and not temp_failed:
-            temp_failed = temp_checker()
-        if usb_player.playing:
-            if now_playing != usb_player.now_playing:
-                now_playing = usb_player.now_playing
-                to_send.append(f'music|{now_playing}')
-        if to_send != []:
-            if is_connected:
-                try:
-                    await message_sender(to_send[0])
-                    del to_send[0]
-                except Exception as ex:
-                    print(f'Error in sending message: {ex}', 'Sender')
-        counter += 1
-        if counter > 100:
-            counter = 0
+        try:
+            if killswitch:
+                exit()
+            if controller.get_door_status() == True and not controller.get_status('room'):
+                to_send.append('room')
+                options['room']('true')
+                temp_room = True
+                global timer_thread
+                if not timer_thread.is_alive():
+                    timer_thread = threading.Thread(target=timer)
+                    timer_thread.start()
+            if counter % 10 == 0 and not temp_failed:
+                temp_failed = temp_checker()
+            if usb_player.playing:
+                if now_playing != usb_player.now_playing:
+                    now_playing = usb_player.now_playing
+                    to_send.append(f'music|{now_playing}')
+            if to_send != []:
+                if is_connected:
+                    try:
+                        await message_sender(to_send[0])
+                        del to_send[0]
+                    except Exception as ex:
+                        print(f'Error in sending message: {ex}', 'Sender')
+            counter += 1
+            if counter > 100:
+                counter = 0
+        except Exception as ex:
+            log.log(f'Status checker Exception: {ex}', True)
+            print(f'Exception: {ex}', 'Sender')
 
 def sender_starter():
     log.log("Sender started")
@@ -240,6 +227,7 @@ def listener_starter():
 
 if __name__=="__main__":
     update()
+    log = logger.logger("RaspberryPiServerLog")
     try:
         import socket
         my_ip = "IP addresses: \n{}".format(socket.gethostbyname_ex(socket.getfqdn()))
