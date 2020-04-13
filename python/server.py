@@ -21,7 +21,7 @@ temp_sent = False
 is_connected = False
 dev_mode = False
 
-controller = pin_controll.controller()
+controller = pin_controll.controller(door_callback)
 listener_loop = asyncio.new_event_loop()
 sender_loop = asyncio.new_event_loop()
 
@@ -61,7 +61,6 @@ def usb_listener():
 
 def temp_checker(test=False):
     global temp_sent
-    global dev_mode
     if not dev_mode:
         try:
             temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
@@ -98,7 +97,8 @@ options = {
     'skip':usb_player.skip,
     'pause':usb_player.pause,
     'volume':usb_player.set_volume,
-    'prev': usb_player.prev }
+    'prev': usb_player.prev
+    }
 
 def timer():
     global temp_room
@@ -173,9 +173,19 @@ async def message_sender(message):
     verbose(f"Sending message '{message}'", 'Sender')
     await ws.send(message)
 
+def door_callback():
+    global temp_room
+    if not controller.get_status("room"):
+        to_send.append('room')
+        options['room']('true')
+        temp_room = True
+        global timer_thread
+        if not timer_thread.is_alive():
+            timer_thread = threading.Thread(target=timer)
+            timer_thread.start()
+
 async def status_checker():
     global to_send
-    global temp_room
     now_playing = ""
     counter = 0
     temp_failed = False
@@ -183,14 +193,6 @@ async def status_checker():
         try:
             if killswitch:
                 exit()
-            if controller.get_door_status() == True and not controller.get_status('room'):
-                to_send.append('room')
-                options['room']('true')
-                temp_room = True
-                global timer_thread
-                if not timer_thread.is_alive():
-                    timer_thread = threading.Thread(target=timer)
-                    timer_thread.start()
             if counter % 10 == 0 and not temp_failed:
                 temp_failed = temp_checker()
             if usb_player.playing:
@@ -294,7 +296,7 @@ if __name__=="__main__":
                 else:
                     menu[text]()
             except KeyError as ke:
-                print("It's not an option", 'Main')
+                print("It's not a valid command!", 'Main')
         sys.exit(0)
     except Exception as ex:
         log.log(str(ex), True)

@@ -3,26 +3,27 @@ try:
 except:
     import FakeRPi.GPIO as GPIO
 
-import pins
+from pins import *
 from time import sleep
 from print_handler import verbose
 
-pins = pins.pins()
+pins = pins()
 
 class controller():
 
-    def __init__(self):
+    def __init__(self, door_callback):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.HIGH)            #Lampa
-        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.HIGH)             #Furdokad
-        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.HIGH)         #Szekreny
-        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)   #Ajto kapcsolo
-        GPIO.setup(pins.red_pin, GPIO.OUT)                               #Red color
-        GPIO.setup(pins.green_pin, GPIO.OUT)                             #Green color
-        GPIO.setup(pins.blue_pin, GPIO.OUT)                              #Blue color
-        GPIO.setup(pins.fan_controll, GPIO.OUT)                          #Fancontroller
+        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.HIGH)                             #Lamp
+        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.HIGH)                              #Bathtub leds
+        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.HIGH)                          #cabinet leds
+        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)                     #Door switch
+        GPIO.setup(pins.red_pin, GPIO.OUT)                                                 #Red color
+        GPIO.setup(pins.green_pin, GPIO.OUT)                                               #Green color
+        GPIO.setup(pins.blue_pin, GPIO.OUT)                                                #Blue color
+        GPIO.setup(pins.fan_controll, GPIO.OUT)                                            #Fancontroller
+        GPIO.add_event_detect(pins.door_pin, GPIO.RISING, door_callback, bouncetime=1000)  #Door interrupt
         self.red = GPIO.PWM(pins.red_pin, 100)
         self.green = GPIO.PWM(pins.green_pin, 100)
         self.blue = GPIO.PWM(pins.blue_pin, 100)
@@ -41,9 +42,6 @@ class controller():
             'blue':0
         }
         self.update_status()
-
-    def get_door_status(self):
-        return GPIO.input(pins.door_pin)
 
     def get_status(self, what):
         return self.status[what]
