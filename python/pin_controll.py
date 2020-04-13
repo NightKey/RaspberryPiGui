@@ -15,14 +15,14 @@ class controller():
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.HIGH)                             #Lamp
-        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.HIGH)                              #Bathtub leds
-        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.HIGH)                          #cabinet leds
-        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)                     #Door switch
+        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.LOW)                              #Lamp
+        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.LOW)                               #Bathtub leds
+        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.LOW)                           #cabinet leds
+        GPIO.setup(pins.fan_controll, GPIO.OUT, initial=GPIO.LOW)                          #Fancontroller
         GPIO.setup(pins.red_pin, GPIO.OUT)                                                 #Red color
         GPIO.setup(pins.green_pin, GPIO.OUT)                                               #Green color
         GPIO.setup(pins.blue_pin, GPIO.OUT)                                                #Blue color
-        GPIO.setup(pins.fan_controll, GPIO.OUT)                                            #Fancontroller
+        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)                     #Door switch
         GPIO.add_event_detect(pins.door_pin, GPIO.RISING, door_callback, bouncetime=1000)  #Door interrupt
         self.red = GPIO.PWM(pins.red_pin, 100)
         self.green = GPIO.PWM(pins.green_pin, 100)
@@ -47,10 +47,10 @@ class controller():
         return self.status[what]
 
     def update_status(self):
-        self.status['room'] = not bool(GPIO.input(pins.lamp_pin))
-        self.status['bath_tub'] = not bool(GPIO.input(pins.tub_pin))
-        self.status['cabinet'] = not bool(GPIO.input(pins.cabinet_pin))
-        self.status['fan'] = not bool(GPIO.input(pins.fan_controll))
+        self.status['room'] = bool(GPIO.input(pins.lamp_pin))
+        self.status['bath_tub'] = bool(GPIO.input(pins.tub_pin))
+        self.status['cabinet'] = bool(GPIO.input(pins.cabinet_pin))
+        self.status['fan'] = bool(GPIO.input(pins.fan_controll))
 
     def translate(self, value, inmin, inmax, outmin, outmax):
         """
