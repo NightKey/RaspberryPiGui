@@ -16,7 +16,7 @@ print = printer
 #flags
 muted = False
 killswitch = False
-temp_room = False
+tmp_room = False
 temp_sent = False
 is_connected = False
 dev_mode = False
@@ -73,6 +73,7 @@ def temp_checker(test=False):
             if temp > 75 and not temp_sent:
                 print(f'CPU temp: {temp} C', 'Temp')
                 to_send.append('temp')
+                temp_sent = True
             elif temp < 70 and temp_sent:
                 temp_sent = False
             return False
@@ -84,15 +85,15 @@ def update(_=None):
     updater.main()
 
 def timer():
-    global temp_room
+    global tmp_room
     global to_send
     sleep(120)
     verbose('Timer stopped', 'Main')
-    if temp_room:
+    if tmp_room:
         verbose('Lights off', 'Main')
         options['room']('false')
         to_send.append('room')
-    temp_room = False
+    tmp_room = False
 
 async def handler(websocket, path):
     global is_connected
@@ -101,7 +102,8 @@ async def handler(websocket, path):
             if killswitch:
                 exit()
             global ws
-            global temp_room
+            global tmp_room
+            global temp_sent
             ws = websocket
             verbose('Incoming connection', 'Listener')
             is_connected = True
@@ -126,6 +128,7 @@ async def handler(websocket, path):
             if tmp['fan']:
                 verbose('Sending fan', 'Listener')
                 await websocket.send('fan')
+                temp_sent = True
             await websocket.send(f"color|{color}")
             await websocket.send(f"brightness|{tmp['brightness']}")
             await websocket.send(f"volume|{int(usb_player.volume * 100)}")
@@ -137,8 +140,8 @@ async def handler(websocket, path):
                 data = await websocket.recv()
                 data = data.split(',')
                 options[data[0]](data[1])
-                if data[0] == "room" and temp_room:
-                    temp_room = False
+                if data[0] == "room" and tmp_room:
+                    tmp_room = False
                 await ws.send('Accepted')
                 if killswitch:
                     exit()
@@ -154,12 +157,12 @@ async def message_sender(message):
     await ws.send(message)
 
 def door_callback(arg):
-    global temp_room
+    global tmp_room
     print(arg, 'Main')
     if not controller.get_status("room"):
         to_send.append('room')
         options['room']('true')
-        temp_room = True
+        tmp_room = True
         global timer_thread
         timer_thread = threading.Thread(target=timer)
         timer_thread.start()
@@ -223,8 +226,8 @@ def developer_mode():
     print('--------LOG--------', 'Main')
     with open("RaspberryPiServerLog.lg", 'r') as f:
         tmp = f.read(-1)
-    tmp.split('\n')
-    print(tmp[-5:], 'Main')
+    tmp = tmp.split('\n')
+    print(tmp[-7:-1], 'Main')
     print('------LOG END------', 'Main')
     del tmp
 
