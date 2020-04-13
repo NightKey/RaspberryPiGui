@@ -12,6 +12,7 @@ ip="127.0.0.1"
 port = 6969
 to_send=[]
 to_print = []
+print = printer
 #flags
 muted = False
 killswitch = False
@@ -152,8 +153,9 @@ async def message_sender(message):
     verbose(f"Sending message '{message}'", 'Sender')
     await ws.send(message)
 
-def door_callback():
+def door_callback(arg):
     global temp_room
+    print(arg, 'Main')
     if not controller.get_status("room"):
         to_send.append('room')
         options['room']('true')
@@ -241,8 +243,6 @@ verbose - Prints more info from runtime"""
 if __name__=="__main__":
     update()
     #Global functions
-    print = printer
-
     controller = pin_controll.controller(door_callback)
     listener_loop = asyncio.new_event_loop()
     sender_loop = asyncio.new_event_loop()
