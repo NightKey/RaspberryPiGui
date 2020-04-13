@@ -161,9 +161,8 @@ def door_callback(arg):
         options['room']('true')
         temp_room = True
         global timer_thread
-        if not timer_thread.is_alive():
-            timer_thread = threading.Thread(target=timer)
-            timer_thread.start()
+        timer_thread = threading.Thread(target=timer)
+        timer_thread.start()
 
 async def status_checker():
     global to_send
