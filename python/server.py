@@ -227,7 +227,8 @@ def developer_mode():
     with open("RaspberryPiServerLog.lg", 'r') as f:
         tmp = f.read(-1)
     tmp = tmp.split('\n')
-    print(tmp[-7:-1], 'Main')
+    for line in tmp[-7:-1]:
+        print(line, 'Main')
     print('------LOG END------', 'Main')
     del tmp
 
