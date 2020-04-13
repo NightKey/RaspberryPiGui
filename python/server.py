@@ -1,29 +1,24 @@
+from print_handler import printer, screen_handler, verbose
 try:
     import RPi.GPIO as GPIO
 except:
     import FakeRPi.GPIO as GPIO
 import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, updater, usb_player
 from time import sleep
-from print_handler import printer, screen_handler, verbose
 import print_handler
-
-print = printer
 
 ws = None
 ip="127.0.0.1"
 port = 6969
 to_send=[]
 to_print = []
+#flags
 muted = False
 killswitch = False
 temp_room = False
 temp_sent = False
 is_connected = False
 dev_mode = False
-
-controller = pin_controll.controller(door_callback)
-listener_loop = asyncio.new_event_loop()
-sender_loop = asyncio.new_event_loop()
 
 def get_status():
     try:
@@ -86,19 +81,6 @@ def temp_checker(test=False):
 
 def update(_=None):
     updater.main()
-
-options = {
-    'cabinet':controller.cabinet, 
-    'room':controller.room, 
-    'brightness':controller.brightness, 
-    'bath_tub':controller.bath_tub, 
-    'color':controller.color,
-    'update':update,
-    'skip':usb_player.skip,
-    'pause':usb_player.pause,
-    'volume':usb_player.set_volume,
-    'prev': usb_player.prev
-    }
 
 def timer():
     global temp_room
@@ -231,7 +213,6 @@ def _exit():
     killswitch = True
     listener_loop.stop()
     sender_loop.stop()
-    print_handler_thread._stop()
 
 def developer_mode():
     if temp_sent:
@@ -259,7 +240,29 @@ verbose - Prints more info from runtime"""
 
 if __name__=="__main__":
     update()
+    #Global functions
+    print = printer
+
+    controller = pin_controll.controller(door_callback)
+    listener_loop = asyncio.new_event_loop()
+    sender_loop = asyncio.new_event_loop()
     log = logger.logger("RaspberryPiServerLog")
+    #Global functions end
+    #Option switch board
+    options = {
+        'cabinet':controller.cabinet, 
+        'room':controller.room, 
+        'brightness':controller.brightness, 
+        'bath_tub':controller.bath_tub, 
+        'color':controller.color,
+        'update':update,
+        'skip':usb_player.skip,
+        'pause':usb_player.pause,
+        'volume':usb_player.set_volume,
+        'prev': usb_player.prev
+        }
+    #Option switch board end
+    #Menu
     menu = {
         "developer":developer_mode,
         "exit":_exit,
@@ -269,7 +272,7 @@ if __name__=="__main__":
         "update":update, 
         'verbose':print_handler.ch_verbose
     }
-    
+    #Menu end
     try:
         log.log("Main thred started!")
         listener = threading.Thread(target=listener_starter)
