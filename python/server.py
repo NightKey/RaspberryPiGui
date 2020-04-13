@@ -111,9 +111,6 @@ def timer():
         to_send.append('room')
     temp_room = False
 
-timer_thread = threading.Thread(target=timer)
-timer_thread.name = "Timer"
-
 async def handler(websocket, path):
     global is_connected
     while True:
