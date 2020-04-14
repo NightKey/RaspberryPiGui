@@ -235,9 +235,7 @@ window.onload = function(){
     }, false);
 
     dismiss.addEventListener('click', function() {
-        error_msg.innerHTML = '';
-        error.style.display = 'none';
-        modal.style.display = 'none';
+        location.reload();
     }, false);
     
     ok.addEventListener('click', function() {
