@@ -11,7 +11,7 @@ pins = pins()
 
 class controller():
 
-    def __init__(self, door_callback):
+    def __init__(self, door_callback, _initial):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
@@ -30,7 +30,7 @@ class controller():
         self.red.start(0)
         self.green.start(0)
         self.blue.start(0)
-        self.status = {
+        self.status = ({
             'brightness':0,
             'room':False,
             'bath_tub':False,
@@ -40,7 +40,11 @@ class controller():
             'red':0,
             'green':0,
             'blue':0
-        }
+        } if _initial == None else _initial)
+        if _initial != None:
+            self.bath_tub(_initial['bath_thub'].lower())
+            self.cabinet(_initial['cabinet'].lower())
+            self.room(_initial['room'].lower())
         self.update_status()
 
     def get_status(self, what):
@@ -70,30 +74,35 @@ class controller():
         self.set_leds()
 
     def set_leds(self):
-        try:
-            self.status['red'] = round((self.translate(self.status['color'][0], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
-            if self.status['red'] > 1:
-                self.status['red'] = 1/self.status['red']
-        except:
-            self.status['red'] = 0
-        finally:
-            self.red.ChangeDutyCycle(self.status['red'] * 100)
-        try:
-            self.status['green'] = round((self.translate(self.status['color'][1], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
-            if self.status['green'] > 1:
-                self.status['green'] = 1/self.status['green']
-        except:
-            self.status['green'] = 0
-        finally:
-            self.green.ChangeDutyCycle(self.status['green'] * 100)
-        try:
-            self.status['blue'] = round((self.translate(self.status['color'][2], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
-            if self.status['blue'] > 1:
-                self.status['blue'] = 1/self.status['blue']
-        except:
-            self.status['blue'] = 0
-        finally:
-            self.blue.ChangeDutyCycle(self.status['blue'] * 100)
+        if self.status['bath_tub'] or self.status['cabinet']:
+            try:
+                self.status['red'] = round((self.translate(self.status['color'][0], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+                if self.status['red'] > 1:
+                    self.status['red'] = 1/self.status['red']
+            except:
+                self.status['red'] = 0
+            finally:
+                self.red.ChangeDutyCycle(self.status['red'] * 100)
+            try:
+                self.status['green'] = round((self.translate(self.status['color'][1], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+                if self.status['green'] > 1:
+                    self.status['green'] = 1/self.status['green']
+            except:
+                self.status['green'] = 0
+            finally:
+                self.green.ChangeDutyCycle(self.status['green'] * 100)
+            try:
+                self.status['blue'] = round((self.translate(self.status['color'][2], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+                if self.status['blue'] > 1:
+                    self.status['blue'] = 1/self.status['blue']
+            except:
+                self.status['blue'] = 0
+            finally:
+                self.blue.ChangeDutyCycle(self.status['blue'] * 100)
+        else:
+            self.red.ChangeDutyCycle(0)
+            self.green.ChangeDutyCycle(0)
+            self.blue.ChangeDutyCycle(0)
 
     def room(self, is_on):
         is_on = (is_on == 'true')
@@ -106,26 +115,14 @@ class controller():
         verbose("The bath tub lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.tub_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['bath_tub'] = GPIO.input(pins.tub_pin)
-        if not self.status['cabinet']:
-            if not is_on:
-                self.red.ChangeDutyCycle(0)
-                self.green.ChangeDutyCycle(0)
-                self.blue.ChangeDutyCycle(0)
-            else:
-                self.set_leds()
+        self.set_leds()
 
     def cabinet(self, is_on):
         is_on = (is_on == 'true')
         verbose("The cabinet lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.cabinet_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['cabinet'] = GPIO.input(pins.cabinet_pin)
-        if not self.status['bath_tub']:
-            if not is_on:
-                self.red.ChangeDutyCycle(0)
-                self.green.ChangeDutyCycle(0)
-                self.blue.ChangeDutyCycle(0)
-            else:
-                self.set_leds()
+        self.set_leds()
 
     def color(self, color_v):
         color_v = color_v.replace('#', '')

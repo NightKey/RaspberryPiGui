@@ -3,7 +3,7 @@ try:
     import RPi.GPIO as GPIO
 except:
     import FakeRPi.GPIO as GPIO
-import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, updater, usb_player
+import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, updater, usb_player, json
 from time import sleep
 import print_handler
 
@@ -95,6 +95,12 @@ def timer():
         to_send.append('room')
     tmp_room = False
 
+def save():
+    controller.update_status()
+    status = controller.status
+    with open('status.json', 'w') as f:
+        json.dump(status, f)
+
 async def handler(websocket, path):
     global is_connected
     while True:
@@ -142,6 +148,7 @@ async def handler(websocket, path):
                 options[data[0]](data[1])
                 if data[0] == "room" and tmp_room:
                     tmp_room = False
+                save()
                 await ws.send('Accepted')
                 if killswitch:
                     exit()
@@ -243,10 +250,19 @@ update - update from github (restarts the system)
 verbose - Prints more info from runtime"""
     print(text, 'Main')
 
+def load():
+    if os.path.exists("status.json"):
+        with open('status.json', 'r') as s:
+            status = json.load(s)
+        return status
+    else:
+        print('No status was saved!', 'Main')
+        return None
+
 if __name__=="__main__":
     update()
     #Global functions
-    controller = pin_controll.controller(door_callback)
+    controller = pin_controll.controller(door_callback, load())
     listener_loop = asyncio.new_event_loop()
     sender_loop = asyncio.new_event_loop()
     log = logger.logger("RaspberryPiServerLog")
