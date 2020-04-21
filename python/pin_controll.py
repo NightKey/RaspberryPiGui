@@ -42,9 +42,9 @@ class controller():
             'blue':0
         } if _initial == None else _initial)
         if _initial != None:
-            self.bath_tub(_initial['bath_tub'].lower())
-            self.cabinet(_initial['cabinet'].lower())
-            self.room(_initial['room'].lower())
+            self.bath_tub(str(_initial['bath_tub']).lower())
+            self.cabinet(str(_initial['cabinet']).lower())
+            self.room(str(_initial['room']).lower())
         self.update_status()
 
     def get_status(self, what):
