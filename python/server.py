@@ -13,6 +13,7 @@ port = 6969
 to_send=[]
 to_print = []
 print = printer
+File_Folder = "/var/RPS"
 #flags
 muted = False
 USB_name=None
@@ -91,7 +92,7 @@ def temp_checker(test=False):
             return True
 
 def update(_=None):
-    updater.main()
+    updater.update()
 
 def timer():
     global tmp_room
@@ -108,7 +109,7 @@ def save():
     _to = USB_name if USB_name != None else 'status'
     controller.update_status()
     status = controller.status
-    with open(f"{_to}.json", 'w') as f:
+    with open(f"{os.path.join((File_Folder, _to))}.json", 'w') as f:
         json.dump(status, f)
 
 async def handler(websocket, path):
@@ -241,7 +242,7 @@ def developer_mode():
         to_send.append('fan')
         print('Fan stopped!', 'Main')
     print('--------LOG--------', 'Main')
-    with open("RaspberryPiServerLog.lg", 'r') as f:
+    with open(os.path.join((File_Folder, "RaspberryPiServerLog.lg")), 'r') as f:
         tmp = f.read(-1)
     tmp = tmp.split('\n')
     for line in tmp[-7:-1]:
@@ -262,8 +263,8 @@ verbose - Prints more info from runtime"""
 
 def load():
     _from = USB_name if USB_name != None else 'status'
-    if os.path.exists(f"{_from}.json"):
-        with open(f"{_from}.json", 'r') as s:
+    if os.path.exists(f"{os.path.join((File_Folder, _from))}.json"):
+        with open(f"{os.path.join((File_Folder, _from))}.json", 'r') as s:
             status = json.load(s)
         return status
     else:
@@ -272,11 +273,14 @@ def load():
 
 if __name__=="__main__":
     update()
+    #Creating needed folders in /var
+    if not os.path.exists(File_Folder):
+        os.mkdir(File_Folder)
     #Global functions
     controller = pin_controll.controller(door_callback, load())
     listener_loop = asyncio.new_event_loop()
     sender_loop = asyncio.new_event_loop()
-    log = logger.logger("RaspberryPiServerLog")
+    log = logger.logger(os.path.join((File_Folder, "RaspberryPiServerLog")))
     #Global functions end
     #Option switch board
     options = {
