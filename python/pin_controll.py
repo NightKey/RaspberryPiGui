@@ -42,7 +42,7 @@ class controller():
             'blue':0
         } if _initial == None else _initial)
         if _initial != None:
-            self.bath_tub(_initial['bath_thub'].lower())
+            self.bath_tub(_initial['bath_tub'].lower())
             self.cabinet(_initial['cabinet'].lower())
             self.room(_initial['room'].lower())
         self.update_status()
