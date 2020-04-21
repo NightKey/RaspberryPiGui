@@ -15,6 +15,7 @@ to_print = []
 print = printer
 #flags
 muted = False
+USB_name=None
 killswitch = False
 tmp_room = False
 temp_sent = False
@@ -34,26 +35,34 @@ def get_status():
 
 def usb_listener():
     print('USB listener started', 'USB')
-    USB_Place = '/media/pi'
+    USB_Dir = '/media/pi'
     failcount = 0
+    global USB_name
     while True:
         try:
             if failcount > 5:
                 print('USB listener failed too many times, shutting off.', 'USB')
                 break
-            drives = os.listdir(USB_Place)
+            drives = os.listdir(USB_Dir)
             if drives != []:
                 verbose(f'Drives found: {drives}', 'USB')
                 for drive in drives:
+                    USB_name = drive
+                    controller.load(load())
+                    save()
                     verbose(f'USB drive found at {drive}', 'USB')
-                    usb_player.start(os.path.join(USB_Place, drive))
+                    usb_player.start(os.path.join(USB_Dir, drive))
                     to_send.append('music|none')
         except Exception as ex:
             failcount += 1
             if failcount == 3:
                 print('Trying test path', 'USB')
-                USB_Place = './test/'
+                USB_Dir = './test/'
             print(f'Exception: {ex}', 'USB')
+        finally:
+            if USB_name != None:
+                USB_name = None
+                controller.load(load())
 
 def temp_checker(test=False):
     global temp_sent
@@ -96,9 +105,10 @@ def timer():
     tmp_room = False
 
 def save():
+    _to = USB_name if USB_name != None else 'status'
     controller.update_status()
     status = controller.status
-    with open('status.json', 'w') as f:
+    with open(f"{_to}.json", 'w') as f:
         json.dump(status, f)
 
 async def handler(websocket, path):
@@ -251,8 +261,9 @@ verbose - Prints more info from runtime"""
     print(text, 'Main')
 
 def load():
-    if os.path.exists("status.json"):
-        with open('status.json', 'r') as s:
+    _from = USB_name if USB_name != None else 'status'
+    if os.path.exists(f"{_from}.json"):
+        with open(f"{_from}.json", 'r') as s:
             status = json.load(s)
         return status
     else:

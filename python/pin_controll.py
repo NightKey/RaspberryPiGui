@@ -11,7 +11,7 @@ pins = pins()
 
 class controller():
 
-    def __init__(self, door_callback, _initial):
+    def __init__(self, door_callback, _initial=None):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
@@ -30,7 +30,7 @@ class controller():
         self.red.start(0)
         self.green.start(0)
         self.blue.start(0)
-        self.status = ({
+        self.status = {
             'brightness':0,
             'room':False,
             'bath_tub':False,
@@ -40,12 +40,17 @@ class controller():
             'red':0,
             'green':0,
             'blue':0
-        } if _initial == None else _initial)
+        }
         if _initial != None:
-            self.bath_tub(str(_initial['bath_tub']).lower())
-            self.cabinet(str(_initial['cabinet']).lower())
-            self.room(str(_initial['room']).lower())
+            self.load(_initial)
         self.update_status()
+
+    def load(self, value):
+        if value != None:
+            self.status = value
+            self.bath_tub(str(value['bath_tub']).lower())
+            self.cabinet(str(value['cabinet']).lower())
+            self.room(str(value['room']).lower())
 
     def get_status(self, what):
         return self.status[what]
