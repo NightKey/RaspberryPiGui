@@ -242,7 +242,7 @@ def developer_mode():
         to_send.append('fan')
         print('Fan stopped!', 'Main')
     print('--------LOG--------', 'Main')
-    with open(os.path.join((File_Folder, "RaspberryPiServerLog.lg")), 'r') as f:
+    with open(os.path.join(File_Folder, "RaspberryPiServerLog.lg"), 'r') as f:
         tmp = f.read(-1)
     tmp = tmp.split('\n')
     for line in tmp[-7:-1]:
@@ -280,7 +280,7 @@ if __name__=="__main__":
     controller = pin_controll.controller(door_callback, load())
     listener_loop = asyncio.new_event_loop()
     sender_loop = asyncio.new_event_loop()
-    log = logger.logger(os.path.join((File_Folder, "RaspberryPiServerLog")))
+    log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
     #Global functions end
     #Option switch board
     options = {
