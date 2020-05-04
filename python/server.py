@@ -109,7 +109,7 @@ def save():
     _to = USB_name if USB_name != None else 'status'
     controller.update_status()
     status = controller.status
-    with open(f"{os.path.join((File_Folder, _to))}.json", 'w') as f:
+    with open(f"{os.path.join(File_Folder, _to)}.json", 'w') as f:
         json.dump(status, f)
 
 async def handler(websocket, path):
@@ -263,8 +263,8 @@ verbose - Prints more info from runtime"""
 
 def load():
     _from = USB_name if USB_name != None else 'status'
-    if os.path.exists(f"{os.path.join((File_Folder, _from))}.json"):
-        with open(f"{os.path.join((File_Folder, _from))}.json", 'r') as s:
+    if os.path.exists(f"{os.path.join(File_Folder, _from)}.json"):
+        with open(f"{os.path.join(File_Folder, _from)}.json", 'r') as s:
             status = json.load(s)
         return status
     else:
