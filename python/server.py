@@ -30,7 +30,15 @@ def get_status():
         pins = controller.status
         print(f'CPU Temperature: {temp}', 'Main')
         for key, value in pins.items():
-            print(f'{key} pin status: {value}', 'Main')
+            if type(value) is not list:
+                print(f'{key} pin status: {value}', 'Main')
+            else:
+                if key == 'rgb':
+                    print(f'Red pin: {value[0]}%', 'Main')
+                    print(f'Green pin: {value[1]}%', 'Main')
+                    print(f'Blue pin: {value[2]}%', 'Main')
+                else:
+                    print(f'{key} is the following: {value}', 'Main')
     except Exception as ex:
         print(f'Error in status check: {ex}', 'Main')
 
