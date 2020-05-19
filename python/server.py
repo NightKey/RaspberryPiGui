@@ -14,6 +14,8 @@ to_send=[]
 to_print = []
 print = printer
 File_Folder = "/var/RPS"
+if os.name == "nt":
+    File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
 #flags
 muted = False
 USB_name=None
