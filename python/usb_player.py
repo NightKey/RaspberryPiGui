@@ -26,7 +26,7 @@ def start(directory):
     i = 0
     while i < len(files) - 1:
         now = files[i]
-        if now.split('.')[-1].lower() not in ['mp3', 'waw', 'wma']:
+        if now.split('.')[-1].lower() not in ['mp3', 'wav', 'wma']:
             del files[i]
         else:
             i += 1
