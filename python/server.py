@@ -327,7 +327,12 @@ if __name__=="__main__":
         os.mkdir(File_Folder)
     #Global functions
     print('Setting up the global functions...', 'Main')
-    controller = pin_controll.controller(door_callback, load())
+    try:
+        controller = pin_controll.controller(door_callback, load())
+    except KeyError:
+        print("Key error detected, reseting setup...", 'Main')
+        controller = pin_controll.controller(door_callback)
+        save()
     listener_loop = asyncio.new_event_loop()
     sender_loop = asyncio.new_event_loop()
     log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
