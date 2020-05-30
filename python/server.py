@@ -294,6 +294,8 @@ def room_controll(state):
         controller.room(state)
     else:
         if not controller.get_status("bath_tub") and not controller.get_status("cabinet"):
+            global to_send
+            to_send.append("room_extend")
             global timer_thread
             timer_thread = threading.Thread(target=timer, args=[30, controller.room, state])
             timer_thread.start()
