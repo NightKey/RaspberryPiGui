@@ -65,7 +65,9 @@ class controller():
             sleep(delay)
         return tmp
 
-    def get_status(self, what):
+    def get_status(self, what=None):
+        if what == None:
+            return self.status
         return self.status[what]
 
     def update_status(self):

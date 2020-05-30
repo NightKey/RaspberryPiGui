@@ -54,10 +54,18 @@ window.onload = function(){
     }
 
     show_message = function(msg) {
-        message_shown = true
+        message_shown = true;
         message_msg.innerHTML = msg;
         message.style.display = 'block';
         modal.style.display = 'block';
+    }
+
+    close_message = function() {
+        if (message_shown) {
+            message_shown = false;
+            message.style.display = 'none';
+            modal.style.display = 'none';
+        }
     }
 
     swtc = function(what) {
@@ -147,6 +155,9 @@ window.onload = function(){
                 break;
             case 'fan':
                 toggle_fan();
+                break;
+            case 'close':
+                close_message();
                 break;
             default:
                 if (send_alert) {

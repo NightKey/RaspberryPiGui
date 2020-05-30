@@ -104,16 +104,14 @@ def temp_checker(test=False):
 def update(_=None):
     updater.update()
 
-def timer():
-    global tmp_room
-    global to_send
-    sleep(120)
-    verbose('Timer stopped', 'Main')
-    if tmp_room:
-        verbose('Lights off', 'Main')
-        options['room']('false')
-        to_send.append('room')
-    tmp_room = False
+def timer(time, to_call, _with=None):
+    verbose('Timer started', "Main")
+    sleep(time)
+    verbose('Timer finished', 'Main')
+    if _with == None:
+        to_call()
+    else:
+        to_call(_with)
 
 def save():
     _to = USB_name if USB_name != None else 'status'
@@ -121,6 +119,16 @@ def save():
     status = controller.status
     with open(f"{os.path.join(File_Folder, _to)}.json", 'w') as f:
         json.dump(status, f)
+
+def tmp_room_check():
+    global tmp_room
+    global to_send
+    if tmp_room:
+        verbose('Lights off', 'Main')
+        options['room']('false')
+        to_send.append('room')
+        to_send.append('close')
+    tmp_room = False
 
 async def handler(websocket, path):
     global is_connected
@@ -192,7 +200,7 @@ def door_callback(arg):
         options['room']('true')
         tmp_room = True
         global timer_thread
-        timer_thread = threading.Thread(target=timer)
+        timer_thread = threading.Thread(target=timer, args=[120, tmp_room_check])
         timer_thread.start()
 
 async def status_checker():
@@ -280,6 +288,18 @@ def load():
     else:
         print('No status was saved!', 'Main')
         return None
+
+def room_controll(state):
+    if state == "true":
+        controller.room(state)
+    else:
+        if not controller.get_status("bath_tub") and not controller.get_status("cabinet"):
+            global timer_thread
+            timer_thread = threading.Thread(target=timer, args=[30, controller.room, state])
+            timer_thread.start()
+        else:
+            controller.room(state)
+
 
 if __name__=="__main__":
     update()
