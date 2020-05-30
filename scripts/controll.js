@@ -68,8 +68,17 @@ window.onload = function(){
         }
     }
 
+    room_extend = function() {
+        show_message("A fények 30 másodperc múlva kikapcsolnak!");
+        swtc(room);
+        setTimeout(function() {
+            swtc(room);
+            close_message();
+        }, 30000);
+    }
+
     swtc = function(what) {
-        what.checked = true;
+        what.checked = !what.checked;
         event = document.createEvent('Event');
         event.initEvent('change', true, true);
         what.dispatchEvent(event);
@@ -121,6 +130,9 @@ window.onload = function(){
     connection.onmessage = function(event){
         console.log(event.data);
         switch (event.data) {
+            case 'room_extend':
+                room_extend();
+                break;
             case 'room':
                 if (!init) {
                     if (!message_shown) {
