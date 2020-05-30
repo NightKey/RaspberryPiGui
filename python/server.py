@@ -18,6 +18,7 @@ if os.name == "nt":
     File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
 #flags
 muted = False
+manual_room = True
 USB_name=None
 killswitch = False
 tmp_room = False
@@ -62,7 +63,9 @@ def usb_listener():
                     controller.load(load())
                     save()
                     verbose(f'USB drive found at {drive}', 'USB')
+                    controller._12V()
                     usb_player.start(os.path.join(USB_Dir, drive))
+                    controller.check_for_need()
                     to_send.append('music|none')
         except Exception as ex:
             failcount += 1
@@ -102,6 +105,7 @@ def temp_checker(test=False):
             return True
 
 def update(_=None):
+    print('Checking for updates', 'Main')
     updater.update()
 
 def timer(time, to_call, _with=None):
@@ -290,10 +294,18 @@ def load():
         return None
 
 def room_controll(state):
+    verbose(f'Room controll called with {state}', 'Main')
     if state == "true":
         controller.room(state)
     else:
+        controller.update_status()
+        verbose(f'Status: {controller.get_status()}', 'Main')
+        global manual_room
+        if not manual_room:
+            manual_room = True
+            return
         if not controller.get_status("bath_tub") and not controller.get_status("cabinet"):
+            manual_room = False
             global to_send
             to_send.append("room_extend")
             global timer_thread
@@ -304,20 +316,27 @@ def room_controll(state):
 
 
 if __name__=="__main__":
+    print_handler_thread = threading.Thread(target=screen_handler)
+    print_handler.name = "Printer"
+    print_handler_thread.start()
+    print('Server started!', 'Main')
     update()
+    print(f"Checking the '{File_Folder}' path", "Main")
     #Creating needed folders in /var
     if not os.path.exists(File_Folder):
         os.mkdir(File_Folder)
     #Global functions
+    print('Setting up the global functions...', 'Main')
     controller = pin_controll.controller(door_callback, load())
     listener_loop = asyncio.new_event_loop()
     sender_loop = asyncio.new_event_loop()
     log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
     #Global functions end
+    print('Setting up the mappings...', "Main")
     #Option switch board
     options = {
         'cabinet':controller.cabinet, 
-        'room':controller.room, 
+        'room':room_controll, 
         'brightness':controller.brightness, 
         'bath_tub':controller.bath_tub, 
         'color':controller.color,
@@ -341,21 +360,21 @@ if __name__=="__main__":
     #Menu end
     try:
         log.log("Main thred started!")
+        print('Creating threads...', "Main")
         listener = threading.Thread(target=listener_starter)
         sender = threading.Thread(target=sender_starter)
-        print_handler_thread = threading.Thread(target=screen_handler)
         usb_thread = threading.Thread(target=usb_listener)
         usb_thread.name='USB'
         listener.name = "Listener"
         sender.name = "Sender"
-        print_handler.name = "Printer"
+        print('Starting up the threads...', 'Main')
         listener.start()
         sender.start()
-        print_handler_thread.start()
         usb_thread.start()
         lights_command = False
+        print('Server started!', 'Main')
         while not killswitch:
-            text = input()
+            text = input("> ")
             try:
                 if ' ' in text:
                     menu[text.split(' ')[0]](text.split(' ')[1])

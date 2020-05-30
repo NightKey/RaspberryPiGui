@@ -10,6 +10,7 @@ class pins():
         self.red_pin = 12
         self.blue_pin = 23
         self.fan_controll = 19
+        self._12V = 9
 
 class encoder():
     """This class contains the rotory encoder's different pin numbers.

@@ -18,12 +18,13 @@ class controller():
         GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.HIGH)                              #Lamp
         GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.HIGH)                               #Bathtub leds
         GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.HIGH)                           #cabinet leds
-        GPIO.setup(pins.fan_controll, GPIO.OUT, initial=GPIO.LOW)                          #Fancontroller
-        GPIO.setup(pins.red_pin, GPIO.OUT)                                                 #Red color
-        GPIO.setup(pins.green_pin, GPIO.OUT)                                               #Green color
-        GPIO.setup(pins.blue_pin, GPIO.OUT)                                                #Blue color
-        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)                     #Door switch
-        GPIO.add_event_detect(pins.door_pin, GPIO.RISING, door_callback, bouncetime=1000)  #Door interrupt
+        GPIO.setup(pins.fan_controll, GPIO.OUT, initial=GPIO.LOW)                           #Fancontroller
+        GPIO.setup(pins.red_pin, GPIO.OUT)                                                  #Red color
+        GPIO.setup(pins.green_pin, GPIO.OUT)                                                #Green color
+        GPIO.setup(pins.blue_pin, GPIO.OUT)                                                 #Blue color
+        GPIO.setup(pins._12V, GPIO.OUT, initial=GPIO.HIGH)                                  #12 V Powersuply
+        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)                      #Door switch
+        GPIO.add_event_detect(pins.door_pin, GPIO.RISING, door_callback, bouncetime=1000)   #Door interrupt
         self.red = GPIO.PWM(pins.red_pin, 100)
         self.green = GPIO.PWM(pins.green_pin, 100)
         self.blue = GPIO.PWM(pins.blue_pin, 100)
@@ -40,7 +41,8 @@ class controller():
             'red':0,
             'green':0,
             'blue':0,
-            "rgb":[0,0,0]
+            "rgb":[0,0,0],
+            '12V':False
         }
         if _initial != None:
             self.load(_initial)
@@ -70,11 +72,27 @@ class controller():
             return self.status
         return self.status[what]
 
+    def _12V(self):
+        if not GPIO.input(pins._12V):
+            GPIO.output(pins._12V, GPIO.HIGH)
+            self.status['12V'] = True
+
+    def check_for_need(self):
+        if not self.status['12V']:
+            if self.status['room'] or self.status['room'] or self.status['room']:
+                GPIO.output(pins._12V, GPIO.HIGH)
+                self.status['12V'] = True
+        else:
+            if not self.status['room'] or not self.status['room'] or not self.status['room']:
+                GPIO.output(pins._12V, GPIO.LOW)
+                self.status['12V'] = False
+
     def update_status(self):
-        self.status['room'] = not bool(GPIO.input(pins.lamp_pin))
-        self.status['bath_tub'] = not bool(GPIO.input(pins.tub_pin))
-        self.status['cabinet'] = not bool(GPIO.input(pins.cabinet_pin))
+        self.status['room'] = bool(GPIO.input(pins.lamp_pin))
+        self.status['bath_tub'] = bool(GPIO.input(pins.tub_pin))
+        self.status['cabinet'] = bool(GPIO.input(pins.cabinet_pin))
         self.status['fan'] = bool(GPIO.input(pins.fan_controll))
+        self.status['12V'] = bool(GPIO.input(pins._12V))
 
     def translate(self, value, inmin, inmax, outmin, outmax):
         """
@@ -119,28 +137,31 @@ class controller():
                 self.status['blue'] = 0
             finally:
                 self.blue.ChangeDutyCycle(self.status['blue'] * 100)
+            self.check_for_need()
         else:
             self.red.ChangeDutyCycle(0)
             self.green.ChangeDutyCycle(0)
             self.blue.ChangeDutyCycle(0)
+            self.check_for_need()
 
     def room(self, is_on):
         is_on = (is_on == 'true')
         verbose("The room lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
-        GPIO.output(pins.lamp_pin, (GPIO.LOW if is_on else GPIO.HIGH))
+        GPIO.output(pins.lamp_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['room'] = GPIO.input(pins.lamp_pin)
+        self.check_for_need()
 
     def bath_tub(self, is_on):
         is_on = (is_on == 'true')
         verbose("The bath tub lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
-        GPIO.output(pins.tub_pin, (GPIO.LOW if is_on else GPIO.HIGH))
+        GPIO.output(pins.tub_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['bath_tub'] = GPIO.input(pins.tub_pin)
         self.set_leds()
 
     def cabinet(self, is_on):
         is_on = (is_on == 'true')
         verbose("The cabinet lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
-        GPIO.output(pins.cabinet_pin, (GPIO.LOW if is_on else GPIO.HIGH))
+        GPIO.output(pins.cabinet_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['cabinet'] = GPIO.input(pins.cabinet_pin)
         self.set_leds()
 
