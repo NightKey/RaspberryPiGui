@@ -50,7 +50,8 @@ class controller():
 
     def load(self, value):
         if value != None:
-            self.status = value
+            if len(value) == len(self.status):
+                self.status = value
             self.bath_tub(str(value['bath_tub']).lower())
             self.cabinet(str(value['cabinet']).lower())
             self.room(str(value['room']).lower())

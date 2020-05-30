@@ -319,76 +319,78 @@ if __name__=="__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
     print_handler.name = "Printer"
     print_handler_thread.start()
-    print('Server started!', 'Main')
-    update()
-    print(f"Checking the '{File_Folder}' path", "Main")
-    #Creating needed folders in /var
-    if not os.path.exists(File_Folder):
-        os.mkdir(File_Folder)
-    #Global functions
-    print('Setting up the global functions...', 'Main')
     try:
-        controller = pin_controll.controller(door_callback, load())
-    except KeyError:
-        print("Key error detected, reseting setup...", 'Main')
-        controller = pin_controll.controller(door_callback)
-        save()
-    listener_loop = asyncio.new_event_loop()
-    sender_loop = asyncio.new_event_loop()
-    log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
-    #Global functions end
-    print('Setting up the mappings...', "Main")
-    #Option switch board
-    options = {
-        'cabinet':controller.cabinet, 
-        'room':room_controll, 
-        'brightness':controller.brightness, 
-        'bath_tub':controller.bath_tub, 
-        'color':controller.color,
-        'update':update,
-        'skip':usb_player.skip,
-        'pause':usb_player.pause,
-        'volume':usb_player.set_volume,
-        'prev': usb_player.prev
-        }
-    #Option switch board end
-    #Menu
-    menu = {
-        "developer":developer_mode,
-        "exit":_exit,
-        'help':help, 
-        'status':get_status, 
-        "mute":print_handler.mute, 
-        "update":update, 
-        'verbose':print_handler.ch_verbose
-    }
-    #Menu end
-    try:
-        log.log("Main thred started!")
-        print('Creating threads...', "Main")
-        listener = threading.Thread(target=listener_starter)
-        sender = threading.Thread(target=sender_starter)
-        usb_thread = threading.Thread(target=usb_listener)
-        usb_thread.name='USB'
-        listener.name = "Listener"
-        sender.name = "Sender"
-        print('Starting up the threads...', 'Main')
-        listener.start()
-        sender.start()
-        usb_thread.start()
-        lights_command = False
         print('Server started!', 'Main')
-        while not killswitch:
-            text = input("> ")
-            try:
-                if ' ' in text:
-                    menu[text.split(' ')[0]](text.split(' ')[1])
-                else:
-                    menu[text]()
-            except KeyError as ke:
-                print("It's not a valid command!", 'Main')
-        sys.exit(0)
-    except Exception as ex:
-        log.log(str(ex), True)
-    finally:
-        log.close()
+        update()
+        print(f"Checking the '{File_Folder}' path", "Main")
+        #Creating needed folders in /var
+        if not os.path.exists(File_Folder):
+            os.mkdir(File_Folder)
+        #Global functions
+        print('Setting up the global functions...', 'Main')
+        controller = pin_controll.controller(door_callback, load())
+        if len(load()) != len(controller.status):
+            print("Key error detected, reseting setup...", 'Main')
+        listener_loop = asyncio.new_event_loop()
+        sender_loop = asyncio.new_event_loop()
+        log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
+        #Global functions end
+        print('Setting up the mappings...', "Main")
+        #Option switch board
+        options = {
+            'cabinet':controller.cabinet, 
+            'room':room_controll, 
+            'brightness':controller.brightness, 
+            'bath_tub':controller.bath_tub, 
+            'color':controller.color,
+            'update':update,
+            'skip':usb_player.skip,
+            'pause':usb_player.pause,
+            'volume':usb_player.set_volume,
+            'prev': usb_player.prev
+            }
+        #Option switch board end
+        #Menu
+        menu = {
+            "developer":developer_mode,
+            "exit":_exit,
+            'help':help, 
+            'status':get_status, 
+            "mute":print_handler.mute, 
+            "update":update, 
+            'verbose':print_handler.ch_verbose
+        }
+        #Menu end
+        try:
+            log.log("Main thred started!")
+            print('Creating threads...', "Main")
+            listener = threading.Thread(target=listener_starter)
+            sender = threading.Thread(target=sender_starter)
+            usb_thread = threading.Thread(target=usb_listener)
+            usb_thread.name='USB'
+            listener.name = "Listener"
+            sender.name = "Sender"
+            print('Starting up the threads...', 'Main')
+            listener.start()
+            sender.start()
+            usb_thread.start()
+            lights_command = False
+            print('Server started!', 'Main')
+            while not killswitch:
+                text = input("> ")
+                try:
+                    if ' ' in text:
+                        menu[text.split(' ')[0]](text.split(' ')[1])
+                    else:
+                        menu[text]()
+                except KeyError as ke:
+                    print("It's not a valid command!", 'Main')
+            sys.exit(0)
+        except Exception as ex:
+            log.log(str(ex), True)
+        finally:
+            log.close()
+    except:
+        print('Error in loading, trying to update...', "Main")
+        while True:
+            update()
