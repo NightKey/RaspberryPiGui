@@ -52,6 +52,8 @@ def usb_listener():
     global USB_name
     while True:
         try:
+            if killswitch:
+                break
             if failcount > 5:
                 print('USB listener failed too many times, shutting off.', 'USB')
                 break
@@ -77,6 +79,8 @@ def usb_listener():
             if USB_name != None:
                 USB_name = None
                 controller.load(load())
+                print('Finally reached!', 'USB')
+                sleep(0.5)
 
 def temp_checker(test=False):
     global temp_sent
@@ -228,10 +232,12 @@ async def status_checker():
                         await message_sender(to_send[0])
                         del to_send[0]
                     except Exception as ex:
+                        log.log(f'Error in sending message: {ex}', 'Sender')
                         print(f'Error in sending message: {ex}', 'Sender')
             counter += 1
             if counter > 100:
                 counter = 0
+            sleep(0.2)
         except Exception as ex:
             log.log(f'Status checker Exception: {ex}', True)
             print(f'Exception: {ex}', 'Sender')
@@ -255,8 +261,12 @@ def _exit():
     global killswitch
     log.log("Stopped by user")
     killswitch = True
+    if usb_player.now_playing != "none":
+        verbose("USB stop calling", 'Main')
+        usb_player.stop()
     listener_loop.stop()
     sender_loop.stop()
+    print('!stop', "Main")
 
 def developer_mode():
     if temp_sent:
@@ -376,21 +386,29 @@ if __name__=="__main__":
             usb_thread.start()
             lights_command = False
             print('Server started!', 'Main')
-            while not killswitch:
-                text = input("> ")
-                try:
-                    if ' ' in text:
-                        menu[text.split(' ')[0]](text.split(' ')[1])
-                    else:
-                        menu[text]()
-                except KeyError as ke:
-                    print("It's not a valid command!", 'Main')
-            sys.exit(0)
+            if "-d" in os.sys.argv:
+                while not killswitch:
+                    text = input()
+                    try:
+                        if ' ' in text:
+                            menu[text.split(' ')[0]](text.split(' ')[1])
+                        else:
+                            menu[text]()
+                    except KeyError as ke:
+                        print("It's not a valid command!", 'Main')
+                sys.exit(0)
+            elif "-v" in os.sys.argv:
+                sender.join()
+            else:
+                print('!stop', 'Main')
         except Exception as ex:
             log.log(str(ex), True)
         finally:
             log.close()
-    except:
+    except Exception as ex:
+        log.log('Main thread error!', True)
+        log.log(f"Exception: {ex}")
         print('Error in loading, trying to update...', "Main")
+        print(f"Exception: {ex}", 'Main')
         while True:
             update()
