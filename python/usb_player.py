@@ -1,6 +1,6 @@
 import os
 from pygame import mixer
-from print_handler import printer
+from print_handler import printer, verbose
 
 
 skipped = False
@@ -8,9 +8,15 @@ previous = False
 paused = False
 volume = 1.0
 playing = False
+kill = False
 now_playing = "none"
 
 print = printer
+
+def stop():
+    global kill
+    verbose("USB stop called", 'USB')
+    kill = True
 
 def start(directory):
     global paused
@@ -65,11 +71,14 @@ def start(directory):
                     i -= 2
                     mixer.music.stop()
                     previous = False
-                pass
+                if kill:
+                    mixer.stop()
             playing = False
             now_playing = "none"
             if fail_count != 0:
                 fail_count = 0
+            if kill:
+                break
         except Exception as ex:
             print('Exception occured during playback', 'USB')
             print(f'Exception: {ex}', 'USB')
