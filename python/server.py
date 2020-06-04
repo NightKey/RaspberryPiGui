@@ -338,7 +338,7 @@ if __name__=="__main__":
             os.mkdir(File_Folder)
         #Global functions
         print('Setting up the global functions...', 'Main')
-        controller = pin_controll.controller(door_callback, load())
+        controller = pin_controll.controller(door_callback, load(), _inverted=True)
         if len(load()) != len(controller.status):
             print("Key error detected, reseting setup...", 'Main')
         listener_loop = asyncio.new_event_loop()
