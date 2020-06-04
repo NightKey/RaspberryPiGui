@@ -11,7 +11,7 @@ pins = pins()
 
 class controller():
 
-    def __init__(self, door_callback, _initial=None):
+    def __init__(self, door_callback, _initial=None, _inverted=False, _12V=False):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
@@ -31,6 +31,8 @@ class controller():
         self.red.start(0)
         self.green.start(0)
         self.blue.start(0)
+        self.inverted = _inverted
+        self._12V_=_12V
         self.status = {
             'brightness':0,
             'room':False,
@@ -74,9 +76,10 @@ class controller():
         return self.status[what]
 
     def _12V(self):
-        if not GPIO.input(pins._12V):
-            GPIO.output(pins._12V, GPIO.HIGH)
-            self.status['12V'] = True
+        if self._12V_:
+            if not GPIO.input(pins._12V):
+                GPIO.output(pins._12V, GPIO.HIGH)
+                self.status['12V'] = True
 
     def check_for_need(self):
         if not self.status['12V']:
@@ -115,34 +118,47 @@ class controller():
     def set_leds(self):
         if self.status['bath_tub'] or self.status['cabinet']:
             try:
-                self.status['red'] = round((self.translate(self.status['color'][0], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+                self.status['red'] = self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, 100, 0)
                 if self.status['red'] > 1:
                     self.status['red'] = 1/self.status['red']
             except:
-                self.status['red'] = 0
+                if self.inverted:
+                    self.status['red'] = 100
+                else:
+                    self.status['red'] = 0
             finally:
-                self.red.ChangeDutyCycle(self.status['red'] * 100)
+                self.red.ChangeDutyCycle(self.status['red'])
             try:
-                self.status['green'] = round((self.translate(self.status['color'][1], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+                self.status['green'] = self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, 100, 0)
                 if self.status['green'] > 1:
                     self.status['green'] = 1/self.status['green']
             except:
-                self.status['green'] = 0
+                if self.inverted:
+                    self.status['green'] = 100
+                else:
+                    self.status['green'] = 0
             finally:
                 self.green.ChangeDutyCycle(self.status['green'] * 100)
             try:
-                self.status['blue'] = round((self.translate(self.status['color'][2], 0, 255, 0, 100) / self.translate(self.status['brightness'], 0, 12, 0, 100)), 3)
+                self.status['blue'] = self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, 100, 0)
                 if self.status['blue'] > 1:
                     self.status['blue'] = 1/self.status['blue']
             except:
-                self.status['blue'] = 0
+                if self.inverted:
+                    self.status['blue'] = 100
+                else:
+                    self.status['blue'] = 0
             finally:
                 self.blue.ChangeDutyCycle(self.status['blue'] * 100)
             self.check_for_need()
         else:
-            self.red.ChangeDutyCycle(0)
-            self.green.ChangeDutyCycle(0)
-            self.blue.ChangeDutyCycle(0)
+            if self.inverted:
+                dc = 100
+            else:
+                dc = 0
+            self.red.ChangeDutyCycle(dc)
+            self.green.ChangeDutyCycle(dc)
+            self.blue.ChangeDutyCycle(dc)
             self.check_for_need()
 
     def room(self, is_on):
