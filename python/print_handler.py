@@ -1,4 +1,5 @@
 import writer
+from time import sleep
 
 main = writer.writer("RaspberryPiServer").write
 listener_print = writer.writer("Listener Status").write
@@ -10,7 +11,6 @@ link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':t
 to_print = []
 muted = False
 is_verbose = False
-
 def verbose(text, sender, end='\n> '):
     if is_verbose:
         to_print.append([sender, text, end])
@@ -31,6 +31,9 @@ def screen_handler():
     global to_print
     while True:
         if to_print != []:
+            if to_print[0][1] == "!stop":
+                print(r'Closing Print function...', end='')
+                break
             if not muted:
                 try:
                     link[to_print[0][0]](to_print[0][1], end=to_print[0][2])
