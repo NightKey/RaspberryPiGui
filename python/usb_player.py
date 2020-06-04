@@ -1,4 +1,8 @@
-import os
+import os, wave
+try:
+    import mutagen.mp3
+except:
+    os.system("pip3 install mutagen")
 from pygame import mixer
 from print_handler import printer, verbose
 
@@ -32,13 +36,11 @@ def start(directory):
     i = 0
     while i < len(files) - 1:
         now = files[i]
-        if now.split('.')[-1].lower() not in ['mp3', 'wav', 'wma']:
+        if now.split('.')[-1].lower() not in ['mp3', 'wav']:
             del files[i]
         else:
             i += 1
         print(f'Size: {len(files)}', 'USB', end='')
-    
-    mixer.init()
     i = 0
     fail_count = 0
     while i < len(files):
@@ -48,6 +50,13 @@ def start(directory):
             item = files[i]
             i+=1
             now_playing = os.path.basename(item)
+            if now_playing.split('.')[-1].lower() == 'mp3':
+                tmp = mutagen.mp3.MP3(item)
+                mixer.init(frequency=tmp.info.sample_rate)
+            else:
+                tmp = wave.open(item)
+                mixer.init(frequency=tmp.getframerate())
+            del tmp
             print(f'Now playing {now_playing}', 'USB')
             mixer.music.load(item)
             mixer.music.set_volume(volume)
