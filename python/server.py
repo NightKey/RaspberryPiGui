@@ -201,6 +201,7 @@ async def message_sender(message):
     await ws.send(message)
 
 def door_callback(arg):
+    return                  #Remove when good magnetic switch is added
     global tmp_room
     print(arg, 'Main')
     if not controller.get_status("room"):
