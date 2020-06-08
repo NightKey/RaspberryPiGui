@@ -92,11 +92,12 @@ class controller():
                 self.status['12V'] = False
 
     def update_status(self):
-        self.status['room'] = bool(GPIO.input(pins.lamp_pin))
+        """ self.status['room'] = bool(GPIO.input(pins.lamp_pin))
         self.status['bath_tub'] = bool(GPIO.input(pins.tub_pin))
         self.status['cabinet'] = bool(GPIO.input(pins.cabinet_pin))
         self.status['fan'] = bool(GPIO.input(pins.fan_controll))
-        self.status['12V'] = bool(GPIO.input(pins._12V))
+        self.status['12V'] = bool(GPIO.input(pins._12V)) """
+        return
 
     def translate(self, value, inmin, inmax, outmin, outmax):
         """

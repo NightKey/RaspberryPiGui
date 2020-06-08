@@ -125,6 +125,7 @@ def save():
     _to = USB_name if USB_name != None else 'status'
     controller.update_status()
     status = controller.status
+    status['volume'] = usb_player.volume
     with open(f"{os.path.join(File_Folder, _to)}.json", 'w') as f:
         json.dump(status, f)
 
@@ -136,7 +137,6 @@ def tmp_room_check():
         options['room']('false')
         to_send.append('room')
         to_send.append('close')
-    tmp_room = False
 
 async def handler(websocket, path):
     global is_connected
@@ -290,31 +290,48 @@ help - This help message
 mute - mutes the server output (to the console)
 status - Reports about the pin, and temperature status
 update - update from github (restarts the system)
-verbose - Prints more info from runtime"""
+verbose - Prints more info from runtime
+vars - Prints all of the global variables"""
     print(text, 'Main')
 
 def load():
     _from = USB_name if USB_name != None else 'status'
     if os.path.exists(f"{os.path.join(File_Folder, _from)}.json"):
-        with open(f"{os.path.join(File_Folder, _from)}.json", 'r') as s:
-            status = json.load(s)
-        return status
+        try:
+            with open(f"{os.path.join(File_Folder, _from)}.json", 'r') as s:
+                status = json.load(s)
+            usb_player.volume = status["volume"]
+            del status["volume"]
+            return status
+        except:
+            print('Status was incorrect!', 'Main')
+            return None
     else:
         print('No status was saved!', 'Main')
         return None
+
+def print_vars():
+    tmp = globals()
+    for key, value in tmp.items():
+        if '__' not in key and key != 'tmp' and type(value) != type(print_vars) and type(value) != type(json):
+            print(f'{key} = {value}', 'Main')
 
 def room_controll(state):
     verbose(f'Room controll called with {state}', 'Main')
     if state == "true":
         controller.room(state)
-    else:
+    elif not controller.status['room']:
         controller.update_status()
         verbose(f'Status: {controller.get_status()}', 'Main')
         global manual_room
         if not manual_room:
             manual_room = True
             return
-        if not controller.get_status("bath_tub") and not controller.get_status("cabinet"):
+        global tmp_room
+        if tmp_room:
+            tmp_room = False
+            return
+        if not (controller.get_status("bath_tub") or controller.get_status("cabinet")):
             manual_room = False
             global to_send
             to_send.append("room_extend")
@@ -332,6 +349,7 @@ if __name__=="__main__":
     try:
         print('Server started!', 'Main')
         update()
+        log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
         print(f"Checking the '{File_Folder}' path", "Main")
         #Creating needed folders in /var
         if not os.path.exists(File_Folder):
@@ -339,11 +357,11 @@ if __name__=="__main__":
         #Global functions
         print('Setting up the global functions...', 'Main')
         controller = pin_controll.controller(door_callback, load(), _inverted=True)
-        if len(load()) != len(controller.status):
-            print("Key error detected, reseting setup...", 'Main')
+        if load() != None:
+            if len(load()) != len(controller.status):
+                print("Key error detected, reseting setup...", 'Main')
         listener_loop = asyncio.new_event_loop()
         sender_loop = asyncio.new_event_loop()
-        log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
         #Global functions end
         print('Setting up the mappings...', "Main")
         #Option switch board
@@ -368,7 +386,8 @@ if __name__=="__main__":
             'status':get_status, 
             "mute":print_handler.mute, 
             "update":update, 
-            'verbose':print_handler.ch_verbose
+            'verbose':print_handler.ch_verbose,
+            'vars':print_vars
         }
         #Menu end
         try:
@@ -401,6 +420,7 @@ if __name__=="__main__":
                 sender.join()
             else:
                 print('!stop', 'Main')
+                sender.join()
         except Exception as ex:
             log.log(str(ex), True)
         finally:
