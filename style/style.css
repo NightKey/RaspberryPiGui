@@ -5,17 +5,20 @@ body {
     height: calc(100% - 18px);
     width: calc(100% - 20px);
     grid-template-rows: [weather] 100px [gap] 5px [under] 200px [gapu] 5px [alers] auto;
+    grid-template-columns: 100%;
 }
 
 @media only screen and (max-width: 869px) {
     body {
         grid-template-rows: [weather] 120px [gap] 5px [under] 200px [gapu] 5px [alers] auto;
+        grid-template-columns: 100%;
     }
 }
 
 @media only screen and (max-width: 669px) {
     body {
         grid-template-rows: [weather] 213px [gap] 5px [under] 200px [gapu] 5px [alers] auto;
+        grid-template-columns: 100%;
     }
 }
 
@@ -25,10 +28,21 @@ body {
     border-left-width: 1;
 }
 
-#weather {
+#weather, #weather_hider {
     grid-row-end: gap;
+    grid-column-start: 1;
+}
+
+#weather {
     border-style: solid;
     width: 100%;
+    z-index: 0;
+}
+
+#weather_hider {
+    border-style: solid;
+    width: 100%;
+    z-index: 2;
 }
 
 #lights {
@@ -68,7 +82,7 @@ body {
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    z-index: 9; /* Sit on top */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
