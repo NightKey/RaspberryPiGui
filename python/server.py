@@ -30,8 +30,11 @@ def get_status():
     try:
         controller.update_status()
         temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
-        pins = controller.status
         print(f'CPU Temperature: {temp}', 'Main')
+    except Exception as ex:
+        print(f'Error in status check: {ex}', 'Main')
+    try:
+        pins = controller.status
         for key, value in pins.items():
             if type(value) is not list:
                 print(f'{key} pin status: {value}', 'Main')
@@ -314,14 +317,16 @@ def load():
 def print_vars():
     tmp = globals()
     for key, value in tmp.items():
-        if '__' not in key and key != 'tmp' and type(value) != type(print_vars) and type(value) != type(json):
+        if '__' not in key and key != 'tmp' and 'object' not in str(type(value)) and key not in ['menu', 'options', 'ws', 'seep']:
             print(f'{key} = {value}', 'Main')
+    del tmp
 
 def room_controll(state):
     verbose(f'Room controll called with {state}', 'Main')
+    verbose(f'Room current status: {controller.status["room"]}', 'Main')
     if state == "true":
         controller.room(state)
-    elif not controller.status['room']:
+    elif controller.status['room']:
         controller.update_status()
         verbose(f'Status: {controller.get_status()}', 'Main')
         global manual_room
@@ -357,7 +362,7 @@ if __name__=="__main__":
             os.mkdir(File_Folder)
         #Global functions
         print('Setting up the global functions...', 'Main')
-        controller = pin_controll.controller(door_callback, load(), _inverted=True)
+        controller = pin_controll.controller(door_callback, load())
         if load() != None:
             if len(load()) != len(controller.status):
                 print("Key error detected, reseting setup...", 'Main')
