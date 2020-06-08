@@ -142,13 +142,15 @@ def tmp_room_check():
         to_send.append('close')
 
 def rgb(values):
+    verbose(f"RGB was called with '{values}' values.", 'Main')
     rgb = values.split(', ')
     pins = [controller.red, controller.green, controller.blue]
     for value, pin in zip(rgb, pins):
         try:
             controller.set_pwm(pin, value)
-        except:
+        except Exception as ex:
             print(f'Falied with the value: {value}', 'Main')
+            verbose(f'Exception: {ex}', 'Main')
 
 async def handler(websocket, path):
     global is_connected
