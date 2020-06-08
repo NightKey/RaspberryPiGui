@@ -162,6 +162,9 @@ class controller():
             self.blue.ChangeDutyCycle(dc)
             self.check_for_need()
 
+    def set_pwm(self, pin, value):
+        pin.ChangeDutyCycle(value)
+
     def room(self, is_on):
         is_on = (is_on == 'true')
         verbose("The room lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')

@@ -141,6 +141,15 @@ def tmp_room_check():
         to_send.append('room')
         to_send.append('close')
 
+def rgb(values):
+    rgb = values.split(', ')
+    pins = [controller.red, controller.green, controller.blue]
+    for value, pin in zip(rgb, pins):
+        try:
+            controller.set_pwm(pin, value)
+        except:
+            print(f'Falied with the value: {value}', 'Main')
+
 async def handler(websocket, path):
     global is_connected
     while True:
@@ -291,11 +300,13 @@ def help():
 developer - Disables the fan pin, and prints the last 5 element of the logs
 exit - Stops the server
 help - This help message
+invert - temporrly inverts the pwm's
 mute - mutes the server output (to the console)
+rgb - set's the rgb pwm values 0-100. The values are given in the following fassion: R, G, B
 status - Reports about the pin, and temperature status
 update - update from github (restarts the system)
-verbose - Prints more info from runtime
-vars - Prints all of the global variables"""
+vars - Prints all of the global variables
+verbose - Prints more info from runtime"""
     print(text, 'Main')
 
 def load():
@@ -320,6 +331,11 @@ def print_vars():
         if '__' not in key and key != 'tmp' and 'object' not in str(type(value)) and key not in ['menu', 'options', 'ws', 'seep']:
             print(f'{key} = {value}', 'Main')
     del tmp
+
+def invert():
+    controller.inverted = not controller.inverted
+    print(f'Inverted was set to {controller.inverted}', 'Main')
+    controller.check_for_need
 
 def room_controll(state):
     verbose(f'Room controll called with {state}', 'Main')
@@ -393,7 +409,9 @@ if __name__=="__main__":
             "mute":print_handler.mute, 
             "update":update, 
             'verbose':print_handler.ch_verbose,
-            'vars':print_vars
+            'vars':print_vars,
+            'rgb':rgb,
+            'invert':invert
         }
         #Menu end
         try:
