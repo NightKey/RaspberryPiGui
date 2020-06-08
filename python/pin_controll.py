@@ -15,9 +15,9 @@ class controller():
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.HIGH)                              #Lamp
-        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.HIGH)                               #Bathtub leds
-        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.HIGH)                           #cabinet leds
+        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.LOW)                              #Lamp
+        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.LOW)                               #Bathtub leds
+        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.LOW)                           #cabinet leds
         GPIO.setup(pins.fan_controll, GPIO.OUT, initial=GPIO.LOW)                           #Fancontroller
         GPIO.setup(pins.red_pin, GPIO.OUT)                                                  #Red color
         GPIO.setup(pins.green_pin, GPIO.OUT)                                                #Green color
@@ -92,12 +92,12 @@ class controller():
                 self.status['12V'] = False
 
     def update_status(self):
-        """ self.status['room'] = bool(GPIO.input(pins.lamp_pin))
+        return
+        self.status['room'] = bool(GPIO.input(pins.lamp_pin))
         self.status['bath_tub'] = bool(GPIO.input(pins.tub_pin))
         self.status['cabinet'] = bool(GPIO.input(pins.cabinet_pin))
         self.status['fan'] = bool(GPIO.input(pins.fan_controll))
-        self.status['12V'] = bool(GPIO.input(pins._12V)) """
-        return
+        self.status['12V'] = bool(GPIO.input(pins._12V))
 
     def translate(self, value, inmin, inmax, outmin, outmax):
         """
@@ -121,7 +121,7 @@ class controller():
             try:
                 self.status['red'] = self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, 100, 0)
                 if self.status['red'] > 1:
-                    self.status['red'] = 1/self.status['red']
+                    self.status['red'] = 1.0/self.status['red']
             except:
                 if self.inverted:
                     self.status['red'] = 100
@@ -132,7 +132,7 @@ class controller():
             try:
                 self.status['green'] = self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, 100, 0)
                 if self.status['green'] > 1:
-                    self.status['green'] = 1/self.status['green']
+                    self.status['green'] = 1.0/self.status['green']
             except:
                 if self.inverted:
                     self.status['green'] = 100
@@ -143,7 +143,7 @@ class controller():
             try:
                 self.status['blue'] = self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, 100, 0)
                 if self.status['blue'] > 1:
-                    self.status['blue'] = 1/self.status['blue']
+                    self.status['blue'] = 1.0/self.status['blue']
             except:
                 if self.inverted:
                     self.status['blue'] = 100
@@ -166,21 +166,21 @@ class controller():
         is_on = (is_on == 'true')
         verbose("The room lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.lamp_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-        self.status['room'] = GPIO.input(pins.lamp_pin)
+        self.status['room'] = is_on
         self.check_for_need()
 
     def bath_tub(self, is_on):
         is_on = (is_on == 'true')
         verbose("The bath tub lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.tub_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-        self.status['bath_tub'] = GPIO.input(pins.tub_pin)
+        self.status['bath_tub'] = is_on
         self.set_leds()
 
     def cabinet(self, is_on):
         is_on = (is_on == 'true')
         verbose("The cabinet lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
         GPIO.output(pins.cabinet_pin, (GPIO.HIGH if is_on else GPIO.LOW))
-        self.status['cabinet'] = GPIO.input(pins.cabinet_pin)
+        self.status['cabinet'] = is_on
         self.set_leds()
 
     def color(self, color_v):
@@ -196,7 +196,7 @@ class controller():
             status = self.status
         verbose("Fan pin was set to {}".format((GPIO.HIGH if status else GPIO.LOW)), 'PINS')
         GPIO.output(pins.fan_controll, (GPIO.HIGH if status else GPIO.LOW))
-        self.status['fan'] = GPIO.input(pins.fan_controll)
+        self.status['fan'] = status
     
     def clean(self):
         GPIO.cleanup()
