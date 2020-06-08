@@ -161,6 +161,10 @@ class controller():
             self.green.ChangeDutyCycle(dc)
             self.blue.ChangeDutyCycle(dc)
             self.check_for_need()
+        #Remove, when problem solved
+        self.red.ChangeDutyCycle(100)
+        self.green.ChangeDutyCycle(0)
+        self.blue.ChangeDutyCycle(0)
 
     def set_pwm(self, pin, value):
         pin.ChangeDutyCycle(value)
