@@ -12,10 +12,10 @@ ip="127.0.0.1"
 port = 6969
 to_send=[]
 to_print = []
-print = print_combiner
 File_Folder = "/var/RPS"
 if os.name == "nt":
     File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
+log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
 #flags
 muted = False
 manual_room = True
@@ -30,6 +30,8 @@ door_ignore_flag = False
 def print_combiner(text, sender, end='\n> '):
     printer(text, sender, end)
     log.log(text)
+
+print = print_combiner
 
 def get_status():
     try:
@@ -350,12 +352,11 @@ def room_controll(state):
     verbose(f'Room controll called with {state}', 'Main')
     verbose(f'Room current status: {controller.status["room"]}', 'Main')
     global timer_thread
+    global door_ignore_flag
     if state == 'flag_reset':
-        global door_ignore_flag
         door_ignore_flag = False
     if state == "true":
         controller.room(state)
-        global door_ignore_flag
         door_ignore_flag = True
     elif controller.status['room']:
         controller.update_status()
@@ -387,7 +388,6 @@ if __name__=="__main__":
     try:
         print('Server started!', 'Main')
         update()
-        log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
         print(f"Checking the '{File_Folder}' path", "Main")
         #Creating needed folders in /var
         if not os.path.exists(File_Folder):
