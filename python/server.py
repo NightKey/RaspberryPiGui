@@ -12,7 +12,7 @@ ip="127.0.0.1"
 port = 6969
 to_send=[]
 to_print = []
-print = printer
+print = print_combiner
 File_Folder = "/var/RPS"
 if os.name == "nt":
     File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
@@ -25,6 +25,11 @@ tmp_room = False
 temp_sent = False
 is_connected = False
 dev_mode = False
+door_ignore_flag = False
+
+def print_combiner(text, sender, end='\n> '):
+    printer(text, sender, end)
+    log.log(text)
 
 def get_status():
     try:
@@ -195,6 +200,7 @@ async def handler(websocket, path):
             del color
             while True:
                 data = await websocket.recv()
+                log.log(f'Data retreaved: {data}')
                 data = data.split(',')
                 options[data[0]](data[1])
                 if data[0] == "room" and tmp_room:
@@ -217,8 +223,9 @@ async def message_sender(message):
 def door_callback(arg):
     return                  #Remove when good magnetic switch is added
     global tmp_room
+    log.log(f'Door signal detected, flag: {door_ignore_flag}')
     print(arg, 'Main')
-    if not controller.get_status("room"):
+    if not door_ignore_flag:
         to_send.append('room')
         options['room']('true')
         tmp_room = True
@@ -342,8 +349,14 @@ def invert():
 def room_controll(state):
     verbose(f'Room controll called with {state}', 'Main')
     verbose(f'Room current status: {controller.status["room"]}', 'Main')
+    global timer_thread
+    if state == 'flag_reset':
+        global door_ignore_flag
+        door_ignore_flag = False
     if state == "true":
         controller.room(state)
+        global door_ignore_flag
+        door_ignore_flag = True
     elif controller.status['room']:
         controller.update_status()
         verbose(f'Status: {controller.get_status()}', 'Main')
@@ -359,11 +372,12 @@ def room_controll(state):
             manual_room = False
             global to_send
             to_send.append("room_extend")
-            global timer_thread
             timer_thread = threading.Thread(target=timer, args=[30, controller.room, state])
             timer_thread.start()
         else:
             controller.room(state)
+            timer_thread = threading.Thread(target=timer, args=[5, controller.room, 'flag_reset'])
+            timer_thread.start()
 
 
 if __name__=="__main__":
