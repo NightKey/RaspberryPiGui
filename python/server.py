@@ -225,7 +225,7 @@ async def message_sender(message):
 def door_callback(arg):
     global tmp_room
     log.log(f'Door signal detected, flag: {door_ignore_flag}')
-    print(arg, 'Main')
+    print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}", 'Main')
     if not door_ignore_flag:
         to_send.append('room')
         options['room']('true')
@@ -363,6 +363,7 @@ def room_controll(state):
         controller.update_status()
         verbose(f'Status: {controller.get_status()}', 'Main')
         if not manual_room:
+            door_ignore_flag = False
             manual_room = True
             return
         global tmp_room
