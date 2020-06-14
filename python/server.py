@@ -352,6 +352,7 @@ def room_controll(state):
     verbose(f'Room current status: {controller.status["room"]}', 'Main')
     global timer_thread
     global door_ignore_flag
+    global manual_room
     if state == 'flag_reset':
         door_ignore_flag = False
     if state == "true":
@@ -361,7 +362,6 @@ def room_controll(state):
     elif controller.status['room']:
         controller.update_status()
         verbose(f'Status: {controller.get_status()}', 'Main')
-        global manual_room
         if not manual_room:
             manual_room = True
             return
