@@ -223,7 +223,6 @@ async def message_sender(message):
     await ws.send(message)
 
 def door_callback(arg):
-    return                  #Remove when good magnetic switch is added
     global tmp_room
     log.log(f'Door signal detected, flag: {door_ignore_flag}')
     print(arg, 'Main')
