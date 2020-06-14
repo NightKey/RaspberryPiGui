@@ -356,6 +356,7 @@ def room_controll(state):
         door_ignore_flag = False
     if state == "true":
         controller.room(state)
+        manual_room = True
         door_ignore_flag = True
     elif controller.status['room']:
         controller.update_status()
