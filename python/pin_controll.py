@@ -15,16 +15,16 @@ class controller():
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.LOW)                              #Lamp
-        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.LOW)                               #Bathtub leds
-        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.LOW)                           #cabinet leds
+        GPIO.setup(pins.lamp_pin, GPIO.OUT, initial=GPIO.LOW)                               #Lamp
+        GPIO.setup(pins.tub_pin, GPIO.OUT, initial=GPIO.LOW)                                #Bathtub leds
+        GPIO.setup(pins.cabinet_pin, GPIO.OUT, initial=GPIO.LOW)                            #cabinet leds
         GPIO.setup(pins.fan_controll, GPIO.OUT, initial=GPIO.LOW)                           #Fancontroller
         GPIO.setup(pins.red_pin, GPIO.OUT)                                                  #Red color
         GPIO.setup(pins.green_pin, GPIO.OUT)                                                #Green color
         GPIO.setup(pins.blue_pin, GPIO.OUT)                                                 #Blue color
         GPIO.setup(pins._12V, GPIO.OUT, initial=GPIO.HIGH)                                  #12 V Powersuply
-        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)                      #Door switch
-        GPIO.add_event_detect(pins.door_pin, GPIO.RISING, door_callback, bouncetime=1000)   #Door interrupt
+        GPIO.setup(pins.door_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)                        #Door switch
+        GPIO.add_event_detect(pins.door_pin, GPIO.FALLING, door_callback, bouncetime=1000)  #Door interrupt
         self.red = GPIO.PWM(pins.red_pin, 100)
         self.green = GPIO.PWM(pins.green_pin, 100)
         self.blue = GPIO.PWM(pins.blue_pin, 100)
