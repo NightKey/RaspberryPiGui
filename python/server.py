@@ -236,11 +236,19 @@ def door_callback(arg):
 
 async def status_checker():
     global to_send
+    global door_ignore_flag
     now_playing = ""
     counter = 0
     temp_failed = False
+    ignore_time = 0
     while True:
         try:
+            if door_ignore_flag:
+                if ignore_time <= 300:
+                    door_ignore_flag = False
+                    ignore_time = 0
+                else:
+                    ignore_time += 1
             if killswitch:
                 exit()
             if counter % 10 == 0 and not temp_failed:
