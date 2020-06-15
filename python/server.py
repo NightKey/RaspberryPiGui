@@ -144,7 +144,6 @@ def tmp_room_check():
     global to_send
     if tmp_room:
         verbose('Lights off', 'Main')
-        options['room']('false')
         to_send.append('room')
         to_send.append('close')
 
@@ -227,11 +226,12 @@ def door_callback(arg):
     log.log(f'Door signal detected, flag: {door_ignore_flag}')
     print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}", 'Main')
     if not door_ignore_flag:
+        if controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
+            return
         to_send.append('room')
-        options['room']('true')
         tmp_room = True
         global timer_thread
-        timer_thread = threading.Thread(target=timer, args=[120, tmp_room_check])
+        timer_thread = threading.Thread(target=timer, args=[60, tmp_room_check])
         timer_thread.start()
 
 async def status_checker():
@@ -384,11 +384,6 @@ def room_controll(state):
             to_send.append("room_extend")
             timer_thread = threading.Thread(target=timer, args=[30, controller.room, state])
             timer_thread.start()
-        else:
-            controller.room(state)
-            timer_thread = threading.Thread(target=timer, args=[5, controller.room, 'flag_reset'])
-            timer_thread.start()
-
 
 if __name__=="__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
