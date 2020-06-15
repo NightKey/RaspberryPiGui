@@ -139,7 +139,7 @@ window.onload = function(){
                         todo = event.data;
                         console.log('room on');
                         show_message('Az ajtó nyitva, a fények égnek 1 percig.<br>Maradjanak égve?');
-                        connection.send('room,true');
+                        //connection.send('room,true');
                     }
                     else {
                         console.log('room off');
