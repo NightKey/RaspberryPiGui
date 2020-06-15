@@ -363,12 +363,14 @@ def room_controll(state):
     global timer_thread
     global door_ignore_flag
     global manual_room
+    global tmp_room
     if state == 'flag_reset':
         door_ignore_flag = False
     if state == "true":
         controller.room(state)
         manual_room = True
         door_ignore_flag = True
+        tmp_room = False
     elif controller.status['room']:
         controller.update_status()
         verbose(f'Status: {controller.get_status()}', 'Main')
@@ -376,16 +378,18 @@ def room_controll(state):
             door_ignore_flag = False
             manual_room = True
             return
-        global tmp_room
-        if tmp_room:
-            tmp_room = False
-            return
         if not (controller.get_status("bath_tub") or controller.get_status("cabinet")):
             manual_room = False
             global to_send
+            if tmp_room:
+                tmp_room = False
+                controller.room(state)
+                return
             to_send.append("room_extend")
             timer_thread = threading.Thread(target=timer, args=[30, controller.room, state])
             timer_thread.start()
+        else:
+            controller.room(state)
 
 if __name__=="__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
