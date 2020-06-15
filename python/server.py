@@ -144,6 +144,7 @@ def tmp_room_check():
     global to_send
     if tmp_room:
         verbose('Lights off', 'Main')
+        options['room']('false')
         to_send.append('room')
         to_send.append('close')
 
@@ -229,6 +230,7 @@ def door_callback(arg):
         if controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
             return
         to_send.append('room')
+        options['room']('true')
         tmp_room = True
         global timer_thread
         timer_thread = threading.Thread(target=timer, args=[60, tmp_room_check])
