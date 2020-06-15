@@ -138,7 +138,7 @@ window.onload = function(){
                     if (!message_shown) {
                         todo = event.data;
                         console.log('room on');
-                        show_message('Az ajtó nyitva, a fények égnek 2 percig.<br>Maradjanak égve?');
+                        show_message('Az ajtó nyitva, a fények égnek 1 percig.<br>Maradjanak égve?');
                     }
                     else {
                         console.log('room off');
