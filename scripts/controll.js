@@ -16,6 +16,10 @@ window.onload = function(){
     let message = document.getElementById('message');
     let error_msg = document.getElementById('error_message');
     let message_msg = document.getElementById('message_message');
+    let error_msg_only = document.getElementById('error_msg_only');
+    let message_msg_only = document.getElementById('message_msg_only');
+    let error_msg_ = document.getElementById('error_msg');
+    let message_msg_ = document.getElementById('message_msg');
     let dismiss = document.getElementById('Dismiss');
     let ok = document.getElementById('Ok');
     let cancle = document.getElementById('Cancle');
@@ -39,8 +43,16 @@ window.onload = function(){
 
     /*Functions*/
     show_error = function(msg) {
+        message_shown = true;
         error_msg.innerHTML = msg;
         error.style.display = 'block';
+        modal.style.display = 'block';
+    }
+
+    show_error_only = function(msg) {
+        message_shown = true;
+        error_msg_.innerHTML = msg;
+        error_msg_only.style.display = 'block';
         modal.style.display = 'block';
     }
 
@@ -60,16 +72,26 @@ window.onload = function(){
         modal.style.display = 'block';
     }
 
+    show_message_only = function(msg) {
+        message_shown = true;
+        message_msg_.innerHTML = msg;
+        message_msg_only.style.display = 'block';
+        modal.style.display = 'block';
+    }
+
     close_message = function() {
         if (message_shown) {
             message_shown = false;
             message.style.display = 'none';
+            message_msg_only.style.display = 'none';
+            error.style.display = 'none';
+            error_msg_only.style.display = 'none';
             modal.style.display = 'none';
         }
     }
 
     room_extend = function() {
-        show_message("A fények 30 másodperc múlva kikapcsolnak!");
+        show_message_only("A fények 30 másodperc múlva kikapcsolnak!");
         swtc(room);
         setTimeout(function() {
             swtc(room);
@@ -161,7 +183,7 @@ window.onload = function(){
                 swtc(cabinet);
                 break;
             case 'temp':
-                show_error('A Pi hőmérséklete túl magas!');
+                show_error_only('A Pi hőmérséklete túl magas!');
                 break;
             case 'alert':
                 send_alert = true;
