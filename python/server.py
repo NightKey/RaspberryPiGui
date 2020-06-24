@@ -99,6 +99,8 @@ def temp_checker(test=False):
     if not dev_mode:
         try:
             temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
+            if temp > 85:
+                os.system("shutdown")
             if temp > 60 and not controller.status['fan']:
                 controller.fan(True)
                 to_send.append('fan')
@@ -321,9 +323,11 @@ def developer_mode():
     print('------LOG END------', 'Main')
     del tmp
 
-def help():
-    text = """Avaleable commands:
+def help(what=None):
+    if what == None:
+        text = """Avaleable commands:
 developer - Disables the fan pin, and prints the last 5 element of the logs
+emulate - Emulates something. Type in 'help emulate' for options
 exit - Stops the server
 help - This help message
 invert - temporrly inverts the pwm's
@@ -333,6 +337,15 @@ status - Reports about the pin, and temperature status
 update - update from github (restarts the system)
 vars - Prints all of the global variables
 verbose - Prints more info from runtime"""
+    elif what == 'emulate':
+        text = """Options:
+door - Emulates a door opening
+bath_tub - Emulates the bathtub switch turning on/off
+cabinet - Emulates the cabinet switch turning on/off
+room - Emulates the lighting switch turnong on/off
+temp - Emulates a high temperature on the pi (only for display)
+fan - Turns on/off the raspberry fan
+        """
     print(text, 'Main')
 
 def load():
@@ -362,6 +375,29 @@ def invert():
     controller.inverted = not controller.inverted
     print(f'Inverted was set to {controller.inverted}', 'Main')
     controller.check_for_need
+
+def manual_send(what):
+    global to_send
+    to_send.append(what)
+
+def fan_emulator():
+    global dev_mode
+    dev_mode = not dev_mode
+    controller.fan(dev_mode)
+    manual_send('fan')
+
+def emulate(what):
+    things = {
+        'door':door_callback, 
+        'room':manual_send, 
+        'cabinet':manual_send, 
+        'bath_tub':manual_send,
+        'temp':manual_send,
+        'fan':fan_emulator,
+        'close':manual_send
+        }
+    if what in things:
+        things[what](what)
 
 def room_controll(state):
     verbose(f'Room controll called with {state}', 'Main')
@@ -435,6 +471,7 @@ if __name__=="__main__":
         #Menu
         menu = {
             "developer":developer_mode,
+            "emulate":emulate,
             "exit":_exit,
             'help':help, 
             'status':get_status, 
