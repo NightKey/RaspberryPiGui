@@ -151,6 +151,9 @@ window.onload = function(){
                     swtc(room);
                 }
                 break;
+            case 'room_switch':
+                swtc(room);
+                break;
             case 'bath_tub':
                 swtc(bath_tub);
                 break;
