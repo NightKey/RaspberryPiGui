@@ -92,12 +92,33 @@ class controller():
                 self.status['12V'] = False
 
     def read_values(self):
+        GPIO.setup(pins.lamp_pin, GPIO.IN)                               #Lamp
+        GPIO.setup(pins.tub_pin, GPIO.IN)                                #Bathtub leds
+        GPIO.setup(pins.cabinet_pin, GPIO.IN)                            #cabinet leds
+        GPIO.setup(pins.fan_controll, GPIO.IN)                           #Fancontroller
+        GPIO.setup(pins.red_pin, GPIO.IN)                                                  #Red color
+        GPIO.setup(pins.green_pin, GPIO.IN)                                                #Green color
+        GPIO.setup(pins.blue_pin, GPIO.IN)                                                 #Blue color
+        self.get_rgb()
         st = self.status
         st['room'] = bool(GPIO.input(pins.lamp_pin))
         st['bath_tub'] = bool(GPIO.input(pins.tub_pin))
         st['cabinet'] = bool(GPIO.input(pins.cabinet_pin))
         st['fan'] = bool(GPIO.input(pins.fan_controll))
         st['12V'] = bool(GPIO.input(pins._12V))
+        GPIO.setup(pins.lamp_pin, GPIO.OUT)                               #Lamp
+        GPIO.setup(pins.tub_pin, GPIO.OUT)                                #Bathtub leds
+        GPIO.setup(pins.cabinet_pin, GPIO.OUT)                            #cabinet leds
+        GPIO.setup(pins.fan_controll, GPIO.OUT)                           #Fancontroller
+        GPIO.setup(pins.red_pin, GPIO.OUT)                                #Red color
+        GPIO.setup(pins.green_pin, GPIO.OUT)                              #Green color
+        GPIO.setup(pins.blue_pin, GPIO.OUT)                               #Blue color
+        self.red = GPIO.PWM(pins.red_pin, 100)
+        self.green = GPIO.PWM(pins.green_pin, 100)
+        self.blue = GPIO.PWM(pins.blue_pin, 100)
+        self.red.start(0)
+        self.green.start(0)
+        self.blue.start(0)
         return st
 
     def update_status(self):
