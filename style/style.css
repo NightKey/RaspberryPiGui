@@ -59,7 +59,7 @@ body {
 }
 
 
-#error {
+#error, #error_msg_only {
     z-index: 1;
     margin: auto;
     display: none;
@@ -69,12 +69,12 @@ body {
     font-style: italic;
 }
 
-#message {
+#message, #message_msg_only {
     z-index: 1;
     margin: auto;
     text-align: center;
     display: none;
-    color: white;
+    color: green;
     font-size: xx-large;
     font-style: italic;
 }
@@ -87,18 +87,19 @@ body {
     top: 0;
     width: 100%; /* Full width */
     height: 100%; /* Full height */
+    padding-top: 50%;
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
   
 .modal-content {
     position: relative;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.8);
     margin: auto;
     padding: 2px;
-    border: 1px solid #888;
     width: 50%;
+    border-radius: 6px;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
     animation-name: animatetop;
     animation-duration: 0.4s
