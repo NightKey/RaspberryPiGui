@@ -207,10 +207,11 @@ async def handler(websocket, path):
             while True:
                 data = await websocket.recv()
                 log.log(f'Data retreaved: {data}')
+                if data == 'keep lit':
+                    global tmp_room
+                    tmp_room = False
                 data = data.split(',')
                 options[data[0]](data[1])
-                if data[0] == "room" and tmp_room:
-                    tmp_room = False
                 save()
                 await ws.send('Accepted')
                 if killswitch:
@@ -234,7 +235,7 @@ def door_callback(arg):
     if not door_ignore_flag:
         if controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
             return
-        to_send.append('room')
+        to_send.append('door')
         options['room']('true')
         tmp_room = True
         global timer_thread

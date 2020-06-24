@@ -155,23 +155,12 @@ window.onload = function(){
             case 'room_extend':
                 room_extend();
                 break;
+            case 'door':
+                show_message('A lámpák 1 percig égnek.');
+                swtc(room);
+                break;
             case 'room':
-                if (!init) {
-                    if (!message_shown) {
-                        todo = event.data;
-                        console.log('room on');
-                        show_message('Az ajtó nyitva, a fények égnek 1 percig.<br>Maradjanak égve?');
-                        //connection.send('room,true');
-                    }
-                    else {
-                        console.log('room off');
-                        work(false);
-                    }
-                }
-                else {
-                    todo = event.data;
-                    swtc(room);
-                }
+                swtc(room);
                 break;
             case 'room_switch':
                 swtc(room);
@@ -291,17 +280,12 @@ window.onload = function(){
     }, false);
     
     ok.addEventListener('click', function() {
-        message_msg.innerHTML = '';
-        message.style.display = 'none';
-        modal.style.display = 'none';
-        work(true);
+        close_message();
+        connection.send('keep lit');
     }, false);
 
     cancle.addEventListener('click', function() {
-        message_msg.innerHTML = '';
-        message.style.display = 'none';
-        modal.style.display = 'none';
-        work(false);
+        close_message();
     }, false);
 
     picker.addEventListener('change', function(){
