@@ -113,12 +113,6 @@ class controller():
         GPIO.setup(pins.red_pin, GPIO.OUT)                                #Red color
         GPIO.setup(pins.green_pin, GPIO.OUT)                              #Green color
         GPIO.setup(pins.blue_pin, GPIO.OUT)                               #Blue color
-        self.red = GPIO.PWM(pins.red_pin, 100)
-        self.green = GPIO.PWM(pins.green_pin, 100)
-        self.blue = GPIO.PWM(pins.blue_pin, 100)
-        self.red.start(0)
-        self.green.start(0)
-        self.blue.start(0)
         return st
 
     def update_status(self):
