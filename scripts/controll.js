@@ -172,6 +172,9 @@ window.onload = function(){
             case 'close':
                 close_message();
                 break;
+            case 'update':
+                weather_creator();
+                return;
             default:
                 if (send_alert) {
                     alert(event.data);
