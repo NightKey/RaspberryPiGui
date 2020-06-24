@@ -368,10 +368,12 @@ def load():
         return None
 
 def print_vars():
+    from inspect import isclass
     tmp = globals()
     for key, value in tmp.items():
-        if '__' not in key and key != 'tmp' and 'object' not in str(type(value)) and key not in ['menu', 'options', 'ws', 'seep']:
-            print(f'{key} = {value}', 'Main')
+        if '__' not in key and key != 'tmp' and key not in ['menu', 'options', 'ws', 'seep', 'item']:
+            if isinstance(value, (str, int, bool, list, dict)) or value == None:
+                print(f'{key} = {value}', 'Main')
     del tmp
 
 def invert():
