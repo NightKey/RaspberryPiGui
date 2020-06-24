@@ -210,6 +210,7 @@ async def handler(websocket, path):
                 if data == 'keep lit':
                     global tmp_room
                     tmp_room = False
+                    continue
                 data = data.split(',')
                 options[data[0]](data[1])
                 save()
