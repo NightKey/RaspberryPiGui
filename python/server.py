@@ -37,13 +37,12 @@ print = print_combiner
 
 def get_status():
     try:
-        controller.update_status()
         temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
         print(f'CPU Temperature: {temp}', 'Main')
     except Exception as ex:
         print(f'Error in status check: {ex}', 'Main')
     try:
-        pins = controller.status
+        pins = controller.read_values()
         for key, value in pins.items():
             if type(value) is not list:
                 print(f'{key} pin status: {value}', 'Main')

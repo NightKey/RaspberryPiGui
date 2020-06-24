@@ -91,6 +91,15 @@ class controller():
                 GPIO.output(pins._12V, GPIO.LOW)
                 self.status['12V'] = False
 
+    def read_values(self):
+        st = self.status
+        st['room'] = bool(GPIO.input(pins.lamp_pin))
+        st['bath_tub'] = bool(GPIO.input(pins.tub_pin))
+        st['cabinet'] = bool(GPIO.input(pins.cabinet_pin))
+        st['fan'] = bool(GPIO.input(pins.fan_controll))
+        st['12V'] = bool(GPIO.input(pins._12V))
+        return st
+
     def update_status(self):
         return
         self.status['room'] = bool(GPIO.input(pins.lamp_pin))
