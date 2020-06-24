@@ -42,7 +42,7 @@ def get_status():
     except Exception as ex:
         print(f'Error in status check: {ex}', 'Main')
     try:
-        pins = controller.read_values()
+        pins = controller.get_status()
         for key, value in pins.items():
             if type(value) is not list:
                 print(f'{key} pin status: {value}', 'Main')
@@ -334,6 +334,7 @@ invert - temporrly inverts the pwm's
 mute - mutes the server output (to the console)
 rgb - set's the rgb pwm values 0-100. The values are given in the following fassion: R,G,B
 status - Reports about the pin, and temperature status
+swap - Swaps the colors: R = R->B->G->R, G = G->R->B->G, B = B->G->R->B
 update - update from github (restarts the system)
 vars - Prints all of the global variables
 verbose - Prints more info from runtime"""
@@ -476,7 +477,8 @@ if __name__=="__main__":
             "developer":developer_mode,
             "emulate":emulate,
             "exit":_exit,
-            'help':help, 
+            'help':help,
+            'swap':controller.swap_color,
             'status':get_status, 
             "mute":print_handler.mute, 
             "update":update, 
