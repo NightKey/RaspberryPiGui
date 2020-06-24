@@ -240,7 +240,7 @@ def door_callback(arg):
         global timer_thread
         timer_thread = threading.Thread(target=timer, args=[60, tmp_room_check])
         timer_thread.start()
-        if last_updated == None or timedelta(last_updated - datetime.now()) > timedelta(hours=1):
+        if last_updated == None or (last_updated - datetime.now()) > timedelta(hours=1):
             last_updated = datetime.now()
             to_send.append('update')
 
