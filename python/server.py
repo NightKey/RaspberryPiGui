@@ -116,6 +116,7 @@ def temp_checker(test=False):
                 to_send.append('temp')
                 temp_sent = True
             elif temp < 70 and temp_sent:
+                to_send.append('close')
                 temp_sent = False
             return False
         except Exception as ex:
@@ -339,13 +340,13 @@ vars - Prints all of the global variables
 verbose - Prints more info from runtime"""
     elif what == 'emulate':
         text = """Options:
-door - Emulates a door opening
-bath_tub - Emulates the bathtub switch turning on/off
 cabinet - Emulates the cabinet switch turning on/off
-room - Emulates the lighting switch turnong on/off
-temp - Emulates a high temperature on the pi (only for display)
+close - Closes the current error/message box shown
+bath_tub - Emulates the bathtub switch turning on/off
+door - Emulates a door opening
 fan - Turns on/off the raspberry fan
-        """
+room - Emulates the lighting switch turnong on/off
+temp - Emulates a high temperature on the pi (only for display)"""
     print(text, 'Main')
 
 def load():
@@ -380,7 +381,7 @@ def manual_send(what):
     global to_send
     to_send.append(what)
 
-def fan_emulator():
+def fan_emulator(_=None):
     global dev_mode
     dev_mode = not dev_mode
     controller.fan(dev_mode)
@@ -398,6 +399,9 @@ def emulate(what):
         }
     if what in things:
         things[what](what)
+        print('Emulated', 'Main')
+    else:
+        print('Not a valid command!', 'Main')
 
 def room_controll(state):
     verbose(f'Room controll called with {state}', 'Main')
