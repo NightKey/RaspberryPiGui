@@ -5,6 +5,7 @@ except:
     import FakeRPi.GPIO as GPIO
 import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, updater, usb_player, json
 from time import sleep
+from datetime import datetime, timedelta
 import print_handler
 
 ws = None
@@ -17,6 +18,7 @@ if os.name == "nt":
     File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
 log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
 #flags
+last_updated = None
 muted = False
 manual_room = True
 USB_name=None
@@ -224,6 +226,7 @@ async def message_sender(message):
 
 def door_callback(arg):
     global tmp_room
+    global last_updated
     log.log(f'Door signal detected, flag: {door_ignore_flag}')
     print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}", 'Main')
     if not door_ignore_flag:
@@ -235,6 +238,9 @@ def door_callback(arg):
         global timer_thread
         timer_thread = threading.Thread(target=timer, args=[60, tmp_room_check])
         timer_thread.start()
+        if last_updated == None or timedelta(last_updated - datetime.now()) > timedelta(hours=1):
+            last_updated = datetime.now()
+            to_send.append('update')
 
 async def status_checker():
     global to_send
