@@ -140,7 +140,6 @@ def save():
     controller.update_status()
     status = controller.status
     status['volume'] = usb_player.volume
-    status['room'], status['bath_tub'], status['cabinet'], status['fan'] = False, False, False, False
     with open(f"{os.path.join(File_Folder, _to)}.json", 'w') as f:
         json.dump(status, f)
 
@@ -411,7 +410,7 @@ def emulate(what):
 
 def room_controll(state):
     verbose(f'Room controll called with {state}', 'Main')
-    verbose(f'Room current status: {controller.status["room"]}', 'Main')
+    verbose(f'Room current status: {controller.get_status("room")}', 'Main')
     global timer_thread
     global door_ignore_flag
     global manual_room
