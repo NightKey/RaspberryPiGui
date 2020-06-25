@@ -420,10 +420,11 @@ def room_controll(state):
         controller.room(state)
         manual_room = True
         door_ignore_flag = True
-        tmp_room = False
     elif controller.status['room']:
         controller.update_status()
         verbose(f'Status: {controller.get_status()}', 'Main')
+        if tmp_room:
+            return
         if not manual_room:
             door_ignore_flag = False
             manual_room = True
