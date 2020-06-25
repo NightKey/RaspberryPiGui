@@ -147,11 +147,12 @@ def tmp_room_check():
     global tmp_room
     global to_send
     if tmp_room:
-        tmp_room = False
         verbose('Lights off', 'Main')
-        options['room']('false')
+        controller.room('false')
         to_send.append('room')
         to_send.append('close')
+        sleep(1)
+        tmp_room = False
 
 def rgb(values):
     verbose(f"RGB was called with '{values}' values.", 'Main')
