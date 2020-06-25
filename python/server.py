@@ -518,6 +518,7 @@ if __name__=="__main__":
                             menu[text]()
                     except KeyError as ke:
                         print("It's not a valid command!", 'Main')
+                log.log('Stopping...')
                 sys.exit(0)
             elif "-v" in os.sys.argv:
                 sender.join()
