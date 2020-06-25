@@ -22,6 +22,7 @@ def mute():
 def ch_verbose():
     global is_verbose
     is_verbose = not is_verbose
+    printer(f'Verbose set to {is_verbose}', 'Main')
 
 def printer(text, sender, end='\n> '):
     global to_print
