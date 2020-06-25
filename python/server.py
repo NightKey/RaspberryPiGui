@@ -140,6 +140,7 @@ def save():
     controller.update_status()
     status = controller.status
     status['volume'] = usb_player.volume
+    status['room'], status['bath_tub'], status['cabinet'], status['fan'] = False, False, False, False
     with open(f"{os.path.join(File_Folder, _to)}.json", 'w') as f:
         json.dump(status, f)
 
@@ -147,6 +148,7 @@ def tmp_room_check():
     global tmp_room
     global to_send
     if tmp_room:
+        tmp_room = False
         verbose('Lights off', 'Main')
         options['room']('false')
         to_send.append('room')
