@@ -7,6 +7,7 @@ import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, up
 from time import sleep
 from datetime import datetime, timedelta
 import print_handler
+from os import path, remove
 
 ws = None
 ip="127.0.0.1"
@@ -282,6 +283,9 @@ async def status_checker():
             counter += 1
             if counter > 100:
                 counter = 0
+            if path.exists('Refresh'):
+                remove('Refresh')
+                to_send.append('Refresh')
             sleep(0.2)
         except Exception as ex:
             log.log(f'Status checker Exception: {ex}', True)
@@ -511,6 +515,8 @@ if __name__=="__main__":
             lights_command = False
             print('Server started!', 'Main')
             if "-d" in os.sys.argv:
+                with open('Ready', 'w') as f:
+                    pass
                 while not killswitch:
                     text = input()
                     try:
