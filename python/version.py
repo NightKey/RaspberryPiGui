@@ -25,6 +25,8 @@ class version_no():
     def __le__(self, other):
         if isinstance(other, version_no):
             return (self.__lt__(other) or self.__eq__(other))
+    def __str__(self):
+        return f'{self.major}.{self.minor}.{self.sub}'
 
 
 class version_info():
@@ -57,6 +59,8 @@ class version_info():
                     return 3
             if self.current_version < inp.browser_restart:
                 return 2
+    def __str__(self):
+        return str(self.current_version)
 
 if __name__ == '__main__':
     current = version_info(['a 2.3.4', 'b 2.3.3', 'c 2.2.4', 'd 1.3.4'])
