@@ -134,95 +134,111 @@ window.onload = function(){
     }
 
     /* Connection */
-    let connection = new this.WebSocket("ws://127.0.0.1:6969");
+    let connection = null;
+    
     let todo;
+    let tryno = 0;
+    start_ws = function(){
+        console.log("Connecting to server...");
+        connection = new this.WebSocket("ws://127.0.0.1:6969");
 
-    console.log("Connecting to server...")
+        connection.onopen = function() {
+            console.log("Connection established");
+            init = true;
+            tryno = 0;
+        }
 
-    connection.onopen = function() {
-        console.log("Connection established");
-        init = true;
-    }
+        connection.onclose = function() {
+            console.log("Connection closed!");
+            tryno++;
+            if (tryno > 15) {
+                show_error('Megszakadt a kapcsolat a szerverrel!');
+            } else{
+                setTimeout(function(){
+                    connection = null;
+                    start_ws();
+                }, 5000);
+            }
+        }
 
-    connection.onclose = function() {
-        console.log("Connection closed!");
-        show_error('Megszakadt a kapcsolat a szerverrel!');
-    }
-
-    connection.onmessage = function(event){
-        console.log(event.data);
-        switch (event.data) {
-            case 'room_extend':
-                room_extend();
-                break;
-            case 'door':
-                show_message('A lámpák 1 percig égnek.');
-                swtc(room);
-                break;
-            case 'room':
-                swtc(room);
-                break;
-            case 'room_switch':
-                swtc(room);
-                break;
-            case 'bath_tub':
-                swtc(bath_tub);
-                break;
-            case 'cabinet':
-                swtc(cabinet);
-                break;
-            case 'temp':
-                show_error_only('A Pi hőmérséklete túl magas!');
-                break;
-            case 'alert':
-                send_alert = true;
-                break;
-            case 'finished':
-                init = false;
-                break;
-            case 'fan':
-                toggle_fan();
-                break;
-            case 'close':
-                close_message();
-                break;
-            case 'update':
-                weather_creator();
-                return;
-            default:
-                if (send_alert) {
-                    alert(event.data);
-                    send_alert = false;
-                } else{
-                    switch (event.data.split('|')[0]) {
-                        case 'color':
-                            let tmp = event.data.split('|')[1].replace('[', '').replace(']', '').split(', ');
-                            for (let i = 0; i < 3; i++) {
-                                tmp[i] = tmp[i].replace("'", '').replace("'", '');
-                            }
-                            console.log(tmp)
-                            picker.value = "#".concat(tmp[0], tmp[1], tmp[2]);
-                            event = document.createEvent('Event');
-                            event.initEvent('change', true, true);
-                            picker.dispatchEvent(event);
-                            break;
-                        case 'brightness':
-                            brightness.value = parseInt(event.data.split('|')[1]);
-                            event = document.createEvent('Event');
-                            event.initEvent('input', true, true);
-                            brightness.dispatchEvent(event);
-                            break;
-                        case 'volume':
-                            volume_nob.value = parseInt(event.data.split('|')[1]);
-                            event = document.createEvent('Event');
-                            event.initEvent('input', true, true);
-                            volume_nob.dispatchEvent(event);
-                            break;
-                        case 'music':
-                            music(event.data.split('|')[1]);
-                            break;
+        connection.onmessage = function(event){
+            console.log(event.data);
+            switch (event.data) {
+                case 'Refresh':
+                    location.reload(true);
+                    break;
+                case 'room_extend':
+                    room_extend();
+                    break;
+                case 'door':
+                    show_message('A lámpák 1 percig égnek.');
+                    swtc(room);
+                    break;
+                case 'room':
+                    swtc(room);
+                    break;
+                case 'room_switch':
+                    swtc(room);
+                    break;
+                case 'bath_tub':
+                    swtc(bath_tub);
+                    break;
+                case 'cabinet':
+                    swtc(cabinet);
+                    break;
+                case 'temp':
+                    show_error_only('A Pi hőmérséklete túl magas!');
+                    break;
+                case 'alert':
+                    send_alert = true;
+                    break;
+                case 'finished':
+                    init = false;
+                    break;
+                case 'fan':
+                    toggle_fan();
+                    break;
+                case 'close':
+                    close_message();
+                    break;
+                case 'update':
+                    weather_creator();
+                    return;
+                default:
+                    if (send_alert) {
+                        alert(event.data);
+                        send_alert = false;
+                    } else{
+                        switch (event.data.split('|')[0]) {
+                            case 'color':
+                                let tmp = event.data.split('|')[1].replace('[', '').replace(']', '').split(', ');
+                                for (let i = 0; i < 3; i++) {
+                                    tmp[i] = tmp[i].replace("'", '').replace("'", '');
+                                }
+                                console.log(tmp)
+                                picker.value = "#".concat(tmp[0], tmp[1], tmp[2]);
+                                event = document.createEvent('Event');
+                                event.initEvent('change', true, true);
+                                picker.dispatchEvent(event);
+                                break;
+                            case 'brightness':
+                                brightness.value = parseInt(event.data.split('|')[1]);
+                                event = document.createEvent('Event');
+                                event.initEvent('input', true, true);
+                                brightness.dispatchEvent(event);
+                                break;
+                            case 'volume':
+                                volume_nob.value = parseInt(event.data.split('|')[1]);
+                                event = document.createEvent('Event');
+                                event.initEvent('input', true, true);
+                                volume_nob.dispatchEvent(event);
+                                break;
+                            case 'music':
+                                music(event.data.split('|')[1]);
+                                break;
+                        }
                     }
-                }
+            }
         }
     }
 
@@ -354,5 +370,9 @@ window.onload = function(){
             connection.send('volume,'+volume_nob.value);
         }
     }, false);
+
+    console.log('Finished with setup, starting Web Socket...');
+
+    start_ws();
 
 }
