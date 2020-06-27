@@ -168,6 +168,7 @@ def rgb(values):
 
 async def handler(websocket, path):
     global is_connected
+    external_ip = get_ip()
     while True:
         try:
             if killswitch:
@@ -205,6 +206,7 @@ async def handler(websocket, path):
             await websocket.send(f"volume|{int(usb_player.volume * 100)}")
             await websocket.send("finished")
             await websocket.send(f'music|{usb_player.now_playing}')
+            await websocket.send(f'ip|{external_ip}')
             del tmp
             del color
             while True:
@@ -316,6 +318,7 @@ def _exit():
     listener_loop.stop()
     sender_loop.stop()
     print('!stop', "Main")
+    with open('KILL', 'w') as _: pass
 
 def developer_mode():
     if temp_sent:
@@ -447,6 +450,16 @@ def room_controll(state):
             timer_thread.start()
         else:
             controller.room(state)
+
+def get_ip():
+    import socket, sys
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    del sys.modules['socket'], sys.modules['sys']
+    del socket, sys
+    return ip
 
 if __name__=="__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
