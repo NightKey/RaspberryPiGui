@@ -40,6 +40,7 @@ window.onload = function(){
     let send_alert = false;
     let fan = document.getElementById('fan_div');
     let now_playing = document.getElementById('now_playing');
+    let ip = '';
 
     /*Functions*/
     show_error = function(msg) {
@@ -235,6 +236,9 @@ window.onload = function(){
                                 break;
                             case 'music':
                                 music(event.data.split('|')[1]);
+                                break;
+                            case 'ip':
+                                ip = event.data.split('|')[1];
                                 break;
                         }
                     }
