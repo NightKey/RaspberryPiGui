@@ -8,10 +8,12 @@ Version file:
 
 current = input('Type in the new version (x.y.z): ')
 try:
-    with open('../version', 'r') as f:
-        data = f.read('-1').split('\n')
-except:
-    data = [f'current {current}', '', '', '']
+    with open('version', 'r') as f:
+        data = f.read(-1).split('\n')
+        print('Inported')
+except Exception as ex:
+    print(f'{type(ex)} --> {ex}')
+    data = [f'current {current}', 'server_untill 0.0.0', 'browser_untill 0.0.0', 'total 0.0.0']
 tmp = data[0].split(' ')[-1]
 data[0] = f'current {current}'
 ansv = str(input('Did anything change with the server since the last update? (Y/[N]) ') or 'N')
@@ -23,7 +25,7 @@ if ansv.upper() == 'Y':
 ansv = str(input('Were there anything requiriing a system restart? (For example changes to the runner.) (Y/[N]) ') or 'N')
 if ansv.upper() == 'Y':
     data[3] = f'total {tmp}'
-with open('../version', 'w') as f:
+with open('version', 'w') as f:
     for i, line in enumerate(data):
         if i < len(data) - 1:
             f.write(f'{line}\n')
