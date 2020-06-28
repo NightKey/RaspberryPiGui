@@ -95,6 +95,7 @@ body {
   
 .modal-content {
     position: relative;
+    display: none;
     background-color: rgba(0, 0, 0, 0.8);
     margin: auto;
     padding: 2px;
