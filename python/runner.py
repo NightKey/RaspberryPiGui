@@ -23,6 +23,17 @@ def main():
         try:
             if path.exists('Ready'):
                 remove('Ready')
+            if path.exists('Restart'):
+                remove('Restart')
+                if arg == '':
+                    arg = '-d'
+                else:
+                    arg = ''
+                server.kill()
+                while server.poll() is None:
+                    pass
+                print(f"Restarting in {'developper' if arg == '-d' else 'background'} mode...")
+                server = subprocess.Popen([interpreter, 'server.py', arg])
             if path.exists('KILL'):
                 remove('KILL')
                 server.kill()
