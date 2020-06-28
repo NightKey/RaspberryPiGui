@@ -40,7 +40,12 @@ window.onload = function(){
     let send_alert = false;
     let fan = document.getElementById('fan_div');
     let now_playing = document.getElementById('now_playing');
-    let ip = '';
+    let menu_btn = document.getElementById('menu_btn');
+    let menu = document.getElementById('menu');
+    let menu_close = document.getElementById('menu_close');
+    let ignore_door = document.getElementById('ignore_door');
+    let ip = document.getElementById('ip');
+    let restart_dev = document.getElementById('restart_dev');
 
     /*Functions*/
     show_error = function(msg) {
@@ -87,6 +92,7 @@ window.onload = function(){
             message_msg_only.style.display = 'none';
             error.style.display = 'none';
             error_msg_only.style.display = 'none';
+            menu.style.display = 'none';
             modal.style.display = 'none';
         }
     }
@@ -238,7 +244,7 @@ window.onload = function(){
                                 music(event.data.split('|')[1]);
                                 break;
                             case 'ip':
-                                ip = event.data.split('|')[1];
+                                ip.innerHTML = event.data.split('|')[1];
                                 break;
                         }
                     }
@@ -374,6 +380,24 @@ window.onload = function(){
             connection.send('volume,'+volume_nob.value);
         }
     }, false);
+
+    menu_btn.addEventListener('click', function(){
+        message_shown = true;
+        menu.style.display = 'block';
+        modal.style.display = 'block';
+    });
+
+    menu_close.addEventListener('click', function(){
+        close_message();
+    });
+
+    ignore_door.addEventListener('click', function(){
+        connection.send('ignore,door');
+    });
+
+    restart_dev.addEventListener('click', function(){
+        connection.send('restart,developper');
+    });
 
     console.log('Finished with setup, starting Web Socket...');
 
