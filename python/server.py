@@ -208,6 +208,7 @@ async def handler(websocket, path):
             await websocket.send("finished")
             await websocket.send(f'music|{usb_player.now_playing}')
             await websocket.send(f'ip|{external_ip}')
+            await websocket.send(f'door|{"ignored" if door_manual_ignore_flag else "checked"}')
             del tmp
             del color
             while True:
@@ -256,7 +257,7 @@ def door_callback(arg):
             to_send.append('update')
 
 def restart(_=None):
-    with open('Restart', 'w') as f: pass
+    with open('Restart', 'w') as _: pass
 
 async def status_checker():
     global to_send
@@ -462,8 +463,10 @@ def room_controll(state):
 def sw_ignore(what):
     if what == 'door':
         global door_manual_ignore_flag
+        global to_send
         door_manual_ignore_flag = not door_manual_ignore_flag
         print('Door ignored' if door_manual_ignore_flag else 'Door endabled', 'Main')
+        to_send.append('door|ignored' if door_manual_ignore_flag else 'door|checked')
 
 def get_ip():
     import socket, sys
