@@ -28,6 +28,21 @@ class version_no():
     def __str__(self):
         return f'{self.major}.{self.minor}.{self.sub}'
 
+class Required_action():
+    def __init__(self, value):
+        self.action = value
+        self.string = 'Nothing' if value == 0 else 'Server restart' if value == 1 else 'Browser refresh' if value == 2 else 'Server and browser restart' if value == 3 else 'Hardware restart'
+    
+    def __str__(self):
+        return self.string
+    
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return other == self.action
+        if isinstance(other, str):
+            return other == self.string
+        if isinstance(other, Required_action):
+            return self.action == other.action
 
 class version_info():
     """
@@ -48,17 +63,19 @@ class version_info():
         4 - too old, system restart required
         """
         if isinstance(inp, version_info):
+            tmp = None
             if self.current_version == inp.current_version:
-                return 0
+                tmp = 0 
             if self.current_version < inp.total_restart:
-                return 4
+                tmp = 4
             if self.current_version < inp.server_restart:
                 if self.current_version >= inp.browser_restart:
-                    return 1
+                    tmp = 1
                 else:
-                    return 3
+                    tmp = 3
             if self.current_version < inp.browser_restart:
-                return 2
+                tmp = 2
+            return Required_action(tmp)
     def __str__(self):
         return str(self.current_version)
 
