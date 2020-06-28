@@ -29,6 +29,7 @@ temp_sent = False
 is_connected = False
 dev_mode = False
 door_ignore_flag = False
+door_manual_ignore_flag = False
 
 def print_combiner(text, sender, end='\n> '):
     printer(text, sender, end)
@@ -221,8 +222,11 @@ async def handler(websocket, path):
                 save()
                 await ws.send('Accepted')
                 if killswitch:
+                    websocket.close()
+                    await websocket.wait_closed()
                     exit()
         except Exception as ex:
+            websocket.ws_server.unregister(websocket)
             log.log('Connection lost')
             log.log(f"Exception: {ex}")
             is_connected = False
@@ -238,7 +242,7 @@ def door_callback(arg):
     global last_updated
     log.log(f'Door signal detected, flag: {door_ignore_flag}')
     print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}", 'Main')
-    if not door_ignore_flag:
+    if not door_ignore_flag and not door_manual_ignore_flag:
         if controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
             return
         to_send.append('door')
@@ -250,6 +254,9 @@ def door_callback(arg):
         if last_updated == None or (last_updated - datetime.now()) > timedelta(hours=1):
             last_updated = datetime.now()
             to_send.append('update')
+
+def restart(_=None):
+    with open('Restart', 'w') as f: pass
 
 async def status_checker():
     global to_send
@@ -341,12 +348,13 @@ developer - Disables the fan pin, and prints the last 5 element of the logs
 emulate - Emulates something. Type in 'help emulate' for options
 exit - Stops the server
 help - This help message
-invert - temporrly inverts the pwm's
-mute - mutes the server output (to the console)
-rgb - set's the rgb pwm values 0-100. The values are given in the following fassion: R,G,B
+invert - Temporrly inverts the pwm's
+mute - Mutes the server output (to the console)
+restart - Restart the server, swapping between developper and normal mode
+rgb - Set's the rgb pwm values 0-100. The values are given in the following fassion: R,G,B
 status - Reports about the pin, and temperature status
 swap - Swaps the colors: R = R->B->G->R, G = G->R->B->G, B = B->G->R->B
-update - update from github (restarts the system)
+update - Update from github (restarts the system)
 vars - Prints all of the global variables
 verbose - Prints more info from runtime"""
     elif what == 'emulate':
@@ -451,6 +459,12 @@ def room_controll(state):
         else:
             controller.room(state)
 
+def sw_ignore(what):
+    if what == 'door':
+        global door_manual_ignore_flag
+        door_manual_ignore_flag = not door_manual_ignore_flag
+        print('Door ignored' if door_manual_ignore_flag else 'Door endabled', 'Main')
+
 def get_ip():
     import socket, sys
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -493,7 +507,9 @@ if __name__=="__main__":
             'skip':usb_player.skip,
             'pause':usb_player.pause,
             'volume':usb_player.set_volume,
-            'prev': usb_player.prev
+            'prev': usb_player.prev,
+            'ignore': sw_ignore,
+            'restart':restart
             }
         #Option switch board end
         #Menu
@@ -509,7 +525,8 @@ if __name__=="__main__":
             'verbose':print_handler.ch_verbose,
             'vars':print_vars,
             'rgb':rgb,
-            'invert':invert
+            'invert':invert,
+            'restart':restart
         }
         #Menu end
         try:
