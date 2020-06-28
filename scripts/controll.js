@@ -45,6 +45,7 @@ window.onload = function(){
     let menu_close = document.getElementById('menu_close');
     let ignore_door = document.getElementById('ignore_door');
     let ip = document.getElementById('ip');
+    let door_state = document.getElementById('door_state');
     let restart_dev = document.getElementById('restart_dev');
 
     /*Functions*/
@@ -94,6 +95,15 @@ window.onload = function(){
             error_msg_only.style.display = 'none';
             menu.style.display = 'none';
             modal.style.display = 'none';
+        }
+    }
+
+    door_ignore_state = function(state) {
+        if (state == 'ignored') {
+            door_state.src = 'images/door_ignored.png'
+        }
+        else {
+            door_state.src = 'images/door.png'
         }
     }
 
@@ -245,6 +255,9 @@ window.onload = function(){
                                 break;
                             case 'ip':
                                 ip.innerHTML = event.data.split('|')[1];
+                                break;
+                            case 'door':
+                                door_ignore_state(event.data.split('|')[1]);
                                 break;
                         }
                     }
