@@ -19,10 +19,12 @@ def main():
     print(f'Current version: {current}')
     arg = argv[-1] if argv[-1] != 'runner.py' else ''
     server = subprocess.Popen([interpreter, 'server.py', arg])
+    t = True
     while server.poll() is None:
         try:
             if path.exists('Ready'):
                 remove('Ready')
+                t = False
             if path.exists('Restart'):
                 remove('Restart')
                 if arg == '':
@@ -43,6 +45,7 @@ def main():
                 with open('../version', 'r') as f:
                     tmp = version_info(f.read(-1).split('\n'))
                 ret = current.check_against(tmp)
+                print(f"Required: {ret}")
                 if ret == 0:
                     continue
                 if ret == 1 or ret == 3:
@@ -57,9 +60,12 @@ def main():
                             t = False
                             break
                 if ret == 2 or ret == 3:
+                    while t:
+                        pass
                     with open('Refresh', 'w') as f:
                         pass
                 if ret == 4:
+                    print('Trying to restart')
                     run("sudo shutdown -r now")
                 read_version()
                 print(f'Current version: {current}')
