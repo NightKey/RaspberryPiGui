@@ -19,7 +19,7 @@ print = printer
 
 def stop():
     global kill
-    verbose("USB stop called", 'USB')
+    verbose("USB stop called")
     kill = True
 
 def start(directory):
@@ -57,7 +57,7 @@ def start(directory):
                 tmp = wave.open(item)
                 mixer.init(frequency=tmp.getframerate())
             del tmp
-            print(f'Now playing {now_playing}', 'USB')
+            print(f'Now playing {now_playing}', 'USB player')
             mixer.music.load(item)
             mixer.music.set_volume(volume)
             mixer.music.play()
@@ -89,8 +89,8 @@ def start(directory):
             if kill:
                 break
         except Exception as ex:
-            print('Exception occured during playback', 'USB')
-            print(f'Exception: {ex}', 'USB')
+            print('Exception occured during playback', 'USB player')
+            print(f'Exception: {ex}', 'USB player')
             fail_count += 1
 
 def pause(a=None):
@@ -110,7 +110,7 @@ def prev(a=None):
     previous = True
 
 def show_now_playing():
-    print(now_playing, 'USB')
+    print(now_playing, 'USB player')
 
 if __name__=="__main__":
     def Player():

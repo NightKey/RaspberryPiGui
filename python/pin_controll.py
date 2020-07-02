@@ -119,7 +119,7 @@ class controller():
         return round(outmin + (scaled * outspan), 2)
 
     def brightness(self, value):
-        verbose(f"Incoming for brightness {value}", 'PINS')
+        verbose(f"Incoming for brightness {value}")
         self.status['brightness'] = int(value)
         self.set_leds()
 
@@ -178,21 +178,21 @@ class controller():
 
     def room(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The room lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
+        verbose("The room lights should {}be on!".format('' if (is_on) else 'not '))
         GPIO.output(pins.lamp_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['room'] = is_on
         self.check_for_need()
 
     def bath_tub(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The bath tub lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
+        verbose("The bath tub lights should {}be on!".format('' if (is_on) else 'not '))
         GPIO.output(pins.tub_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['bath_tub'] = is_on
         self.set_leds()
 
     def cabinet(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The cabinet lights should {}be on!".format('' if (is_on) else 'not '), 'PINS')
+        verbose("The cabinet lights should {}be on!".format('' if (is_on) else 'not '))
         GPIO.output(pins.cabinet_pin, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['cabinet'] = is_on
         self.set_leds()
@@ -200,7 +200,7 @@ class controller():
     def color(self, color_v):
         color_v = color_v.replace('#', '')
         color_v = [int(color_v[:2], 16), int(color_v[2:4], 16), int(color_v[4:], 16)]
-        verbose(f"The color of the led's should be #{color_v}", 'PINS')
+        verbose(f"The color of the led's should be #{color_v}")
         self.status['color'] = color_v
         self.set_leds()
 
@@ -208,7 +208,7 @@ class controller():
         if status == None:
             self.status['fan'] = not self.status['fan']
             status = self.status
-        verbose("Fan pin was set to {}".format((GPIO.HIGH if status else GPIO.LOW)), 'PINS')
+        verbose("Fan pin was set to {}".format((GPIO.HIGH if status else GPIO.LOW)))
         GPIO.output(pins.fan_controll, (GPIO.HIGH if status else GPIO.LOW))
         self.status['fan'] = status
     

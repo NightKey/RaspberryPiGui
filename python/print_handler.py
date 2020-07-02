@@ -1,19 +1,18 @@
-import writer
+import writer, inspect
 from time import sleep
 
-main = writer.writer("RaspberryPiServer").write
-listener_print = writer.writer("Listener Status").write
-sender_print = writer.writer("Sender Status").write
-temp_print = writer.writer('Temp Checker').write
-USB = writer.writer('USB Listener').write
-PINS = writer.writer('PIN controller').write
-link = {'Listener':listener_print, 'Sender': sender_print, 'Main':main, 'Temp':temp_print, 'USB':USB, 'PINS':PINS}
+output = writer.writer()
 to_print = []
 muted = False
 is_verbose = False
-def verbose(text, sender, end='\n> '):
+def verbose(text, caller=None, end='\n> '):
     if is_verbose:
-        to_print.append([sender, text, end])
+        if caller is None:
+            try:
+                caller = f"{inspect.getouterframes(inspect.currentframe().f_back, 2)[1][3]}->{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
+            except:
+                caller = f"{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
+        to_print.append([caller, text, end])
 
 def mute():
     global muted
@@ -24,20 +23,25 @@ def ch_verbose():
     is_verbose = not is_verbose
     printer(f'Verbose set to {is_verbose}', 'Main')
 
-def printer(text, sender, end='\n> '):
+def printer(text, caller=None, end='\n> '):
     global to_print
-    to_print.append([sender, text, end])
+    if caller is None:
+        try:
+            caller = f"{inspect.getouterframes(inspect.currentframe().f_back, 2)[1][3]}->{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
+        except:
+            caller = f"{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
+    to_print.append([caller, text, end])
 
 def screen_handler():
     global to_print
     while True:
         if to_print != []:
             if to_print[0][1] == "!stop":
-                print(r'Closing Print function...', end='')
+                print(r'Closing Print function...', end='\n')
                 break
             if not muted:
                 try:
-                    link[to_print[0][0]](to_print[0][1], end=to_print[0][2])
+                    output.write(to_print[0][1], to_print[0][0], end=to_print[0][2])
                 except Exception as ex:
-                    link['Main'](ex)
+                    output.write(f'{type(ex)} --> {ex}', 'Print handler Error')
             del to_print[0]
