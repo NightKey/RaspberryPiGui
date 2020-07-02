@@ -25,6 +25,9 @@ def main():
             if path.exists('Ready'):
                 remove('Ready')
                 t = False
+            if path.exists('Reboot'):
+                remove('Reboot')
+                run("sudo shutdown -r now")
             if path.exists('Restart'):
                 remove('Restart')
                 if arg == '':
