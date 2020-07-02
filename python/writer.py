@@ -3,10 +3,7 @@ class writer():
     The caller is the name of the caller program, or whatever was given in the init phase.
     """
     import os
-    
-    def __init__(self, caller):
-        self.caller = caller
-    
-    def write(self, txt, dest=os.sys.stdout, end='\n'):
+
+    def write(self, txt, caller, dest=os.sys.stdout, end='\n'):
         from datetime import datetime
-        dest.write("\r[{} @ {}]: {}{}".format(self.caller.upper(), datetime.now(), txt, end))
+        dest.write("\r[{} @ {}]: {}{}".format(caller.upper(), datetime.now(), txt, end))
