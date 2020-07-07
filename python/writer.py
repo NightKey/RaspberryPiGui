@@ -5,5 +5,6 @@ class writer():
     import os
 
     def write(self, txt, caller, dest=os.sys.stdout, end='\n'):
+        """Prints out to the given output's 'write' function"""
         from datetime import datetime
         dest.write("\r[{} @ {}]: {}{}".format(caller.upper(), datetime.now(), txt, end))

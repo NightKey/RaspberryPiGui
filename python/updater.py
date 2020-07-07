@@ -2,7 +2,7 @@ from os import system as run
 from os import remove
 from sys import stderr
 
-def update():
+def update():   #Trys to download an update, and alerts the runner, if the update was successfull
     run('git pull > update.lg')
     with open('update.lg', 'r') as f:
         c = f.read(-1).split('\n')

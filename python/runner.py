@@ -10,25 +10,31 @@ interpreter = 'python' if system() == 'Windows' else 'python3'
 current = None
 
 def read_version():
+    """
+    Reads the version information from the 'version' file, and saves them to a variable.
+    """
     global current
     with open('../version', 'r') as f:
         current = version_info(f.read(-1).split('\n'))
 
 def main():
+    """
+    Main loop that handdles starting the server, and deciding what to do after an update.
+    """
     read_version()
     print(f'Current version: {current}')
     arg = argv[-1] if argv[-1] != 'runner.py' else ''
-    server = subprocess.Popen([interpreter, 'server.py', arg])
+    server = subprocess.Popen([interpreter, 'server.py', arg])  #Creates a child process with the 'server.py' script
     t = True
-    while server.poll() is None:
+    while server.poll() is None:    #Works while the child process runs
         try:
-            if path.exists('Ready'):
+            if path.exists('Ready'):    #When the server is ready
                 remove('Ready')
                 t = False
-            if path.exists('Reboot'):
+            if path.exists('Reboot'):   #When the server requires a hardwear reboot
                 remove('Reboot')
                 run("sudo shutdown -r now")
-            if path.exists('Restart'):
+            if path.exists('Restart'):  #When the server requires a restart changing it's runmode between developper and normal mode
                 remove('Restart')
                 if arg == '':
                     arg = '-d'
@@ -39,19 +45,19 @@ def main():
                     pass
                 print(f"Restarting in {'developper' if arg == '-d' else 'background'} mode...")
                 server = subprocess.Popen([interpreter, 'server.py', arg])
-            if path.exists('KILL'):
+            if path.exists('KILL'): #When the server requires to be killed by the runner
                 remove('KILL')
                 server.kill()
-            if path.exists('Update_required'):
+            if path.exists('Update_required'):  #When an update is downloaded
                 remove('Update_required')
-                print('Updated!')
-                with open('../version', 'r') as f:
+                print('Update downloaded!')
+                with open('../version', 'r') as f:  #Reads the updated version into a variable
                     tmp = version_info(f.read(-1).split('\n'))
-                ret = current.check_against(tmp)
+                ret = current.check_against(tmp)    #Gets the required action
                 print(f"Required: {ret}")
                 if ret == 0:
                     continue
-                if ret == 1 or ret == 3:
+                if ret == 1 or ret == 3:    #Restarts the server after update
                     server.kill()
                     while server.poll() is None:
                         pass
@@ -62,12 +68,12 @@ def main():
                             remove('Ready')
                             t = False
                             break
-                if ret == 2 or ret == 3:
+                if ret == 2 or ret == 3:    #Restarts the browser after update
                     while t:
                         pass
                     with open('Refresh', 'w') as f:
                         pass
-                if ret == 4:
+                if ret == 4:    #Restarts the hardwear after update
                     print('Trying to restart')
                     run("sudo shutdown -r now")
                 read_version()
@@ -78,6 +84,7 @@ def main():
             sleep(0.2)
 
 if __name__ == '__main__':
+    #Starts the server, while required
     while True:
         main()
         print('Server killed!')

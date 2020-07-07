@@ -4,6 +4,7 @@ Version file:
     server_until x.y.z 
     browser_until x.y.z
     total x.y.z
+Creates a version file, after an update created.
 """
 
 current = input('Type in the new version (x.y.z): ')

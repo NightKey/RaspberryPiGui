@@ -6,6 +6,9 @@ to_print = []
 muted = False
 is_verbose = False
 def verbose(text, caller=None, end='\n> '):
+    """
+    Only prints when verbose is set to true    
+    """
     if is_verbose:
         if caller is None:
             try:
@@ -15,15 +18,21 @@ def verbose(text, caller=None, end='\n> '):
         to_print.append([caller, text, end])
 
 def mute():
+    """
+    Mutes all output
+    """
     global muted
     muted = not muted
 
-def ch_verbose():
+def ch_verbose():   #Changes the verbose state
     global is_verbose
     is_verbose = not is_verbose
     printer(f'Verbose set to {is_verbose}', 'Main')
 
-def printer(text, caller=None, end='\n> '):
+def printer(text, caller=None, end='\n> '): 
+    """
+    Adds the given text and caller to the 'to_print' variable
+    """
     global to_print
     if caller is None:
         try:
@@ -33,6 +42,10 @@ def printer(text, caller=None, end='\n> '):
     to_print.append([caller, text, end])
 
 def screen_handler():
+    """
+    Prints to stdout with a well formated style:
+    [CALLER_PARENT/CALLER @ TIME]: text - Output created by writer program
+    """
     global to_print
     while True:
         if to_print != []:
