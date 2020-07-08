@@ -15,10 +15,10 @@ class version_no():
         self.sub = int(no[2])
     def __gt__(self, other):
         if isinstance(other, version_no):
-            return (self.major > other.major) or (self.major == other.major and self.minor > other.minor) or (self.major == other.major and self.minor == other.minor and self.sub > other.sub)
+            return ((self.major > other.major) or (self.major == other.major and self.minor > other.minor) or (self.major == other.major and self.minor == other.minor and self.sub > other.sub))
     def __lt__(self, other):
         if isinstance(other, version_no):
-            return (self.major < other.major) or (self.major == other.major and self.minor < other.minor) or (self.major == other.major and self.minor == other.minor and self.sub < other.sub)
+            return ((self.major < other.major) or (self.major == other.major and self.minor < other.minor) or (self.major == other.major and self.minor == other.minor and self.sub < other.sub))
     def __eq__(self, other):
         if isinstance(other, version_no):
             return (not self.__lt__(other) and not self.__gt__(other))
@@ -75,16 +75,16 @@ class version_info():
         """
         if isinstance(inp, version_info):
             tmp = None
-            if self.current_version < inp.server_restart:
+            if self.current_version <= inp.server_restart:
                 tmp = 1
-            if self.current_version < inp.browser_restart:
+            if self.current_version <= inp.browser_restart:
                 if tmp == None:
                     tmp = 2
                 else:
                     tmp = 3
             if self.current_version == inp.current_version:
                 tmp = 0
-            if self.current_version < inp.total_restart:
+            if self.current_version <= inp.total_restart:
                 tmp = 4
             return Required_action(tmp)
     def __str__(self):
