@@ -7,21 +7,20 @@ from sys import argv
 from time import sleep
 
 interpreter = 'python' if system() == 'Windows' else 'python3'
-current = None
+version_file = '../version'
 
 def read_version():
     """
-    Reads the version information from the 'version' file, and saves them to a variable.
+    Reads the version information from the 'version' file, and returns a version info.
     """
-    global current
-    with open('../version', 'r') as f:
-        current = version_info(f.read(-1).split('\n'))
+    with open(version_file, 'r') as f:
+        return version_info(f.read(-1).split('\n'))
 
 def main():
     """
     Main loop that handdles starting the server, and deciding what to do after an update.
     """
-    read_version()
+    current = read_version()
     print(f'Current version: {current}')
     arg = argv[-1] if argv[-1] != 'runner.py' else ''
     server = subprocess.Popen([interpreter, 'server.py', arg])  #Creates a child process with the 'server.py' script
@@ -51,7 +50,7 @@ def main():
             if path.exists('Update_required'):  #When an update is downloaded
                 remove('Update_required')
                 print('Update downloaded!')
-                with open('../version', 'r') as f:  #Reads the updated version into a variable
+                with open(version_file, 'r') as f:  #Reads the updated version into a variable
                     tmp = version_info(f.read(-1).split('\n'))
                 ret = current.check_against(tmp)    #Gets the required action
                 print(f"Required: {ret}")
@@ -76,7 +75,7 @@ def main():
                 if ret == 4:    #Restarts the hardwear after update
                     print('Trying to restart')
                     run("sudo shutdown -r now")
-                read_version()
+                current = read_version()
                 print(f'Current version: {current}')
         except:
             pass
