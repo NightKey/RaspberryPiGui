@@ -538,7 +538,8 @@ if __name__=="__main__":
             'volume':usb_player.set_volume,
             'prev': usb_player.prev,
             'ignore': sw_ignore,
-            'restart':restart
+            'restart':restart,
+            'reboot':reboot
             }
         #Option switch board end
         #Menu
