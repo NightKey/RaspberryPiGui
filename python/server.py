@@ -19,7 +19,7 @@ if os.name == "nt":
     File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
 log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
 #flags
-last_updated = None
+last_updated = datetime.now()
 muted = False
 manual_room = True
 USB_name=None
@@ -257,7 +257,8 @@ def door_callback(arg):
         global timer_thread
         timer_thread = threading.Thread(target=timer, args=[60, tmp_room_check])
         timer_thread.start()
-        if last_updated == None or (last_updated - datetime.now()) > timedelta(hours=1):
+        if last_updated == None or (datetime.now() - last_updated) > timedelta(hours=1):
+            verbose('Weather updated')
             last_updated = datetime.now()
             to_send.append('update')
 
@@ -402,8 +403,10 @@ def print_vars():
     tmp = globals()
     for key, value in tmp.items():
         if '__' not in key and key != 'tmp' and key not in ['menu', 'options', 'ws', 'seep', 'item']:
-            if isinstance(value, (str, int, bool, list, dict)) or value == None:
+            if isinstance(value, (str, int, bool, list, dict)) or value is None:
                 print(f'{key} = {value}')
+        if key == 'last_updated':
+            print(f'{key} = {value}')
     del tmp
 
 def invert():
