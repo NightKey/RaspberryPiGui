@@ -47,6 +47,7 @@ window.onload = function(){
     let ip = document.getElementById('ip');
     let door_state = document.getElementById('door_state');
     let restart_dev = document.getElementById('restart_dev');
+    let restart = document.getElementById('restart');
 
     /*Functions*/
     show_error = function(msg) {
@@ -410,6 +411,10 @@ window.onload = function(){
 
     restart_dev.addEventListener('click', function(){
         connection.send('restart,developper');
+    });
+
+    restart.addEventListener('click', function() {
+        connection.send('reboot,user');
     });
 
     console.log('Finished with setup, starting Web Socket...');

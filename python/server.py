@@ -261,8 +261,11 @@ def door_callback(arg):
             last_updated = datetime.now()
             to_send.append('update')
 
-def restart(_=None):
+def restart(mode=None):
     with open('Restart', 'w') as _: pass
+
+def reboot(_=None):
+    with open('Reboot', 'w') as _: pass
 
 async def status_checker():
     global to_send
@@ -360,7 +363,7 @@ restart - Restart the server, swapping between developper and normal mode
 rgb - Set's the rgb pwm values 0-100. The values are given in the following fassion: R,G,B
 status - Reports about the pin, and temperature status
 swap - Swaps the colors: R = R->B->G->R, G = G->R->B->G, B = B->G->R->B
-update - Update from github (restarts the system)
+update - Update from github
 vars - Prints all of the global variables
 verbose - Prints more info from runtime"""
     elif what == 'emulate':
@@ -495,7 +498,7 @@ def killer():
         death_timer.name = 'Restarter'
         death_timer.start()
     else:
-        with open('Reboot', 'w') as _: pass
+        reboot()
 
 if __name__=="__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
