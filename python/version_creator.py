@@ -7,14 +7,15 @@ Version file:
 Creates a version file, after an update created.
 """
 
-current = input('Type in the new version (x.y.z): ')
 try:
     with open('version', 'r') as f:
         data = f.read(-1).split('\n')
         print('Inported')
 except Exception as ex:
     print(f'{type(ex)} --> {ex}')
-    data = [f'current {current}', 'server_untill 0.0.0', 'browser_untill 0.0.0', 'total 0.0.0']
+    data = [f'current 0.0.0', 'server_untill 0.0.0', 'browser_untill 0.0.0', 'total 0.0.0']
+print(f"Last version: {data[0].split(' ')[1]}")
+current = input('Type in the new version (x.y.z): ')
 tmp = data[0].split(' ')[-1]
 data[0] = f'current {current}'
 ansv = str(input('Did anything change with the server since the last update? (Y/[N]) ') or 'N')
