@@ -153,6 +153,8 @@ def save():
 def tmp_room_check():
     global tmp_room
     global to_send
+    global manual_room
+    global door_ignore_flag
     if tmp_room:
         verbose('Lights off')
         controller.room('false')
@@ -160,6 +162,9 @@ def tmp_room_check():
         to_send.append('close')
         sleep(1)
         tmp_room = False
+        verbose("tmp_room set to false count down finished")
+        manual_room = False
+        door_ignore_flag = False
 
 def rgb(values):
     verbose(f"RGB was called with '{values}' values.")
@@ -220,8 +225,8 @@ async def handler(websocket, path):
                 data = await websocket.recv()
                 log.log(f'Data retreaved: {data}')
                 if data == 'keep lit':
-                    global tmp_room
                     tmp_room = False
+                    verbose("tmp_room set to false, got message 'keep lit'")
                     continue
                 data = data.split(',')
                 options[data[0]](data[1])
@@ -469,6 +474,7 @@ def room_controll(state):
             global to_send
             if tmp_room:
                 tmp_room = False
+                verbose("tmp_room set to false, lights switched off, with no other lights avaleable")
                 controller.room(state)
                 return
             to_send.append("room_extend")
