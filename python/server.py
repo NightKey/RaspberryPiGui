@@ -503,7 +503,7 @@ def get_ip():
 
 def killer():
     if controller.get_status('room') or controller.get_status('cabinet') or controller.get_status('bath_tub'):
-        death_timer = threading.Thread(target=timer, args=[3600, killer])
+        death_timer = threading.Thread(target=timer, args=[1800, killer])
         death_timer.name = 'Restarter'
         death_timer.start()
     else:
@@ -517,7 +517,7 @@ if __name__=="__main__":
         print('Server started!')
         update()
         print('Creating a death timer...')
-        death_timer = threading.Thread(target=timer, args=[432000, killer])
+        death_timer = threading.Thread(target=timer, args=[86400, killer])
         death_timer.name = 'Restarter'
         death_timer.start()
         print(f"Checking the '{File_Folder}' path")
