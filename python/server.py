@@ -521,8 +521,12 @@ if __name__=="__main__":
     try:
         print('Server started!')
         update()
-        print('Creating a death timer...')
-        death_timer = threading.Thread(target=timer, args=[86400, killer])
+        tmp = datetime.now()
+        tmp += timedelta(days=1)
+        tmp = tmp.replace(hour=1, minute=0, second=0)
+        tmp = (tmp - datetime.now()).total_seconds()
+        print(f"Creating death timer for {tmp} seconds")
+        death_timer = threading.Thread(target=timer, args=[tmp, killer])
         death_timer.name = 'Restarter'
         death_timer.start()
         print(f"Checking the '{File_Folder}' path")
