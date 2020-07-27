@@ -134,9 +134,9 @@ def update(_=None):
     updater.update()
 
 def timer(time, to_call, _with=None):
-    verbose('Timer started')
+    print('Timer started')
     sleep(time)
-    verbose('Timer finished')
+    print(f'Timer finished, calling {to_call.__name__} with the following value {_with}')
     if _with == None:
         to_call()
     else:
@@ -250,8 +250,8 @@ async def message_sender(message):
 
 def door_callback(arg):
     global tmp_room
+    global door_ignore_flag
     global last_updated
-    log.log(f'Door signal detected, flag: {door_ignore_flag}')
     print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}")
     if not door_ignore_flag and not door_manual_ignore_flag:
         if controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
@@ -259,11 +259,13 @@ def door_callback(arg):
         to_send.append('door')
         options['room']('true')
         tmp_room = True
-        global timer_thread
-        timer_thread = threading.Thread(target=timer, args=[60, tmp_room_check])
-        timer_thread.start()
+        global door_timer_thread
+        door_timer_thread = threading.Thread(target=timer, args=[60, tmp_room_check])
+        door_timer_thread.start()
+        print("Timer started")
+        door_ignore_flag = True
         if last_updated == None or (datetime.now() - last_updated) > timedelta(hours=1):
-            verbose('Weather updated')
+            print('Weather updated')
             last_updated = datetime.now()
             to_send.append('update')
 
@@ -410,6 +412,8 @@ def print_vars():
         if '__' not in key and key != 'tmp' and key not in ['menu', 'options', 'ws', 'seep', 'item']:
             if isinstance(value, (str, int, bool, list, dict)) or value is None:
                 print(f'{key} = {value}')
+            elif isinstance(value, threading.Thread):
+                print(f'{key}: {value.is_alive()}')
         if key == 'last_updated':
             print(f'{key} = {value}')
     del tmp
@@ -450,7 +454,6 @@ def emulate(what):
 def room_controll(state):
     verbose(f'Room controll called with {state}')
     verbose(f'Room current status: {controller.get_status("room")}')
-    global timer_thread
     global door_ignore_flag
     global manual_room
     global tmp_room
@@ -478,8 +481,10 @@ def room_controll(state):
                 controller.room(state)
                 return
             to_send.append("room_extend")
-            timer_thread = threading.Thread(target=timer, args=[30, controller.room, state])
-            timer_thread.start()
+            global off_timer_thread
+            off_timer_thread = threading.Thread(target=timer, args=[30, controller.room, state])
+            off_timer_thread.start()
+            print('Off timer started')
         else:
             controller.room(state)
 
