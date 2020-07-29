@@ -17,7 +17,7 @@ to_print = []
 File_Folder = "/var/RPS"
 if os.name == "nt":
     File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
-log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"))
+log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"), True)
 #flags
 last_updated = datetime.now()
 muted = False
@@ -342,6 +342,7 @@ def _exit():
     listener_loop.stop()
     sender_loop.stop()
     print('!stop')
+    log.close()
     with open('KILL', 'w') as _: pass
 
 def developer_mode():
@@ -350,13 +351,9 @@ def developer_mode():
         to_send.append('fan')
         print('Fan stopped!')
     print('--------LOG--------')
-    with open(os.path.join(File_Folder, "RaspberryPiServerLog.lg"), 'r') as f:
-        tmp = f.read(-1)
-    tmp = tmp.split('\n')
-    for line in tmp[-7:-1]:
+    for line in log.get_buffer():
         print(line)
     print('------LOG END------')
-    del tmp
 
 def help(what=None):
     if what == None:
@@ -605,7 +602,6 @@ if __name__=="__main__":
                     except KeyError as ke:
                         print("It's not a valid command!")
                 log.log('Stopping...')
-                sys.exit(0)
             elif "-v" in os.sys.argv:
                 sender.join()
             else:
