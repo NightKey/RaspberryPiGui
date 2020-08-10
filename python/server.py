@@ -158,13 +158,13 @@ def tmp_room_check():
     if tmp_room:
         verbose('Lights off')
         controller.room('false')
+        door_ignore_flag = True
         to_send.append('room')
         to_send.append('close')
         sleep(1)
         tmp_room = False
         verbose("tmp_room set to false count down finished")
         manual_room = False
-        door_ignore_flag = False
 
 def rgb(values):
     verbose(f"RGB was called with '{values}' values.")
@@ -269,7 +269,7 @@ def door_callback(arg):
             last_updated = datetime.now()
             to_send.append('update')
 
-def restart(mode=None):
+def restart(_=None):
     with open('Restart', 'w') as _: pass
 
 def reboot(_=None):
@@ -290,6 +290,8 @@ async def status_checker():
                     ignore_time = 0
                 else:
                     ignore_time += 1
+            elif ignore_time != 0:
+                ignore_time = 0
             if killswitch:
                 exit()
             if counter % 10 == 0 and not temp_failed:
