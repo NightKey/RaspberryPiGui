@@ -12,7 +12,7 @@ class logger:
         self.file = "{}.lg".format(name)
         self.ram_mode = ram_mode
         if self.ram_mode:
-            self.buffer = ""
+            self.buffer = []
         with open(self.file, "a") as f:
             f.write("OPENED AT {}\n".format(datetime.datetime.now()))     
     def log(self, string, error=False):
@@ -24,19 +24,24 @@ class logger:
         """
         if self.ram_mode:
             if error:
-                self.buffer += "---ERROR OCCURED!---\n"
-            self.buffer = f"{datetime.datetime.now().time()} - {string}\n"
+                self.buffer.append("---ERROR OCCURED!---\n")
+            self.buffer.append(f"{datetime.datetime.now().time()} - {string}\n")
         else:
             with open(self.file, 'a') as f:
                 if error:
                     f.write("---ERROR OCCURED!---\n")
                 f.write("{} - {}\n".format(datetime.datetime.now().time(), string))
+        if len(self.buffer) > 500:
+            with open(self.file, 'a') as f:
+                for line in self.buffer:
+                    f.write(line)
+            self.buffer = []
     def get_buffer(self):
         """
         Returns the buffer, if exists, in an array or returns None
         """
         if self.ram_mode:
-            return self.buffer.split('\n')
+            return self.buffer
         else:
             return None
     def close(self):
