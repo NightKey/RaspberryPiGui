@@ -15,6 +15,7 @@ volume = 1.0
 playing = False
 kill = False
 now_playing = "none"
+sounds = []
 
 print = printer
 
@@ -23,6 +24,14 @@ def stop():
     global kill
     verbose("USB stop called")
     kill = True
+
+def play_sound(name):
+    if name in sounds:
+        tmp = wave.open(sounds[name])
+        mixer.init(frequency=tmp.getframerate())
+        mixer.music.load(sounds[name])
+        mixer.music.set_volume(volume)
+        mixer.music.play()
 
 def start(directory):
     """
