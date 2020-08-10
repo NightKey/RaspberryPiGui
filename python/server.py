@@ -31,14 +31,15 @@ dev_mode = False
 door_ignore_flag = False
 door_manual_ignore_flag = False
 
-def print_combiner(text, end='\n> '):
+def print_combiner(text, end='\n> ', no_log=False):
     try:
         caller = f"{inspect.getouterframes(inspect.currentframe().f_back, 2)[1][3]}->{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
     except:
         caller = f"{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
     caller = caller.replace('<module>', 'Main')
     printer(text, caller, end)
-    log.log(f'{caller} -> {text}')
+    if not no_log:
+        log.log(f'{caller} -> {text}')
 
 print = print_combiner
 
@@ -352,10 +353,10 @@ def developer_mode():
         controller.fan(False)
         to_send.append('fan')
         print('Fan stopped!')
-    print('--------LOG--------')
+    print('--------LOG START--------', no_log=True)
     for line in log.get_buffer():
-        print(line)
-    print('------LOG END------')
+        print(line.replace("\n", ''), no_log=True)
+    print('------LOG END------', no_log=True)
 
 def help(what=None):
     if what == None:
