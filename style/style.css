@@ -119,6 +119,7 @@ input[type=color] {
 
 input[type=button] {
     border-radius: 30px;
+    padding: 5px;
 }
 
 input[type=range] {
