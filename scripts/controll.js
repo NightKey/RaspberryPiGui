@@ -22,7 +22,6 @@ window.onload = function(){
     let message_msg_ = document.getElementById('message_msg');
     let dismiss = document.getElementById('Dismiss');
     let ok = document.getElementById('Ok');
-    let cancle = document.getElementById('Cancle');
     let picker = document.getElementById('color');
     let cabinet = document.getElementById("cabinet");
     let bath_tub = document.getElementById("bath_tub");
@@ -42,7 +41,6 @@ window.onload = function(){
     let now_playing = document.getElementById('now_playing');
     let menu_btn = document.getElementById('menu_btn');
     let menu = document.getElementById('menu');
-    let menu_close = document.getElementById('menu_close');
     let ignore_door = document.getElementById('ignore_door');
     let ip = document.getElementById('ip');
     let door_state = document.getElementById('door_state');
@@ -324,10 +322,6 @@ window.onload = function(){
         connection.send('keep lit');
     }, false);
 
-    cancle.addEventListener('click', function() {
-        close_message();
-    }, false);
-
     picker.addEventListener('change', function(){
         picker.style.backgroundColor = picker.value;
         console.log('Selected color: '+picker.value);
@@ -401,10 +395,6 @@ window.onload = function(){
         modal.style.display = 'block';
     });
 
-    menu_close.addEventListener('click', function(){
-        close_message();
-    });
-
     ignore_door.addEventListener('click', function(){
         connection.send('ignore,door');
     });
@@ -415,6 +405,12 @@ window.onload = function(){
 
     restart.addEventListener('click', function() {
         connection.send('reboot,user');
+    });
+
+    modal.addEventListener("click", (e) =>{
+        if (e.target.classList.contains("modal")) {
+            close_message();
+        } 
     });
 
     console.log('Finished with setup, starting Web Socket...');
