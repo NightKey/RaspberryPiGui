@@ -105,6 +105,9 @@ body {
     animation-name: animatetop;
     animation-duration: 0.4s
 }
+.modal-content input{
+    margin: 5px;
+}
 
 @keyframes animatetop {
     from {top: -300px; opacity: 0}
@@ -120,7 +123,6 @@ input[type=color] {
 input[type=button] {
     border-radius: 30px;
     padding: 5px;
-    margin: 5px;
 }
 
 input[type=range] {
