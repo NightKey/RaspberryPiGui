@@ -90,7 +90,7 @@ body {
     z-index: 10;
 }
 #clock-owerlay #inner{
-    top: 50vh;
+    top: 40vh;
     position: relative;
     display:flex;
     align-items: center;
@@ -98,7 +98,6 @@ body {
 }
 #clock-owerlay #inner div{
     position: relative;
-    margin: 0 5px;
     -webkit-box-reflect: below 1px linear-gradient(transparent, #000);
 }
 #hours, #minutes, #seconds {
