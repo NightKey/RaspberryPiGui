@@ -32,10 +32,12 @@ class logger:
                     f.write("---ERROR OCCURED!---\n")
                 f.write("{} - {}\n".format(datetime.datetime.now().time(), string))
         if len(self.buffer) > 500:
-            with open(self.file, 'a') as f:
-                for line in self.buffer:
-                    f.write(line)
-            self.buffer = []
+            self.dump_buffer()
+    def dump_buffer(self):
+        with open(self.file, 'a') as f:
+            for line in self.buffer:
+                f.write(line)
+        self.buffer = []
     def get_buffer(self):
         """
         Returns the buffer, if exists, in an array or returns None
@@ -50,7 +52,7 @@ class logger:
         """
         with open(self.file, "a") as f:
             if self.ram_mode:
-                f.write(self.buffer)
+                self.dump_buffer()
             f.write("CLOSED AT {}\n".format(datetime.datetime.now()))
 
 if __name__ == "__main__":

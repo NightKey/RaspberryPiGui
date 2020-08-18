@@ -19,7 +19,8 @@ if os.name == "nt":
     File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
 log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"), True)
 #flags
-last_updated = datetime.now()
+last_activity = last_updated = datetime.now()
+clock_showing = True
 muted = False
 manual_room = True
 USB_name=None
@@ -180,6 +181,8 @@ def rgb(values):
 
 async def handler(websocket, path):
     global is_connected
+    global last_activity
+    global clock_showing
     external_ip = get_ip()
     while True:
         try:
@@ -224,10 +227,14 @@ async def handler(websocket, path):
             del color
             while True:
                 data = await websocket.recv()
+                last_activity = datetime.now()
                 log.log(f'Data retreaved: {data}')
                 if data == 'keep lit':
                     tmp_room = False
                     verbose("tmp_room set to false, got message 'keep lit'")
+                    continue
+                if data == "clock_off":
+                    clock_showing = False
                     continue
                 data = data.split(',')
                 options[data[0]](data[1])
@@ -253,10 +260,13 @@ def door_callback(arg):
     global tmp_room
     global door_ignore_flag
     global last_updated
+    global last_activity
     print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}")
     if not door_ignore_flag and not door_manual_ignore_flag:
         if controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
             return
+        last_activity = datetime.now()
+        wake()
         to_send.append('door')
         options['room']('true')
         tmp_room = True
@@ -276,9 +286,17 @@ def restart(_=None):
 def reboot(_=None):
     with open('Reboot', 'w') as _: pass
 
+def wake():
+    global clock_showing
+    if clock_showing:
+        clock_showing = False
+        to_send.append("clock|none")
+
 async def status_checker():
     global to_send
     global door_ignore_flag
+    global last_activity
+    global clock_showing
     now_playing = ""
     counter = 0
     temp_failed = False
@@ -315,6 +333,9 @@ async def status_checker():
             if path.exists('Refresh'):
                 remove('Refresh')
                 to_send.append('Refresh')
+            if (datetime.now() - last_activity) >= timedelta(minutes=5) and not clock_showing:
+                to_send.append("clock|block")
+                clock_showing = True
             sleep(0.2)
         except Exception as ex:
             log.log(f'Status checker Exception: {ex}', True)
@@ -339,9 +360,11 @@ def _exit():
     global killswitch
     log.log("Stopped by user")
     killswitch = True
-    if usb_player.now_playing != "none":
-        verbose("USB stop calling")
-        usb_player.stop()
+    try:
+        if usb_player.now_playing != "none":
+            verbose("USB stop calling")
+            usb_player.stop()
+    except: pass
     listener_loop.stop()
     sender_loop.stop()
     print('!stop')
@@ -410,12 +433,10 @@ def print_vars():
     tmp = globals()
     for key, value in tmp.items():
         if '__' not in key and key != 'tmp' and key not in ['menu', 'options', 'ws', 'seep', 'item']:
-            if isinstance(value, (str, int, bool, list, dict)) or value is None:
+            if isinstance(value, (str, int, bool, list, dict, datetime)) or value is None:
                 print(f'{key} = {value}')
             elif isinstance(value, threading.Thread):
                 print(f'{key}: {value.is_alive()}')
-        if key == 'last_updated':
-            print(f'{key} = {value}')
     del tmp
 
 def invert():

@@ -79,6 +79,54 @@ body {
     font-style: italic;
 }
 
+#clock-owerlay {
+    background-color: #000;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left:0;
+    top:0;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+#clock-owerlay #inner{
+    top: 50vh;
+    position: relative;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+#clock-owerlay #inner div{
+    position: relative;
+    margin: 0 5px;
+    -webkit-box-reflect: below 1px linear-gradient(transparent, #000);
+}
+#hours, #minutes, #seconds {
+    position: relative;
+    display: block;
+    width: 100px;
+    height: 80px;
+    color: #FFF;
+    font-weight: 300;
+    justify-content: center;
+    font-size: 3em;
+    z-index: 11;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+#clock-message {
+    position: relative;
+    display: block;
+    width: 100px;
+    height: 80px;
+    color: #F00;
+    font-weight: 300;
+    justify-content: center;
+    font-size: 1em;
+    z-index: 11;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */

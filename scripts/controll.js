@@ -46,6 +46,8 @@ window.onload = function(){
     let door_state = document.getElementById('door_state');
     let restart_dev = document.getElementById('restart_dev');
     let restart = document.getElementById('restart');
+    let clock = document.getElementById("clock-owerlay");
+    let clock_message = document.getElementById("clock-message");
 
     /*Functions*/
     show_error = function(msg) {
@@ -53,6 +55,10 @@ window.onload = function(){
         error_msg.innerHTML = msg;
         error.style.display = 'block';
         modal.style.display = 'block';
+    }
+
+    clock_switch = function(state){
+        clock.style.display = state;
     }
 
     show_error_only = function(msg) {
@@ -160,12 +166,14 @@ window.onload = function(){
 
         connection.onopen = function() {
             console.log("Connection established");
+            clock_message.innerHTML = "";
             init = true;
             tryno = 0;
         }
 
         connection.onclose = function() {
             console.log("Connection closed!");
+            clock_message.innerHTML = "Connection to server failed";
             tryno++;
             if (tryno > 15) {
                 show_error('Megszakadt a kapcsolat a szerverrel!');
@@ -257,6 +265,9 @@ window.onload = function(){
                                 break;
                             case 'door':
                                 door_ignore_state(event.data.split('|')[1]);
+                                break;
+                            case 'clock':
+                                clock_switch(event.data.split('|')[1]);
                                 break;
                         }
                     }
@@ -411,6 +422,14 @@ window.onload = function(){
         if (e.target.classList.contains("modal")) {
             close_message();
         } 
+    });
+
+    clock.addEventListener("click", () => {
+        if (clock_message.innerHTML == "") {
+            clock_switch("none");
+            console.log("Sending clock off signal...")
+            connection.send("clock_off");
+        }
     });
 
     console.log('Finished with setup, starting Web Socket...');

@@ -46,6 +46,8 @@ def main():
                 server = subprocess.Popen([interpreter, 'server.py', arg])
             if path.exists('KILL'): #When the server requires to be killed by the runner
                 remove('KILL')
+                print("Killing the server...")
+                server.terminate()
                 server.kill()
             if path.exists('Update_required'):  #When an update is downloaded
                 remove('Update_required')

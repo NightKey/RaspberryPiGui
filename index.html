@@ -10,7 +10,29 @@
         <script type="text/javascript" src="scripts/controll.js"></script>
     </head>
     <body>
-
+        <div id="clock-owerlay">
+            <div id="inner">
+                <div><span id="hours">00</span></div>
+                <div><span id="minutes">00</span></div>
+                <div><span id="seconds">00</span></div>
+                <div><span id="clock-message"></span></div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            function clock(){
+                var dh = document.getElementById("hours");
+                var dm = document.getElementById("minutes");
+                var ds = document.getElementById("seconds");
+                var h = new Date().getHours();
+                var m = new Date().getMinutes();
+                var s = new Date().getSeconds();
+                dh.innerHTML = h;
+                dm.innerHTML = m;
+                ds.innerHTML = s;
+            }
+    
+            var interval = setInterval(clock, 1000);
+        </script>
         <div id="weather">
             <a class="weatherwidget-io" href="https://forecast7.com/hu/46d4318d78/tolna/" data-label_1="TOLNA" data-label_2="Időjárás" data-font="Roboto Slab" data-icons="Climacons Animated" data-days="5" data-theme="weather_one">TOLNA Időjárás</a>
         </div>
