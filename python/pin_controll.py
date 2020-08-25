@@ -168,10 +168,6 @@ class controller():
             self.green.ChangeDutyCycle(dc)
             self.blue.ChangeDutyCycle(dc)
             self.check_for_need()
-        #Remove, when problem solved
-        self.red.ChangeDutyCycle(100)
-        self.green.ChangeDutyCycle(0)
-        self.blue.ChangeDutyCycle(0)
 
     def set_pwm(self, pin, value):
         pin.ChangeDutyCycle(value)
@@ -199,6 +195,7 @@ class controller():
 
     def color(self, color_v):
         color_v = color_v.replace('#', '')
+        color_v = "FFFFFF"  #Remove when coloring sorted
         color_v = [int(color_v[:2], 16), int(color_v[2:4], 16), int(color_v[4:], 16)]
         verbose(f"The color of the led's should be #{color_v}")
         self.status['color'] = color_v
