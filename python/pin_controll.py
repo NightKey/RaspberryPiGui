@@ -12,6 +12,7 @@ pins = pins()
 class controller():
 
     def __init__(self, door_callback, _initial=None, _inverted=False, _12V=False):
+        """Some text"""
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
@@ -124,9 +125,15 @@ class controller():
         self.set_leds()
 
     def set_leds(self):
+        _min = 100 if self.inverted else 0
+        _max = 0 if self.inverted else 100
         if self.status['bath_tub'] or self.status['cabinet']:
+            self.red.ChangeDutyCycle(self.translate(self.status["brightness"], -1, 13, _min, _max))
+            self.green.ChangeDutyCycle(self.translate(self.status["brightness"], -1, 13, _min, _max))
+            self.blue.ChangeDutyCycle(self.translate(self.status["brightness"], -1, 13, _min, _max))
+            return
             try:
-                self.status['red'] = self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, 0, 100)
+                self.status['red'] = self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, _min, _max)
                 if self.status['red'] > 1:
                     self.status['red'] = 1.0/self.status['red']
             except:
@@ -137,7 +144,7 @@ class controller():
             finally:
                 self.red.ChangeDutyCycle(self.status['red'])
             try:
-                self.status['green'] = self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, 0, 100)
+                self.status['green'] = self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, _min, _max)
                 if self.status['green'] > 1:
                     self.status['green'] = 1.0/self.status['green']
             except:
@@ -148,7 +155,7 @@ class controller():
             finally:
                 self.green.ChangeDutyCycle(self.status['green'] * 100)
             try:
-                self.status['blue'] = self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, 0, 100)
+                self.status['blue'] = self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, _min, _max)
                 if self.status['blue'] > 1:
                     self.status['blue'] = 1.0/self.status['blue']
             except:
@@ -159,9 +166,6 @@ class controller():
             finally:
                 self.blue.ChangeDutyCycle(self.status['blue'] * 100)
             self.check_for_need()
-            self.red.ChangeDutyCycle(0)
-            self.green.ChangeDutyCycle(self.translate(self.status["brightness"], 0, 12, 0, 100))
-            self.blue.ChangeDutyCycle(0)
         else:
             if self.inverted:
                 dc = 100

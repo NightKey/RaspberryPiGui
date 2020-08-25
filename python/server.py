@@ -556,7 +556,7 @@ if __name__=="__main__":
             os.mkdir(File_Folder)
         #Global functions
         print('Setting up the global functions...')
-        controller = pin_controll.controller(door_callback, load())
+        controller = pin_controll.controller(door_callback, load(), True)
         if load() != None:
             if len(load()) != len(controller.status):
                 print("Key error detected, reseting setup...")
