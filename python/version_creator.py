@@ -12,8 +12,13 @@ try:
         data = f.read(-1).split('\n')
         print('Inported')
 except Exception as ex:
-    print(f'{type(ex)} --> {ex}')
-    data = [f'current 0.0.0', 'server_untill 0.0.0', 'browser_untill 0.0.0', 'total 0.0.0']
+    try: 
+        with open('../version', 'r') as f:
+            data = f.read(-1).split('\n')
+            print('Inported')
+    except:
+        print(f'{type(ex)} --> {ex}')
+        data = [f'current 0.0.0', 'server_untill 0.0.0', 'browser_untill 0.0.0', 'total 0.0.0']
 print(f"Last version: {data[0].split(' ')[1]}")
 current = input('Type in the new version (x.y.z): ')
 tmp = data[0].split(' ')[-1]

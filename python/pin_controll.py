@@ -126,7 +126,7 @@ class controller():
     def set_leds(self):
         if self.status['bath_tub'] or self.status['cabinet']:
             try:
-                self.status['red'] = self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, 100, 0)
+                self.status['red'] = self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, 0, 100)
                 if self.status['red'] > 1:
                     self.status['red'] = 1.0/self.status['red']
             except:
@@ -137,7 +137,7 @@ class controller():
             finally:
                 self.red.ChangeDutyCycle(self.status['red'])
             try:
-                self.status['green'] = self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, 100, 0)
+                self.status['green'] = self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, 0, 100)
                 if self.status['green'] > 1:
                     self.status['green'] = 1.0/self.status['green']
             except:
@@ -148,7 +148,7 @@ class controller():
             finally:
                 self.green.ChangeDutyCycle(self.status['green'] * 100)
             try:
-                self.status['blue'] = self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, 100, 0)
+                self.status['blue'] = self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, 0, 100)
                 if self.status['blue'] > 1:
                     self.status['blue'] = 1.0/self.status['blue']
             except:
@@ -160,7 +160,7 @@ class controller():
                 self.blue.ChangeDutyCycle(self.status['blue'] * 100)
             self.check_for_need()
             self.red.ChangeDutyCycle(0)
-            self.green.ChangeDutyCycle(self.translate(self.status["brightness"], 0, 12, 100, 0))
+            self.green.ChangeDutyCycle(self.translate(self.status["brightness"], 0, 12, 0, 100))
             self.blue.ChangeDutyCycle(0)
         else:
             if self.inverted:
