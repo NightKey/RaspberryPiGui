@@ -159,6 +159,9 @@ class controller():
             finally:
                 self.blue.ChangeDutyCycle(self.status['blue'] * 100)
             self.check_for_need()
+            self.red.ChangeDutyCycle(0)
+            self.green.ChangeDutyCycle(self.translate(self.status["brightness"], 0, 12, 100, 0))
+            self.blue.ChangeDutyCycle(0)
         else:
             if self.inverted:
                 dc = 100
@@ -195,7 +198,6 @@ class controller():
 
     def color(self, color_v):
         color_v = color_v.replace('#', '')
-        color_v = "FFFFFF"  #Remove when coloring sorted
         color_v = [int(color_v[:2], 16), int(color_v[2:4], 16), int(color_v[4:], 16)]
         verbose(f"The color of the led's should be #{color_v}")
         self.status['color'] = color_v
