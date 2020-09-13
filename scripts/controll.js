@@ -162,7 +162,7 @@ window.onload = function(){
     let tryno = 0;
     start_ws = function(){
         console.log("Connecting to server...");
-        connection = new this.WebSocket("ws://127.0.0.1:6969");
+        connection = new this.WebSocket("ws://localhost:6969");
 
         connection.onopen = function() {
             console.log("Connection established");

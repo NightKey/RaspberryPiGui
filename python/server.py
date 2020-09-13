@@ -10,7 +10,7 @@ import print_handler, inspect
 from os import path, remove
 
 ws = None
-ip="127.0.0.1"
+ip="localhost"
 port = 6969
 to_send=[]
 to_print = []
@@ -185,6 +185,7 @@ async def handler(websocket, path):
     global clock_showing
     external_ip = get_ip()
     while True:
+        print('alive')
         try:
             if killswitch:
                 exit()
