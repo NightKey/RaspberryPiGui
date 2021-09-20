@@ -2,7 +2,7 @@ import datetime
 import os
 
 class logger:
-    def __init__(self, name, ram_mode=False, maximum_chunk_size_byte=-1):
+    def __init__(self, name, ram_mode=False, maximum_chunk_size_byte=None):
         """
         Sets up the logger class.
         Input: 
@@ -62,7 +62,7 @@ class logger:
         """
         Depending on the file size, will archive the old one and create a new one
         """
-        if (self.maximum_chunk_size_byte != -1 and os.path.getsize(f"{self.name}.lg") > self.maximum_chunk_size_byte):
+        if (self.maximum_chunk_size_byte is not None and os.path.getsize(f"{self.name}.lg") > self.maximum_chunk_size_byte):
             if (os.path.getsize(f"{self.name}.lg") > self.maximum_chunk_size_byte*10):
                 os.remove(f"{self.name}.lg")
             else:
