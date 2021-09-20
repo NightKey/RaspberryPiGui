@@ -1,8 +1,4 @@
 from print_handler import printer, screen_handler, verbose
-try:
-    import RPi.GPIO as GPIO
-except:
-    import FakeRPi.GPIO as GPIO
 import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, updater, usb_player, json
 from time import sleep
 from datetime import datetime, timedelta
@@ -16,8 +12,8 @@ to_send=[]
 to_print = []
 File_Folder = "/var/RPS"
 if os.name == "nt":
-    File_Folder = "D:/Windows_stuff/var/RPS" #Change for your prefered log folder
-log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"), True)
+    File_Folder = "E:/Windows_stuff/var/RPS" #Change for your prefered log folder
+log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"), True, 5120)
 #flags
 last_activity = last_updated = datetime.now()
 clock_showing = True
@@ -31,6 +27,7 @@ is_connected = False
 dev_mode = False
 door_ignore_flag = False
 door_manual_ignore_flag = False
+door_wait_timer = 1 #Time to wait after detecting a falling edge in the door sensore
 
 def print_combiner(text, end='\n> ', no_log=False):
     try:
@@ -264,7 +261,8 @@ def door_callback(arg):
     global last_activity
     print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}")
     if not door_ignore_flag and not door_manual_ignore_flag:
-        if controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
+        sleep(door_wait_timer)
+        if controller.get_door_status() or controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
             return
         last_activity = datetime.now()
         wake()
@@ -439,6 +437,7 @@ def print_vars():
             elif isinstance(value, threading.Thread):
                 print(f'{key}: {value.is_alive()}')
     del tmp
+    print(f"The door value is {controller.get_door_status()}")
 
 def invert():
     controller.inverted = not controller.inverted

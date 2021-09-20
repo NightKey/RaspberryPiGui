@@ -1,7 +1,7 @@
 try:
     import RPi.GPIO as GPIO
 except:
-    import FakeRPi.GPIO as GPIO
+    import FakeRPi.GPIO as GPIO #pip install git+https://github.com/sn4k3/FakeRPi
 
 from pins import *
 from time import sleep
@@ -79,9 +79,8 @@ class controller():
 
     def _12V(self):
         if self._12V_:
-            if not GPIO.input(pins._12V):
-                GPIO.output(pins._12V, GPIO.HIGH)
-                self.status['12V'] = True
+            GPIO.output(pins._12V, GPIO.HIGH)
+            self.status['12V'] = True
 
     def check_for_need(self):
         if not self.status['12V']:
@@ -92,6 +91,9 @@ class controller():
             if not self.status['room'] or not self.status['room'] or not self.status['room']:
                 GPIO.output(pins._12V, GPIO.LOW)
                 self.status['12V'] = False
+
+    def get_door_status(self):
+        return bool(GPIO.input(pins.door_pin))
 
     def swap_color(self):
         tmp = self.red
