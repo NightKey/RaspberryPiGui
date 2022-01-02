@@ -143,7 +143,6 @@ def timer(time, to_call, _with=None):
 
 def save():
     _to = USB_name if USB_name != None else 'status'
-    controller.update_status()
     status = controller.status
     status['volume'] = usb_player.volume
     with open(f"{os.path.join(File_Folder, _to)}.json", 'w') as f:
@@ -192,7 +191,6 @@ async def handler(websocket, path):
             ws = websocket
             verbose('Incoming connection')
             is_connected = True
-            controller.update_status()
             tmp = controller.status
             color = []
             for item in tmp['color']:
@@ -485,7 +483,6 @@ def room_controll(state):
         manual_room = True
         door_ignore_flag = True
     elif controller.status['room']:
-        controller.update_status()
         verbose(f'Status: {controller.get_status()}')
         if tmp_room:
             return
