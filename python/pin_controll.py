@@ -24,9 +24,9 @@ class controller():
         GPIO.setup(pins._12V.value, GPIO.OUT, initial=GPIO.HIGH)                                  #12 V Powersuply
         GPIO.setup(pins.door_pin.value, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)                      #Door switch
         GPIO.add_event_detect(pins.door_pin.value, GPIO.FALLING, door_callback, bouncetime=150)   #Door interrupt
-        self.red = GPIO.PWM(pins.red_pin.value, 100)
-        self.green = GPIO.PWM(pins.green_pin.value, 100)
-        self.blue = GPIO.PWM(pins.blue_pin.value, 100)
+        self.red = GPIO.setup(pins.red_pin.value, GPIO.OUT, initial=GPIO.LOW) #GPIO.PWM(pins.red_pin.value, 100)
+        self.green = GPIO.setup(pins.green_pin.value, GPIO.OUT, initial=GPIO.LOW) #GPIO.PWM(pins.green_pin.value, 100)
+        self.blue = GPIO.setup(pins.blue_pin.value, GPIO.OUT, initial=GPIO.LOW) #GPIO.PWM(pins.blue_pin.value, 100)
         self.inverted = _inverted
         self._12V_=_12V
         self.status = {
@@ -101,7 +101,8 @@ class controller():
         inspan = inmax - inmin
         outspan = outmax - outmin
         scaled = float(value - inmin) / float(inspan)
-        return round(outmin + (scaled * outspan), 2)
+        translated = round(outmin + (scaled * outspan), 2)
+        return GPIO.HIGH if translated > outmax/2 else GPIO.LOW
 
     def brightness(self, value):
         verbose(f"Incoming for brightness {value}")
@@ -109,9 +110,13 @@ class controller():
         self.set_leds()
 
     def set_leds(self):
+        _min = 100 if self.inverted else 0
+        _max = 0 if self.inverted else 100
+        GPIO.output(pins.red_pin, self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, _min, _max))
+        GPIO.output(pins.green_pin, self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, _min, _max))
+        GPIO.output(pins.blue_pin, self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, _min, _max))
+        return
         try:
-            _min = 100 if self.inverted else 0
-            _max = 0 if self.inverted else 100
             if self.status['bath_tub'] or self.status['cabinet']:
                 if not self.status['PWM']:
                     self.red.start(0)
