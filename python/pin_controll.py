@@ -113,10 +113,15 @@ class controller():
         _min = 100 if self.inverted else 0
         _max = 0 if self.inverted else 100
         if self.status["brightness"] > 0:
-            GPIO.output(pins.red_pin.value, self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, _min, _max))
-            GPIO.output(pins.green_pin.value, self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, _min, _max))
-            GPIO.output(pins.blue_pin.value, self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, _min, _max))
+            red = self.translate(self.status['color'][0]/(1/self.status['brightness']), 0, 255, _min, _max)
+            green = self.translate(self.status['color'][1]/(1/self.status['brightness']), 0, 255, _min, _max)
+            blue = self.translate(self.status['color'][2]/(1/self.status['brightness']), 0, 255, _min, _max)
+            verbose(f"Led pins should use the following values: R {red}, G {green} B {blue}")
+            GPIO.output(pins.red_pin.value, red)
+            GPIO.output(pins.green_pin.value, green)
+            GPIO.output(pins.blue_pin.value, blue)
         else:
+            verbose("Brightness is 0, switching all off!")
             GPIO.output(pins.red_pin.value, GPIO.LOW)
             GPIO.output(pins.green_pin.value, GPIO.LOW)
             GPIO.output(pins.blue_pin.value, GPIO.LOW)
@@ -184,7 +189,6 @@ class controller():
         verbose("The room lights should {}be on!".format('' if (is_on) else 'not '))
         GPIO.output(pins.lamp_pin.value, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['room'] = is_on
-        self.check_for_need()
 
     def bath_tub(self, is_on):
         is_on = (is_on == 'true')
