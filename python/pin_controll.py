@@ -112,9 +112,14 @@ class controller():
     def set_leds(self):
         _min = 100 if self.inverted else 0
         _max = 0 if self.inverted else 100
-        GPIO.output(pins.red_pin, self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, _min, _max))
-        GPIO.output(pins.green_pin, self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, _min, _max))
-        GPIO.output(pins.blue_pin, self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, _min, _max))
+        if self.status["brightness"] > 0:
+            GPIO.output(pins.red_pin, self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, _min, _max))
+            GPIO.output(pins.green_pin, self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, _min, _max))
+            GPIO.output(pins.blue_pin, self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, _min, _max))
+        else:
+            GPIO.output(pins.red_pin, GPIO.LOW)
+            GPIO.output(pins.green_pin, GPIO.LOW)
+            GPIO.output(pins.blue_pin, GPIO.LOW)
         return
         try:
             if self.status['bath_tub'] or self.status['cabinet']:
