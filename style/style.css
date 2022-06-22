@@ -28,7 +28,8 @@ body {
     border-left-width: 1;
 }
 
-#weather, #weather_hider {
+#weather,
+#weather_hider {
     grid-row-end: gap;
     grid-column-start: 1;
 }
@@ -59,7 +60,8 @@ body {
 }
 
 
-#error, #error_msg_only {
+#error,
+#error_msg_only {
     z-index: 200;
     margin: auto;
     display: none;
@@ -69,7 +71,8 @@ body {
     font-style: italic;
 }
 
-#message, #message_msg_only {
+#message,
+#message_msg_only {
     z-index: 200;
     margin: auto;
     text-align: center;
@@ -84,23 +87,28 @@ body {
     position: absolute;
     height: 100%;
     width: 100%;
-    left:0;
-    top:0;
+    left: 0;
+    top: 0;
     transition: all 0.3s ease;
     z-index: 10;
 }
-#clock-owerlay #inner{
+
+#clock-owerlay #inner {
     top: 40vh;
     position: relative;
-    display:flex;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
-#clock-owerlay #inner div{
+
+#clock-owerlay #inner div {
     position: relative;
     -webkit-box-reflect: below 1px linear-gradient(transparent, #000);
 }
-#hours, #minutes, #seconds {
+
+#hours,
+#minutes,
+#seconds {
     position: relative;
     display: block;
     width: 100px;
@@ -127,20 +135,28 @@ body {
 }
 
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 199; /* Sit on top */
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 199;
+    /* Sit on top */
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
     padding-top: 25%;
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
     backdrop-filter: blur(8px);
 }
-  
+
 .modal-content {
     position: relative;
     display: none;
@@ -149,17 +165,25 @@ body {
     padding: 2px;
     width: 50%;
     border-radius: 6px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     animation-name: animatetop;
     animation-duration: 0.4s
 }
-.modal-content input{
+
+.modal-content input {
     margin: 5px;
 }
 
 @keyframes animatetop {
-    from {top: -300px; opacity: 0}
-    to {top: 0; opacity: 1}
+    from {
+        top: -300px;
+        opacity: 0
+    }
+
+    to {
+        top: 0;
+        opacity: 1
+    }
 }
 
 input[type=color] {
@@ -215,7 +239,7 @@ input[type=range]::-webkit-slider-runnable-track {
     background: rgba(130, 214, 235, 0.6);
     border-radius: 3px;
 }
-  
+
 input[type=range]:focus::-webkit-slider-runnable-track {
     background: rgba(130, 214, 235, 0.6);
 }
@@ -240,4 +264,5 @@ td {
     left: 30;
     position: absolute;
     bottom: 30;
+    background-color: transparent;
 }

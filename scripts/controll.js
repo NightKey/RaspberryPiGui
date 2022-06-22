@@ -1,7 +1,7 @@
-window.onload = function(){
+window.onload = function () {
 
-    weather_creator = function() {
-        var js,fjs=document.getElementsByTagName('script')[0];js=document.createElement('script');js.id='weatherwidget-io-js';js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);
+    weather_creator = function () {
+        var js, fjs = document.getElementsByTagName('script')[0]; js = document.createElement('script'); js.id = 'weatherwidget-io-js'; js.src = 'https://weatherwidget.io/js/widget.min.js'; fjs.parentNode.insertBefore(js, fjs);
     }
 
     weather_creator();
@@ -50,25 +50,25 @@ window.onload = function(){
     let clock_message = document.getElementById("clock-message");
 
     /*Functions*/
-    show_error = function(msg) {
+    show_error = function (msg) {
         message_shown = true;
         error_msg.innerHTML = msg;
         error.style.display = 'block';
         modal.style.display = 'block';
     }
 
-    clock_switch = function(state){
+    clock_switch = function (state) {
         clock.style.display = state;
     }
 
-    show_error_only = function(msg) {
+    show_error_only = function (msg) {
         message_shown = true;
         error_msg_.innerHTML = msg;
         error_msg_only.style.display = 'block';
         modal.style.display = 'block';
     }
 
-    toggle_fan = function() {
+    toggle_fan = function () {
         if (fan.style.display == 'block') {
             fan.style.display = 'none';
         }
@@ -77,21 +77,21 @@ window.onload = function(){
         }
     }
 
-    show_message = function(msg) {
+    show_message = function (msg) {
         message_shown = true;
         message_msg.innerHTML = msg;
         message.style.display = 'block';
         modal.style.display = 'block';
     }
 
-    show_message_only = function(msg) {
+    show_message_only = function (msg) {
         message_shown = true;
         message_msg_.innerHTML = msg;
         message_msg_only.style.display = 'block';
         modal.style.display = 'block';
     }
 
-    close_message = function() {
+    close_message = function () {
         if (message_shown) {
             message_shown = false;
             message.style.display = 'none';
@@ -103,7 +103,7 @@ window.onload = function(){
         }
     }
 
-    door_ignore_state = function(state) {
+    door_ignore_state = function (state) {
         if (state == 'ignored') {
             door_state.src = 'images/door_ignored.png'
         }
@@ -112,31 +112,31 @@ window.onload = function(){
         }
     }
 
-    room_extend = function() {
+    room_extend = function () {
         show_message_only("A fények 30 másodperc múlva kikapcsolnak!");
         swtc(room);
-        setTimeout(function() {
+        setTimeout(function () {
             swtc(room);
             close_message();
         }, 30000);
     }
 
-    swtc = function(what) {
+    swtc = function (what) {
         what.checked = !what.checked;
         event = document.createEvent('Event');
         event.initEvent('change', true, true);
         what.dispatchEvent(event);
     }
 
-    work = function(ansver) {
-        console.log('Todo: '+todo+'\tAnsver: '+ansver);
+    work = function (ansver) {
+        console.log('Todo: ' + todo + '\tAnsver: ' + ansver);
         switch (todo) {
             case 'room':
                 room.checked = ansver;
                 event = document.createEvent('Event');
                 event.initEvent('change', true, true);
                 room.dispatchEvent(event);
-                message_shown=false;
+                message_shown = false;
                 break;
             case 'kill':
                 connection.send('kill');
@@ -144,7 +144,7 @@ window.onload = function(){
         }
     }
 
-    music = function(data) {
+    music = function (data) {
         if (data != 'none') {
             is_music_on = true;
             now_playing.innerHTML = data
@@ -157,35 +157,35 @@ window.onload = function(){
 
     /* Connection */
     let connection = null;
-    
+
     let todo;
     let tryno = 0;
-    start_ws = function(){
+    start_ws = function () {
         console.log("Connecting to server...");
         connection = new this.WebSocket("ws://localhost:6969");
 
-        connection.onopen = function() {
+        connection.onopen = function () {
             console.log("Connection established");
             clock_message.innerHTML = "";
             init = true;
             tryno = 0;
         }
 
-        connection.onclose = function() {
+        connection.onclose = function () {
             console.log("Connection closed!");
             clock_message.innerHTML = "Connection to server failed";
             tryno++;
             if (tryno > 15) {
                 show_error('Megszakadt a kapcsolat a szerverrel!');
-            } else{
-                setTimeout(function(){
+            } else {
+                setTimeout(function () {
                     connection = null;
                     start_ws();
                 }, 5000);
             }
         }
 
-        connection.onmessage = function(event){
+        connection.onmessage = function (event) {
             console.log(event.data);
             switch (event.data) {
                 case 'Refresh':
@@ -232,7 +232,7 @@ window.onload = function(){
                     if (send_alert) {
                         alert(event.data);
                         send_alert = false;
-                    } else{
+                    } else {
                         switch (event.data.split('|')[0]) {
                             case 'color':
                                 let tmp = event.data.split('|')[1].replace('[', '').replace(']', '').split(', ');
@@ -282,73 +282,73 @@ window.onload = function(){
     brightness_text.innerHTML = bvalue;
 
     /* Event handlers */
-    brightness.addEventListener("input", function() {
-        
+    brightness.addEventListener("input", function () {
+
         let bvalue = brightness.value;
-        console.log("EventListener called with value of "+bvalue)
+        console.log("EventListener called with value of " + bvalue)
         if (bvalue < 10) {
             bvalue = "0" + bvalue;
         }
 
         brightness_text.innerHTML = bvalue;
-        let data = 'brightness,'+bvalue;
+        let data = 'brightness,' + bvalue;
         if (!init) {
             connection.send(data);
         }
     }, false);
 
-    room.addEventListener('change', function() {
+    room.addEventListener('change', function () {
         let room_on = room.checked;
-        console.log("EventListener called for '"+lights.id+"' with value '"+room_on+"'");
-        let data = 'room,'+room_on;
+        console.log("EventListener called for '" + lights.id + "' with value '" + room_on + "'");
+        let data = 'room,' + room_on;
         if (!init) {
             connection.send(data);
         }
     }, false);
 
-    bath_tub.addEventListener('change', function() {
+    bath_tub.addEventListener('change', function () {
         let bath_tub_on = bath_tub.checked;
-        console.log("EventListener called for '"+bath_tub.id+"' with value '"+bath_tub_on+"'");
-        let data = 'bath_tub,'+bath_tub_on;
+        console.log("EventListener called for '" + bath_tub.id + "' with value '" + bath_tub_on + "'");
+        let data = 'bath_tub,' + bath_tub_on;
         if (!init) {
             connection.send(data);
         }
     }, false);
 
-    cabinet.addEventListener('change', function() {
+    cabinet.addEventListener('change', function () {
         let cabinet_on = cabinet.checked;
-        console.log("EventListener called for '"+cabinet.id+"' with value '"+cabinet_on+"'");
-        let data = 'cabinet,'+cabinet_on;
+        console.log("EventListener called for '" + cabinet.id + "' with value '" + cabinet_on + "'");
+        let data = 'cabinet,' + cabinet_on;
         if (!init) {
             connection.send(data);
         }
     }, false);
 
-    dismiss.addEventListener('click', function() {
+    dismiss.addEventListener('click', function () {
         location.reload();
     }, false);
-    
-    ok.addEventListener('click', function() {
+
+    ok.addEventListener('click', function () {
         close_message();
         connection.send('keep lit');
     }, false);
 
-    picker.addEventListener('change', function(){
+    picker.addEventListener('change', function () {
         picker.style.backgroundColor = picker.value;
-        console.log('Selected color: '+picker.value);
+        console.log('Selected color: ' + picker.value);
         if (!init) {
-            connection.send('color,'+picker.value);   
+            connection.send('color,' + picker.value);
         }
     }, false);
 
-    update.addEventListener('click', function(){
+    update.addEventListener('click', function () {
         console.log('Update clicked!');
         if (!init) {
-            connection.send('update,None');   
+            connection.send('update,None');
         }
     }, false);
 
-    refresh.addEventListener('click', function(){
+    refresh.addEventListener('click', function () {
         if (connection.readyState == WebSocket.OPEN) {
             weather_creator();
         }
@@ -357,7 +357,7 @@ window.onload = function(){
         }
     }, false);
 
-    skip.addEventListener('click', function(){
+    skip.addEventListener('click', function () {
         if (is_music_on) {
             console.log('Skip clicked!');
             if (!init) {
@@ -366,7 +366,7 @@ window.onload = function(){
         }
     }, false);
 
-    prev.addEventListener('click', function(){
+    prev.addEventListener('click', function () {
         if (is_music_on) {
             console.log('Prev clicked!');
             if (!init) {
@@ -375,15 +375,15 @@ window.onload = function(){
         }
     }, false);
 
-    pause.addEventListener('click', function(){
+    pause.addEventListener('click', function () {
         console.log('Pause clicked!');
-        if(is_music_on) {
-            if (!is_playing){
-                pause.src='images/play.png';
+        if (is_music_on) {
+            if (!is_playing) {
+                pause.src = 'images/play.png';
                 is_playing = true;
             }
-            else { 
-                pause.src='images/pause.png'; 
+            else {
+                pause.src = 'images/pause.png';
                 is_playing = false;
             }
             if (!init) {
@@ -392,36 +392,40 @@ window.onload = function(){
         }
     }, false);
 
-    volume_nob.addEventListener('input', function() {
-        console.log('Volume at '+volume_nob.value);
-        volume_num.innerHTML = 'Hangerő: '+volume_nob.value+'%';
+    volume_nob.addEventListener('input', function () {
+        console.log('Volume at ' + volume_nob.value);
+        volume_num.innerHTML = 'Hangerő: ' + volume_nob.value + '%';
         if (!init) {
-            connection.send('volume,'+volume_nob.value);
+            connection.send('volume,' + volume_nob.value);
         }
     }, false);
 
-    menu_btn.addEventListener('click', function(){
+    menu_btn.addEventListener('click', function () {
         message_shown = true;
         menu.style.display = 'block';
         modal.style.display = 'block';
     });
 
-    ignore_door.addEventListener('click', function(){
+    ignore_door.addEventListener('click', function () {
         connection.send('ignore,door');
     });
 
-    restart_dev.addEventListener('click', function(){
+    door_state.addEventListener('click', function () {
+        connection.send('ignore,door');
+    });
+
+    restart_dev.addEventListener('click', function () {
         connection.send('restart,developper');
     });
 
-    restart.addEventListener('click', function() {
+    restart.addEventListener('click', function () {
         connection.send('reboot,user');
     });
 
-    modal.addEventListener("click", (e) =>{
+    modal.addEventListener("click", (e) => {
         if (e.target.classList.contains("modal")) {
             close_message();
-        } 
+        }
     });
 
     clock.addEventListener("click", () => {

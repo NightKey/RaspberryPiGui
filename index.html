@@ -1,138 +1,149 @@
 <html>
-    <head>
-        <Title>Fürdőszoba vezérlő</Title>
-        <meta charset="UTF-8" />
 
-        <link rel="stylesheet" type="text/css" href="style/style.css" />
-        <link rel="stylesheet" type="text/css" href="style/slider.css" />
-        <link rel="stylesheet" type="text/css" href="style/plus_menu.css" />
+<head>
+    <Title>Fürdőszoba vezérlő</Title>
+    <meta charset="UTF-8" />
 
-        <script type="text/javascript" src="scripts/controll.js"></script>
-    </head>
-    <body>
-        <div id="clock-owerlay">
-            <div id="inner">
-                <div><span id="hours">00</span></div>
-                <div><span id="minutes">00</span></div>
-                <div><span id="seconds">00</span></div>
-                <div><span id="clock-message"></span></div>
-            </div>
+    <link rel="stylesheet" type="text/css" href="style/style.css" />
+    <link rel="stylesheet" type="text/css" href="style/slider.css" />
+    <link rel="stylesheet" type="text/css" href="style/plus_menu.css" />
+
+    <script type="text/javascript" src="scripts/controll.js"></script>
+</head>
+
+<body>
+    <div id="clock-owerlay">
+        <div id="inner">
+            <div><span id="hours">00</span></div>
+            <div><span id="minutes">00</span></div>
+            <div><span id="seconds">00</span></div>
+            <div><span id="clock-message"></span></div>
         </div>
-        <script type="text/javascript">
-            function clock(){
-                var dh = document.getElementById("hours");
-                var dm = document.getElementById("minutes");
-                var ds = document.getElementById("seconds");
-                var h = new Date().getHours();
-                var m = new Date().getMinutes();
-                var s = new Date().getSeconds();
-                if (s <= 9) { s = '0'+s; }
-                if (m <= 9) { m = '0'+m; }
-                if (h <= 9) { h = '0'+h; }
-                dh.innerHTML = h+" :";
-                if (s%2){
-                    dm.innerHTML = m+" :";    
-                }
-                else {
-                    dm.innerHTML = m;
-                }
-                ds.innerHTML = s;
+    </div>
+    <script type="text/javascript">
+        function clock() {
+            var dh = document.getElementById("hours");
+            var dm = document.getElementById("minutes");
+            var ds = document.getElementById("seconds");
+            var h = new Date().getHours();
+            var m = new Date().getMinutes();
+            var s = new Date().getSeconds();
+            if (s <= 9) { s = '0' + s; }
+            if (m <= 9) { m = '0' + m; }
+            if (h <= 9) { h = '0' + h; }
+            dh.innerHTML = h + " :";
+            if (s % 2) {
+                dm.innerHTML = m + " :";
             }
-    
-            var interval = setInterval(clock, 1000);
-        </script>
-        <div id="weather">
-            <a class="weatherwidget-io" href="https://forecast7.com/hu/46d4318d78/tolna/" data-label_1="TOLNA" data-label_2="Időjárás" data-font="Roboto Slab" data-icons="Climacons Animated" data-days="5" data-theme="weather_one">TOLNA Időjárás</a>
-        </div>
+            else {
+                dm.innerHTML = m;
+            }
+            ds.innerHTML = s;
+        }
 
-        <div id="weather_hider">
-            <input id='menu_btn' type="button" value="...">
-        </div>
+        var interval = setInterval(clock, 1000);
+    </script>
+    <div id="weather">
+        <a class="weatherwidget-io" href="https://forecast7.com/hu/46d4318d78/tolna/" data-label_1="TOLNA"
+            data-label_2="Időjárás" data-font="Roboto Slab" data-icons="Climacons Animated" data-days="5"
+            data-theme="weather_one">TOLNA Időjárás</a>
+    </div>
 
-        <div id="lights">
-            <table>
+    <div id="weather_hider">
+        <input id='menu_btn' type="button" value="...">
+    </div>
+
+    <div id="lights">
+        <table>
+            <tr>
+                <th>Szín</th>
+                <th>Fényerő</th>
+                <th class="v">Villany</th>
+            </tr>
+            <tr>
+                <td>
+                    <input type="color" id='color' style='background-color: black; border-style: none;'>
+                </td>
+                <td>
+                    <input type="range" id="brightness" min="0" max="12" value="0"><br><br><label
+                        id="brightness_number">00</label>
+                </td>
+                <td class='v'><img src='images/door.png' width="100px" id='door_state'></td>
+            </tr>
+            <tr>
+                <th>Fürdőkád</th>
+                <td>Szekrény</td>
+                <td class="v" rowspan="2">
+                    <label class="switch">
+                        <input id="room" type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="switch">
+                        <input id="bath_tub" type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+                <td>
+                    <label class="switch">
+                        <input id="cabinet" type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="alerts" class="modal">
+        <div id='error' class="modal-content"><span id='error_message'>test</span><br><input type='button' id='Dismiss'
+                value='Újra próbál'></div>
+        <div id='error_msg_only' class="modal-content"><span id='error_msg'>test</span></div>
+        <div id='message' class="modal-content"><span id='message_message'>test</span><br><input type='button' id='Ok'
+                value='Maradjanak égve'></div>
+        <div id='message_msg_only' class="modal-content"><span id='message_msg'>test</span></div>
+        <div id='menu' class="modal-content">
+            <table id="menu_table">
                 <tr>
-                    <th>Szín</th>
-                    <th>Fényerő</th>
-                    <th class="v">Villany</th>
+                    <td><span>IP cím:</span></td>
+                    <td><span id='ip'>IP helye</span></td>
                 </tr>
                 <tr>
-                    <td>
-                        <input type="color" id='color' style='background-color: black; border-style: none;'>
-                    </td>
-                    <td>
-                        <input type="range" id="brightness" min="0" max="12" value="0"><br><br><label id="brightness_number">00</label>
-                    </td>
-                    <td class='v'><img src='images/door.png' width='30px' id='door_state'></td>
+                    <td><input id="ignore_door" type="button" value="Ajtó ignorálása"></td>
+                    <td><input id='restart_dev' type="button" value="Fejlesztői mód"></td>
                 </tr>
                 <tr>
-                    <th>Fürdőkád</th>
-                    <td>Szekrény</td>
-                    <td class="v" rowspan="2">
-                        <label class="switch">
-                            <input id="room" type="checkbox">
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label class="switch">
-                            <input id="bath_tub" type="checkbox">
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="switch">
-                            <input id="cabinet" type="checkbox">
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
+                    <td colspan="2"><input type='button' id='restart' value='Újraindítás'></td>
                 </tr>
             </table>
         </div>
-        <div id="alerts" class="modal">
-            <div id='error' class="modal-content"><span id='error_message'>test</span><br><input  type='button' id='Dismiss' value='Újra próbál'></div>
-            <div id='error_msg_only' class="modal-content"><span id='error_msg'>test</span></div>
-            <div id='message' class="modal-content"><span id='message_message'>test</span><br><input  type='button' id='Ok' value='Maradjanak égve'></div>
-            <div id='message_msg_only' class="modal-content"><span id='message_msg'>test</span></div>
-            <div id='menu' class="modal-content">
-                <table id="menu_table">
-                    <tr>
-                        <td><span>IP cím:</span></td>
-                        <td><span id='ip'>IP helye</span></td>
-                    </tr>
-                    <tr>
-                        <td><input id="ignore_door" type="button" value="Ajtó ignorálása"></td>
-                        <td><input id='restart_dev' type="button" value="Fejlesztői mód"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><input type='button' id='restart' value='Újraindítás'></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        <div id='controll'>
-            <table width='100%' height='100%'>
-                <tr>
-                    <td><input type='button' id='update' value='Frissítés'></td>
-                    <td colspan="3">
-                        <img src='images/prev.png' id='prev' height='25px'>
-                         &nbsp; 
-                        <img src='images/pause.png' id='pause' height='25px'>
-                        &nbsp;
-                        <img src='images/skip.png' id='skip' height='25px'><br>
-                        <spam>Now Playing:<br><marquee behavior="scroll" direction="left" id='now_playing'></marquee></spam>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type='button' id='refresh' value='Újratöltés'></td>
-                    <td colspan="3"><input id='volume' type='range' max='100' min='0' value='100'><br><br><label id='volume_number'>Hangerő: 100%</label></td>
-                </tr>
-            </table>
-        </div>
-        <div id='fan_div' style="display: none;">
-            <img src='images/fan.png' id='fan' height='45px'>
-        </div>
-    </body>
+    </div>
+    <div id='controll'>
+        <table width='100%' height='100%'>
+            <tr>
+                <td><input type='button' id='update' value='Frissítés'></td>
+                <td colspan="3">
+                    <img src='images/prev.png' id='prev' height='25px'>
+                    &nbsp;
+                    <img src='images/pause.png' id='pause' height='25px'>
+                    &nbsp;
+                    <img src='images/skip.png' id='skip' height='25px'><br>
+                    <spam>Now Playing:<br>
+                        <marquee behavior="scroll" direction="left" id='now_playing'></marquee>
+                    </spam>
+                </td>
+            </tr>
+            <tr>
+                <td><input type='button' id='refresh' value='Újratöltés'></td>
+                <td colspan="3"><input id='volume' type='range' max='100' min='0' value='100'><br><br><label
+                        id='volume_number'>Hangerő: 100%</label></td>
+            </tr>
+        </table>
+    </div>
+    <div id='fan_div' style="display: none;">
+        <img src='images/fan.gif' id='fan' height='60px'>
+    </div>
+</body>
+
 </html>
