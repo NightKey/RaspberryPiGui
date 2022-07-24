@@ -1,25 +1,37 @@
 from print_handler import printer, screen_handler, verbose
-import asyncio, websockets, logger, threading, sys, os, psutil, pin_controll, updater, usb_player, json
+import asyncio
+import websockets
+import logger
+import threading
+import sys
+import os
+import psutil
+import pin_controll
+import updater
+import usb_player
+import json
 from time import sleep
 from datetime import datetime, timedelta
-import print_handler, inspect
+import print_handler
+import inspect
 from os import path, remove
 
 ws = None
-ip="localhost"
+ip = "localhost"
 port = 6969
-to_send=[]
+to_send = []
 to_print = []
 File_Folder = "/var/RPS"
 if os.name == "nt":
-    File_Folder = "E:/Windows_stuff/var/RPS" #Change for your prefered log folder
-log = logger.logger(os.path.join(File_Folder, "RaspberryPiServerLog"), True, 5120)
-#flags
+    File_Folder = "E:/Windows_stuff/var/RPS"  # Change for your prefered log folder
+log = logger.logger(os.path.join(
+    File_Folder, "RaspberryPiServerLog"), True, 5120)
+# flags
 last_activity = last_updated = datetime.now()
 clock_showing = True
 muted = False
 manual_room = True
-USB_name=None
+USB_name = None
 killswitch = False
 tmp_room = False
 temp_sent = False
@@ -27,7 +39,9 @@ is_connected = False
 dev_mode = False
 door_ignore_flag = False
 door_manual_ignore_flag = False
-door_wait_timer = 1 #Time to wait after detecting a falling edge in the door sensore
+door_wait_timer = 1  # Time to wait after detecting a falling edge in the door sensore
+door_open = False
+
 
 def print_combiner(text, end='\n> ', no_log=False):
     try:
@@ -39,11 +53,14 @@ def print_combiner(text, end='\n> ', no_log=False):
     if not no_log:
         log.log(f'{caller} -> {text}')
 
+
 print = print_combiner
+
 
 def get_status():
     try:
-        temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
+        temp = psutil.sensors_temperatures(
+        )['cpu-thermal'][0]._asdict()['current']
         print(f'CPU Temperature: {temp}')
     except Exception as ex:
         print(f'Error in status check: {ex}')
@@ -61,6 +78,7 @@ def get_status():
                     print(f'{key} is the following: {value}')
     except Exception as ex:
         print(f'Error in status check: {ex}')
+
 
 def usb_listener():
     print('USB listener started')
@@ -99,11 +117,13 @@ def usb_listener():
                 print('Finally reached!')
                 sleep(0.5)
 
+
 def temp_checker(test=False):
     global temp_sent
     if not dev_mode:
         try:
-            temp = psutil.sensors_temperatures()['cpu-thermal'][0]._asdict()['current']
+            temp = psutil.sensors_temperatures(
+            )['cpu-thermal'][0]._asdict()['current']
             if temp > 85:
                 os.system("shutdown")
             if temp > 60 and not controller.status['fan']:
@@ -128,18 +148,22 @@ def temp_checker(test=False):
             print(ex)
             return True
 
+
 def update(_=None):
     print('Checking for updates')
     updater.update()
 
+
 def timer(time, to_call, _with=None):
     print('Timer started')
     sleep(time)
-    print(f'Timer finished, calling {to_call.__name__} with the following value {_with}')
+    print(
+        f'Timer finished, calling {to_call.__name__} with the following value {_with}')
     if _with == None:
         to_call()
     else:
         to_call(_with)
+
 
 def save():
     _to = USB_name if USB_name != None else 'status'
@@ -147,6 +171,7 @@ def save():
     status['volume'] = usb_player.volume
     with open(f"{os.path.join(File_Folder, _to)}.json", 'w') as f:
         json.dump(status, f)
+
 
 def tmp_room_check():
     global tmp_room
@@ -164,6 +189,7 @@ def tmp_room_check():
         verbose("tmp_room set to false count down finished")
         manual_room = False
 
+
 def rgb(values):
     verbose(f"RGB was called with '{values}' values.")
     rgb = values.split(',')
@@ -174,6 +200,7 @@ def rgb(values):
         except Exception as ex:
             print(f'Falied with the value: {value}')
             verbose(f'Exception: {ex}')
+
 
 async def handler(websocket, path):
     global is_connected
@@ -248,27 +275,43 @@ async def handler(websocket, path):
             print('Connection lost')
             print(f'Exception: {ex}')
 
+
 async def message_sender(message):
     verbose(f"Sending message '{message}'")
     await ws.send(message)
 
-def door_callback(arg):
+
+def door_close_callback(arg):
+    global door_open
+    if not door_open:
+        return
+    sleep(door_wait_timer)
+    if not controller.get_door_status():
+        return
+    door_open = False
+
+
+def door_open_callback(arg):
     global tmp_room
     global door_ignore_flag
     global last_updated
     global last_activity
+    global door_open
     print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}")
-    if not door_ignore_flag and not door_manual_ignore_flag:
+    if not door_ignore_flag and not door_manual_ignore_flag and not door_open:
         sleep(door_wait_timer)
-        if controller.get_door_status() or controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:  #Ignores the door, if it was opened/stood open with lights on
+        # Ignores the door, if it was opened/stood open with lights on
+        if controller.get_door_status() or controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:
             return
         last_activity = datetime.now()
         wake()
         to_send.append('door')
+        door_open = True
         options['room']('true')
         tmp_room = True
         global door_timer_thread
-        door_timer_thread = threading.Thread(target=timer, args=[60, tmp_room_check])
+        door_timer_thread = threading.Thread(
+            target=timer, args=[60, tmp_room_check])
         door_timer_thread.start()
         print("Timer started")
         door_ignore_flag = True
@@ -277,17 +320,23 @@ def door_callback(arg):
             last_updated = datetime.now()
             to_send.append('update')
 
+
 def restart(_=None):
-    with open('Restart', 'w') as _: pass
+    with open('Restart', 'w') as _:
+        pass
+
 
 def reboot(_=None):
-    with open('Reboot', 'w') as _: pass
+    with open('Reboot', 'w') as _:
+        pass
+
 
 def wake():
     global clock_showing
     if clock_showing:
         clock_showing = False
         to_send.append("clock|none")
+
 
 async def status_checker():
     global to_send
@@ -338,12 +387,14 @@ async def status_checker():
             log.log(f'Status checker Exception: {ex}', True)
             print(f'Exception: {ex}')
 
+
 def sender_starter():
     log.log("Sender started")
     asyncio.set_event_loop(sender_loop)
     sender_loop.run_until_complete(status_checker())
     sender_loop.run_forever()
     exit(0)
+
 
 def listener_starter():
     log.log("Listener started")
@@ -353,6 +404,7 @@ def listener_starter():
     listener_loop.run_forever()
     exit(0)
 
+
 def _exit():
     global killswitch
     log.log("Stopped by user")
@@ -361,12 +413,15 @@ def _exit():
         if usb_player.now_playing != "none":
             verbose("USB stop calling")
             usb_player.stop()
-    except: pass
+    except:
+        pass
     listener_loop.stop()
     sender_loop.stop()
     print('!stop')
     log.close()
-    with open('KILL', 'w') as _: pass
+    with open('KILL', 'w') as _:
+        pass
+
 
 def developer_mode():
     if temp_sent:
@@ -377,6 +432,7 @@ def developer_mode():
     for line in log.get_buffer():
         print(line.replace("\n", ''), no_log=True)
     print('------LOG END------', no_log=True)
+
 
 def help(what=None):
     if what == None:
@@ -409,6 +465,7 @@ update - Emulates an update request for the weather bar"""
         text = f"The selected modul '{what}' has no help page!"
     print(text)
 
+
 def load():
     _from = USB_name if USB_name != None else 'status'
     if os.path.exists(f"{os.path.join(File_Folder, _from)}.json"):
@@ -425,6 +482,7 @@ def load():
         print('No status was saved!')
         return None
 
+
 def print_vars():
     from inspect import isclass
     tmp = globals()
@@ -437,14 +495,17 @@ def print_vars():
     del tmp
     print(f"The door value is {controller.get_door_status()}")
 
+
 def invert():
     controller.inverted = not controller.inverted
     print(f'Inverted was set to {controller.inverted}')
     controller.check_for_need
 
+
 def manual_send(what):
     global to_send
     to_send.append(what)
+
 
 def fan_emulator(_=None):
     global dev_mode
@@ -452,23 +513,25 @@ def fan_emulator(_=None):
     controller.fan(dev_mode)
     manual_send('fan')
 
+
 def emulate(what):
     things = {
-        'door':door_callback, 
-        'room':manual_send, 
-        'cabinet':manual_send, 
-        'bath_tub':manual_send,
-        'temp':manual_send,
-        'fan':fan_emulator,
-        'close':manual_send,
-        'Refresh':manual_send,
-        'update':manual_send
-        }
+        'door': door_open_callback,
+        'room': manual_send,
+        'cabinet': manual_send,
+        'bath_tub': manual_send,
+        'temp': manual_send,
+        'fan': fan_emulator,
+        'close': manual_send,
+        'Refresh': manual_send,
+        'update': manual_send
+    }
     if what in things:
         things[what](what)
         print('Emulated')
     else:
         print('Not a valid command!')
+
 
 def room_controll(state):
     verbose(f'Room controll called with {state}')
@@ -495,16 +558,19 @@ def room_controll(state):
             global to_send
             if tmp_room:
                 tmp_room = False
-                verbose("tmp_room set to false, lights switched off, with no other lights avaleable")
+                verbose(
+                    "tmp_room set to false, lights switched off, with no other lights avaleable")
                 controller.room(state)
                 return
             to_send.append("room_extend")
             global off_timer_thread
-            off_timer_thread = threading.Thread(target=timer, args=[30, controller.room, state])
+            off_timer_thread = threading.Thread(
+                target=timer, args=[30, controller.room, state])
             off_timer_thread.start()
             print('Off timer started')
         else:
             controller.room(state)
+
 
 def sw_ignore(what):
     if what == 'door':
@@ -512,10 +578,13 @@ def sw_ignore(what):
         global to_send
         door_manual_ignore_flag = not door_manual_ignore_flag
         print('Door ignored' if door_manual_ignore_flag else 'Door endabled')
-        to_send.append('door|ignored' if door_manual_ignore_flag else 'door|checked')
+        to_send.append(
+            'door|ignored' if door_manual_ignore_flag else 'door|checked')
+
 
 def get_ip():
-    import socket, sys
+    import socket
+    import sys
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     ip = s.getsockname()[0]
@@ -523,6 +592,7 @@ def get_ip():
     del sys.modules['socket'], sys.modules['sys']
     del socket, sys
     return ip
+
 
 def killer():
     if controller.get_status('room') or controller.get_status('cabinet') or controller.get_status('bath_tub'):
@@ -532,7 +602,8 @@ def killer():
     else:
         reboot()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
     print_handler.name = "Printer"
     print_handler_thread.start()
@@ -548,60 +619,62 @@ if __name__=="__main__":
         death_timer.name = 'Restarter'
         death_timer.start()
         print(f"Checking the '{File_Folder}' path")
-        #Creating needed folders in /var
+        # Creating needed folders in /var
         if not os.path.exists(File_Folder):
             os.mkdir(File_Folder)
-        #Global functions
+        # Global functions
         print('Setting up the global functions...')
-        controller = pin_controll.controller(door_callback, load())
+        controller = pin_controll.controller(
+            door_open_callback, door_close_callback, load())
         if load() != None:
             if len(load()) != len(controller.status):
                 print("Key error detected, reseting setup...")
+        door_open = not controller.get_door_status()
         listener_loop = asyncio.new_event_loop()
         sender_loop = asyncio.new_event_loop()
-        #Global functions end
+        # Global functions end
         print('Setting up the mappings...')
-        #Option switch board
+        # Option switch board
         options = {
-            'cabinet':controller.cabinet, 
-            'room':room_controll, 
-            'brightness':controller.brightness, 
-            'bath_tub':controller.bath_tub, 
-            'color':controller.color,
-            'update':update,
-            'skip':usb_player.skip,
-            'pause':usb_player.pause,
-            'volume':usb_player.set_volume,
+            'cabinet': controller.cabinet,
+            'room': room_controll,
+            'brightness': controller.brightness,
+            'bath_tub': controller.bath_tub,
+            'color': controller.color,
+            'update': update,
+            'skip': usb_player.skip,
+            'pause': usb_player.pause,
+            'volume': usb_player.set_volume,
             'prev': usb_player.prev,
             'ignore': sw_ignore,
-            'restart':restart,
-            'reboot':reboot
-            }
-        #Option switch board end
-        #Menu
-        menu = {
-            "developer":developer_mode,
-            "emulate":emulate,
-            "exit":_exit,
-            'help':help,
-            'swap':controller.swap_color,
-            'status':get_status, 
-            "mute":print_handler.mute, 
-            "update":update, 
-            'verbose':print_handler.ch_verbose,
-            'vars':print_vars,
-            'rgb':rgb,
-            'invert':invert,
-            'restart':restart
+            'restart': restart,
+            'reboot': reboot
         }
-        #Menu end
+        # Option switch board end
+        # Menu
+        menu = {
+            "developer": developer_mode,
+            "emulate": emulate,
+            "exit": _exit,
+            'help': help,
+            'swap': controller.swap_color,
+            'status': get_status,
+            "mute": print_handler.mute,
+            "update": update,
+            'verbose': print_handler.ch_verbose,
+            'vars': print_vars,
+            'rgb': rgb,
+            'invert': invert,
+            'restart': restart
+        }
+        # Menu end
         try:
             log.log("Main thred started!")
             print('Creating threads...')
             listener = threading.Thread(target=listener_starter)
             sender = threading.Thread(target=sender_starter)
             usb_thread = threading.Thread(target=usb_listener)
-            usb_thread.name='USB'
+            usb_thread.name = 'USB'
             listener.name = "Listener"
             sender.name = "Sender"
             print('Starting up the threads...')

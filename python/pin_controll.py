@@ -1,46 +1,59 @@
 try:
     import RPi.GPIO as GPIO
 except:
-    import FakeRPi.GPIO as GPIO #pip install git+https://github.com/sn4k3/FakeRPi
+    import FakeRPi.GPIO as GPIO  # pip install git+https://github.com/sn4k3/FakeRPi
 
 from pins import *
 from time import sleep
 from print_handler import verbose
 
+
 class controller():
 
-    def __init__(self, door_callback, _initial=None, _inverted=False, _12V=False):
+    def __init__(self, door_open_callback, door_close_callback, _initial=None, _inverted=False, _12V=False):
         """Some text"""
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        GPIO.setup(pins.lamp_pin.value, GPIO.OUT, initial=GPIO.LOW)                               #Lamp
-        GPIO.setup(pins.tub_pin.value, GPIO.OUT, initial=GPIO.LOW)                                #Bathtub leds
-        GPIO.setup(pins.cabinet_pin.value, GPIO.OUT, initial=GPIO.LOW)                            #cabinet leds
-        GPIO.setup(pins.fan_controll.value, GPIO.OUT, initial=GPIO.LOW)                           #Fancontroller
-        GPIO.setup(pins.red_pin.value, GPIO.OUT)                                                  #Red color
-        GPIO.setup(pins.green_pin.value, GPIO.OUT)                                                #Green color
-        GPIO.setup(pins.blue_pin.value, GPIO.OUT)                                                 #Blue color
-        GPIO.setup(pins._12V.value, GPIO.OUT, initial=GPIO.HIGH)                                  #12 V Powersuply
-        GPIO.setup(pins.door_pin.value, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)                      #Door switch
-        GPIO.add_event_detect(pins.door_pin.value, GPIO.FALLING, door_callback, bouncetime=150)   #Door interrupt
-        self.red = GPIO.setup(pins.red_pin.value, GPIO.OUT, initial=GPIO.LOW) #GPIO.PWM(pins.red_pin.value, 100)
-        self.green = GPIO.setup(pins.green_pin.value, GPIO.OUT, initial=GPIO.LOW) #GPIO.PWM(pins.green_pin.value, 100)
-        self.blue = GPIO.setup(pins.blue_pin.value, GPIO.OUT, initial=GPIO.LOW) #GPIO.PWM(pins.blue_pin.value, 100)
+        GPIO.setup(pins.lamp_pin.value, GPIO.OUT, initial=GPIO.LOW)  # Lamp
+        GPIO.setup(pins.tub_pin.value, GPIO.OUT,
+                   initial=GPIO.LOW)  # Bathtub leds
+        GPIO.setup(pins.cabinet_pin.value, GPIO.OUT,
+                   initial=GPIO.LOW)  # cabinet leds
+        GPIO.setup(pins.fan_controll.value, GPIO.OUT,
+                   initial=GPIO.LOW)  # Fancontroller
+        GPIO.setup(pins.red_pin.value, GPIO.OUT)  # Red color
+        GPIO.setup(pins.green_pin.value, GPIO.OUT)  # Green color
+        GPIO.setup(pins.blue_pin.value, GPIO.OUT)  # Blue color
+        GPIO.setup(pins._12V.value, GPIO.OUT,
+                   initial=GPIO.HIGH)  # 12 V Powersuply
+        GPIO.setup(pins.door_pin.value, GPIO.IN,
+                   pull_up_down=GPIO.PUD_DOWN)  # Door switch
+        GPIO.add_event_detect(pins.door_pin.value, GPIO.FALLING,
+                              door_open_callback, bouncetime=150)  # Door interrupt
+        GPIO.add_event_detect(pins.door_pin.value,
+                              GPIO.RISING, door_close_callback, bouncetime=150)
+        # GPIO.PWM(pins.red_pin.value, 100)
+        self.red = GPIO.setup(pins.red_pin.value, GPIO.OUT, initial=GPIO.LOW)
+        # GPIO.PWM(pins.green_pin.value, 100)
+        self.green = GPIO.setup(pins.green_pin.value,
+                                GPIO.OUT, initial=GPIO.LOW)
+        # GPIO.PWM(pins.blue_pin.value, 100)
+        self.blue = GPIO.setup(pins.blue_pin.value, GPIO.OUT, initial=GPIO.LOW)
         self.inverted = _inverted
-        self._12V_=_12V
+        self._12V_ = _12V
         self.status = {
-            'brightness':0,
-            'room':False,
-            'bath_tub':False,
-            'cabinet':False,
-            'color':[0,0,0],
-            'fan':False,
-            'red':0,
-            'green':0,
-            'blue':0,
-            "rgb":[0,0,0],
-            '12V':False,
+            'brightness': 0,
+            'room': False,
+            'bath_tub': False,
+            'cabinet': False,
+            'color': [0, 0, 0],
+            'fan': False,
+            'red': 0,
+            'green': 0,
+            'blue': 0,
+            "rgb": [0, 0, 0],
+            '12V': False,
             'PWM': False
         }
         if _initial != None:
@@ -113,10 +126,14 @@ class controller():
         _min = 100 if self.inverted else 0
         _max = 0 if self.inverted else 100
         if self.status["brightness"] > 0:
-            red = self.translate(self.status['color'][0]/(1/self.status['brightness']), 0, 255, _min, _max)
-            green = self.translate(self.status['color'][1]/(1/self.status['brightness']), 0, 255, _min, _max)
-            blue = self.translate(self.status['color'][2]/(1/self.status['brightness']), 0, 255, _min, _max)
-            verbose(f"Led pins should use the following values: R {red}, G {green} B {blue}")
+            red = self.translate(
+                self.status['color'][0]/(1/self.status['brightness']), 0, 255, _min, _max)
+            green = self.translate(
+                self.status['color'][1]/(1/self.status['brightness']), 0, 255, _min, _max)
+            blue = self.translate(
+                self.status['color'][2]/(1/self.status['brightness']), 0, 255, _min, _max)
+            verbose(
+                f"Led pins should use the following values: R {red}, G {green} B {blue}")
             GPIO.output(pins.red_pin.value, red)
             GPIO.output(pins.green_pin.value, green)
             GPIO.output(pins.blue_pin.value, blue)
@@ -133,12 +150,16 @@ class controller():
                     self.green.start(0)
                     self.blue.start(0)
                     self.status['PWM'] = True
-                self.red.ChangeDutyCycle(self.translate(self.status["brightness"], -1, 13, _min, _max))
-                self.green.ChangeDutyCycle(self.translate(self.status["brightness"], -1, 13, _min, _max))
-                self.blue.ChangeDutyCycle(self.translate(self.status["brightness"], -1, 13, _min, _max))
+                self.red.ChangeDutyCycle(self.translate(
+                    self.status["brightness"], -1, 13, _min, _max))
+                self.green.ChangeDutyCycle(self.translate(
+                    self.status["brightness"], -1, 13, _min, _max))
+                self.blue.ChangeDutyCycle(self.translate(
+                    self.status["brightness"], -1, 13, _min, _max))
                 return
                 try:
-                    self.status['red'] = self.translate(self.status['color'][0]/self.status['brightness'], 0, 255, _min, _max)
+                    self.status['red'] = self.translate(
+                        self.status['color'][0]/self.status['brightness'], 0, 255, _min, _max)
                     if self.status['red'] > 1:
                         self.status['red'] = 1.0/self.status['red']
                 except:
@@ -149,7 +170,8 @@ class controller():
                 finally:
                     self.red.ChangeDutyCycle(self.status['red'])
                 try:
-                    self.status['green'] = self.translate(self.status['color'][1]/self.status['brightness'], 0, 255, _min, _max)
+                    self.status['green'] = self.translate(
+                        self.status['color'][1]/self.status['brightness'], 0, 255, _min, _max)
                     if self.status['green'] > 1:
                         self.status['green'] = 1.0/self.status['green']
                 except:
@@ -160,7 +182,8 @@ class controller():
                 finally:
                     self.green.ChangeDutyCycle(self.status['green'] * 100)
                 try:
-                    self.status['blue'] = self.translate(self.status['color'][2]/self.status['brightness'], 0, 255, _min, _max)
+                    self.status['blue'] = self.translate(
+                        self.status['color'][2]/self.status['brightness'], 0, 255, _min, _max)
                     if self.status['blue'] > 1:
                         self.status['blue'] = 1.0/self.status['blue']
                 except:
@@ -186,27 +209,31 @@ class controller():
 
     def room(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The room lights should {}be on!".format('' if (is_on) else 'not '))
+        verbose("The room lights should {}be on!".format(
+            '' if (is_on) else 'not '))
         GPIO.output(pins.lamp_pin.value, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['room'] = is_on
 
     def bath_tub(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The bath tub lights should {}be on!".format('' if (is_on) else 'not '))
+        verbose("The bath tub lights should {}be on!".format(
+            '' if (is_on) else 'not '))
         GPIO.output(pins.tub_pin.value, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['bath_tub'] = is_on
         self.set_leds()
 
     def cabinet(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The cabinet lights should {}be on!".format('' if (is_on) else 'not '))
+        verbose("The cabinet lights should {}be on!".format(
+            '' if (is_on) else 'not '))
         GPIO.output(pins.cabinet_pin.value, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['cabinet'] = is_on
         self.set_leds()
 
     def color(self, color_v):
         color_v = color_v.replace('#', '')
-        color_v = [int(color_v[:2], 16), int(color_v[2:4], 16), int(color_v[4:], 16)]
+        color_v = [int(color_v[:2], 16), int(
+            color_v[2:4], 16), int(color_v[4:], 16)]
         verbose(f"The color of the led's should be #{color_v}")
         self.status['color'] = color_v
         self.set_leds()
@@ -215,9 +242,11 @@ class controller():
         if status == None:
             self.status['fan'] = not self.status['fan']
             status = self.status
-        verbose("Fan pin was set to {}".format((GPIO.HIGH if status else GPIO.LOW)))
-        GPIO.output(pins.fan_controll.value, (GPIO.HIGH if status else GPIO.LOW))
+        verbose("Fan pin was set to {}".format(
+            (GPIO.HIGH if status else GPIO.LOW)))
+        GPIO.output(pins.fan_controll.value,
+                    (GPIO.HIGH if status else GPIO.LOW))
         self.status['fan'] = status
-    
+
     def clean(self):
         GPIO.cleanup()
