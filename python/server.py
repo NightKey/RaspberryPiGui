@@ -281,7 +281,14 @@ async def message_sender(message):
     await ws.send(message)
 
 
-def door_close_callback(arg):
+def  door_callback(arg):
+    if controller.get_door_status():
+        door_close_callback()
+    else:
+        door_open_callback()
+
+
+def door_close_callback():
     global door_open
     if not door_open:
         return
@@ -291,34 +298,34 @@ def door_close_callback(arg):
     door_open = False
 
 
-def door_open_callback(arg):
+def door_open_callback():
     global tmp_room
     global door_ignore_flag
     global last_updated
     global last_activity
     global door_open
-    print(f"Door callback: {arg} Ignore flag: {door_ignore_flag}")
-    if not door_ignore_flag and not door_manual_ignore_flag and not door_open:
-        sleep(door_wait_timer)
-        # Ignores the door, if it was opened/stood open with lights on
-        if controller.get_door_status() or controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:
-            return
-        last_activity = datetime.now()
-        wake()
-        to_send.append('door')
-        door_open = True
-        options['room']('true')
-        tmp_room = True
-        global door_timer_thread
-        door_timer_thread = threading.Thread(
-            target=timer, args=[60, tmp_room_check])
-        door_timer_thread.start()
-        print("Timer started")
-        door_ignore_flag = True
-        if last_updated == None or (datetime.now() - last_updated) > timedelta(hours=1):
-            print('Weather updated')
-            last_updated = datetime.now()
-            to_send.append('update')
+    if door_ignore_flag or door_manual_ignore_flag or door_open:
+        return
+    sleep(door_wait_timer)
+    # Ignores the door, if it was opened/stood open with lights on
+    if controller.get_door_status() or controller.status['room'] or controller.status['bath_tub'] or controller.status['cabinet']:
+        return
+    last_activity = datetime.now()
+    wake()
+    to_send.append('door')
+    door_open = True
+    options['room']('true')
+    tmp_room = True
+    global door_timer_thread
+    door_timer_thread = threading.Thread(
+        target=timer, args=[60, tmp_room_check])
+    door_timer_thread.start()
+    print("Timer started")
+    door_ignore_flag = True
+    if last_updated == None or (datetime.now() - last_updated) > timedelta(hours=1):
+        print('Weather updated')
+        last_updated = datetime.now()
+        to_send.append('update')
 
 
 def restart(_=None):
@@ -625,7 +632,7 @@ if __name__ == "__main__":
         # Global functions
         print('Setting up the global functions...')
         controller = pin_controll.controller(
-            door_open_callback, door_close_callback, load())
+            door_callback, load())
         if load() != None:
             if len(load()) != len(controller.status):
                 print("Key error detected, reseting setup...")
