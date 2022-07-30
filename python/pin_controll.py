@@ -10,7 +10,7 @@ from print_handler import verbose
 
 class controller():
 
-    def __init__(self, door_open_callback, door_close_callback, _initial=None, _inverted=False, _12V=False):
+    def __init__(self, door_callback, _initial=None, _inverted=False, _12V=False):
         """Some text"""
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
@@ -29,10 +29,8 @@ class controller():
                    initial=GPIO.HIGH)  # 12 V Powersuply
         GPIO.setup(pins.door_pin.value, GPIO.IN,
                    pull_up_down=GPIO.PUD_DOWN)  # Door switch
-        GPIO.add_event_detect(pins.door_pin.value, GPIO.FALLING,
-                              door_open_callback, bouncetime=150)  # Door interrupt
-        GPIO.add_event_detect(pins.door_pin.value,
-                              GPIO.RISING, door_close_callback, bouncetime=150)
+        GPIO.add_event_detect(pins.door_pin.value, GPIO.BOTH,
+                              door_callback, bouncetime=150)  # Door interrupt
         # GPIO.PWM(pins.red_pin.value, 100)
         self.red = GPIO.setup(pins.red_pin.value, GPIO.OUT, initial=GPIO.LOW)
         # GPIO.PWM(pins.green_pin.value, 100)
