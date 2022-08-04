@@ -1,7 +1,7 @@
 from print_handler import printer, screen_handler, verbose
 import asyncio
 import websockets
-import logger
+from smdb_logger import Logger
 import threading
 import sys
 import os
@@ -24,8 +24,8 @@ to_print = []
 File_Folder = "/var/RPS"
 if os.name == "nt":
     File_Folder = "E:/Windows_stuff/var/RPS"  # Change for your prefered log folder
-log = logger.logger(os.path.join(
-    File_Folder, "RaspberryPiServerLog"), True, 5120)
+logger = Logger("RaspberryPiServerLog.log", File_Folder, level="INFO",
+                storage_life_extender_mode=True, max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True)
 # flags
 last_activity = last_updated = datetime.now()
 clock_showing = True
@@ -51,10 +51,18 @@ def print_combiner(text, end='\n> ', no_log=False):
     caller = caller.replace('<module>', 'Main')
     printer(text, caller, end)
     if not no_log:
-        log.log(f'{caller} -> {text}')
+        logger.info(text)
 
 
 print = print_combiner
+
+
+def periodic_flusher():
+    print("Flushed!")
+    logger.flush_buffer()
+    new_timer = threading.Thread(target=timer, args=[7200, periodic_flusher])
+    new_timer.name = "Periodic flush timer"
+    new_timer.start()
 
 
 def get_status():
@@ -251,7 +259,7 @@ async def handler(websocket, path):
             while True:
                 data = await websocket.recv()
                 last_activity = datetime.now()
-                log.log(f'Data retreaved: {data}')
+                logger.debug(f'Data retreaved: {data}')
                 if data == 'keep lit':
                     tmp_room = False
                     verbose("tmp_room set to false, got message 'keep lit'")
@@ -269,8 +277,8 @@ async def handler(websocket, path):
                     exit()
         except Exception as ex:
             websocket.ws_server.unregister(websocket)
-            log.log('Connection lost')
-            log.log(f"Exception: {ex}")
+            logger.error('Connection lost')
+            logger.error(f"Exception: {ex}")
             is_connected = False
             print('Connection lost')
             print(f'Exception: {ex}')
@@ -378,7 +386,7 @@ async def status_checker():
                         await message_sender(to_send[0])
                         del to_send[0]
                     except Exception as ex:
-                        log.log(f'Error in sending message: {ex}')
+                        logger.error(f'Error in sending message: {ex}')
                         print(f'Error in sending message: {ex}')
             counter += 1
             if counter > 100:
@@ -391,12 +399,12 @@ async def status_checker():
                 clock_showing = True
             sleep(0.2)
         except Exception as ex:
-            log.log(f'Status checker Exception: {ex}', True)
+            logger.error(f'Status checker Exception: {ex}', True)
             print(f'Exception: {ex}')
 
 
 def sender_starter():
-    log.log("Sender started")
+    logger.debug("Sender started")
     asyncio.set_event_loop(sender_loop)
     sender_loop.run_until_complete(status_checker())
     sender_loop.run_forever()
@@ -404,7 +412,7 @@ def sender_starter():
 
 
 def listener_starter():
-    log.log("Listener started")
+    logger.debug("Listener started")
     asyncio.set_event_loop(listener_loop)
     start_server = websockets.serve(handler, ip, port)
     listener_loop.run_until_complete(start_server)
@@ -414,7 +422,7 @@ def listener_starter():
 
 def _exit():
     global killswitch
-    log.log("Stopped by user")
+    logger.debug("Stopped by user")
     killswitch = True
     try:
         if usb_player.now_playing != "none":
@@ -425,7 +433,7 @@ def _exit():
     listener_loop.stop()
     sender_loop.stop()
     print('!stop')
-    log.close()
+    logger.close()
     with open('KILL', 'w') as _:
         pass
 
@@ -436,7 +444,7 @@ def developer_mode():
         to_send.append('fan')
         print('Fan stopped!')
     print('--------LOG START--------', no_log=True)
-    for line in log.get_buffer():
+    for line in logger.get_buffer():
         print(line.replace("\n", ''), no_log=True)
     print('------LOG END------', no_log=True)
 
@@ -616,6 +624,7 @@ if __name__ == "__main__":
     print_handler_thread.start()
     try:
         print('Server started!')
+        periodic_flusher()
         update()
         tmp = datetime.now()
         tmp += timedelta(days=1)
@@ -676,7 +685,7 @@ if __name__ == "__main__":
         }
         # Menu end
         try:
-            log.log("Main thred started!")
+            logger.debug("Main thred started!")
             print('Creating threads...')
             listener = threading.Thread(target=listener_starter)
             sender = threading.Thread(target=sender_starter)
@@ -702,20 +711,21 @@ if __name__ == "__main__":
                             menu[text]()
                     except KeyError as ke:
                         print("It's not a valid command!")
-                log.log('Stopping...')
+                logger.debug('Stopping...')
             elif "-v" in os.sys.argv:
                 sender.join()
             else:
                 print('!stop')
                 sender.join()
         except Exception as ex:
-            log.log(str(ex), True)
+            logger.error(str(ex), True)
         finally:
-            log.close()
+            logger.flush_buffer()
     except Exception as ex:
-        log.log('Main thread error!', True)
-        log.log(f"Exception: {ex}")
+        logger.error('Main thread error!', True)
+        logger.error(f"Exception: {ex}")
         print('Error in loading, trying to update...')
         print(f"Exception: {ex}")
+        logger.flush_buffer()
         while True:
             update()

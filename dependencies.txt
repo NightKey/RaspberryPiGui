@@ -1,2 +1,3 @@
 pygame
 websockets
+smdb_logger
