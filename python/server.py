@@ -26,6 +26,8 @@ if os.name == "nt":
     File_Folder = "E:/Windows_stuff/var/RPS"  # Change for your prefered log folder
 logger = Logger("RaspberryPiServerLog.log", File_Folder, level="INFO",
                 storage_life_extender_mode=True, max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True)
+temp_logger = Logger("Temperatires.log", storage_life_extender_mode=True,
+                     max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=False)
 # flags
 last_activity = last_updated = datetime.now()
 clock_showing = True
@@ -61,6 +63,14 @@ def periodic_flusher():
     print("Flushed!")
     logger.flush_buffer()
     new_timer = threading.Thread(target=timer, args=[7200, periodic_flusher])
+    new_timer.name = "Periodic flush timer"
+    new_timer.start()
+
+
+def temp_flusher():
+    print("Flushed!")
+    temp_logger.flush_buffer()
+    new_timer = threading.Thread(target=timer, args=[14800, temp_flusher])
     new_timer.name = "Periodic flush timer"
     new_timer.start()
 
@@ -132,6 +142,7 @@ def temp_checker(test=False):
         try:
             temp = psutil.sensors_temperatures(
             )['cpu-thermal'][0]._asdict()['current']
+            temp_logger.info(temp)
             if temp > 85:
                 os.system("shutdown")
             if temp > 60 and not controller.status['fan']:
@@ -253,6 +264,7 @@ async def handler(websocket, path):
             await websocket.send("finished")
             await websocket.send(f'music|{usb_player.now_playing}')
             await websocket.send(f'ip|{external_ip}')
+            await websocket.send(f'version|{version}')
             await websocket.send(f'door|{"ignored" if door_manual_ignore_flag else "checked"}')
             del tmp
             del color
@@ -289,7 +301,7 @@ async def message_sender(message):
     await ws.send(message)
 
 
-def  door_callback(arg):
+def door_callback(arg):
     if controller.get_door_status():
         door_close_callback()
     else:
@@ -622,6 +634,7 @@ if __name__ == "__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
     print_handler.name = "Printer"
     print_handler_thread.start()
+    version = os.sys.argv[os.sys.argv.index("--version") + 1]
     try:
         print('Server started!')
         periodic_flusher()
@@ -699,6 +712,7 @@ if __name__ == "__main__":
             usb_thread.start()
             lights_command = False
             print('Server started!')
+            temp_flusher()
             if "-d" in os.sys.argv:
                 with open('Ready', 'w') as f:
                     pass

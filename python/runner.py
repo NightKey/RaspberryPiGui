@@ -24,9 +24,11 @@ def main():
     """
     current = read_version()
     print(f'Current version: {current}')
-    arg = argv[-1] if argv[-1] != 'runner.py' else ''
+    arg = [argv[-1] if argv[-1] != 'runner.py' else '']
+    arg.append("--version")
+    arg.append(str(current))
     # Creates a child process with the 'server.py' script
-    server = subprocess.Popen([interpreter, 'server.py', arg])
+    server = subprocess.Popen([interpreter, 'server.py', *arg])
     t = True
     while server.poll() is None:  # Works while the child process runs
         try:

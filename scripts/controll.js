@@ -43,6 +43,7 @@ window.onload = function () {
     let menu = document.getElementById('menu');
     let ignore_door = document.getElementById('ignore_door');
     let ip = document.getElementById('ip');
+    let version = document.getElementById('version');
     let door_state = document.getElementById('door_state');
     let restart_dev = document.getElementById('restart_dev');
     let restart = document.getElementById('restart');
@@ -262,6 +263,9 @@ window.onload = function () {
                                 break;
                             case 'ip':
                                 ip.innerHTML = event.data.split('|')[1];
+                                break;
+                            case 'version':
+                                version.innerHTML = event.data.split('|')[1];
                                 break;
                             case 'door':
                                 door_ignore_state(event.data.split('|')[1]);
