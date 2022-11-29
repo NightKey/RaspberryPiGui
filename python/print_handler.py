@@ -1,10 +1,13 @@
-import writer, inspect
+import writer
+import inspect
 from time import sleep
 
 output = writer.writer()
 to_print = []
 muted = False
 is_verbose = False
+
+
 def verbose(text, caller=None, end='\n> '):
     """
     Only prints when verbose is set to true    
@@ -17,6 +20,7 @@ def verbose(text, caller=None, end='\n> '):
                 caller = f"{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
         to_print.append([caller, text, end])
 
+
 def mute():
     """
     Mutes all output
@@ -24,12 +28,14 @@ def mute():
     global muted
     muted = not muted
 
-def ch_verbose():   #Changes the verbose state
+
+def ch_verbose():  # Changes the verbose state
     global is_verbose
     is_verbose = not is_verbose
     printer(f'Verbose set to {is_verbose}', 'Main')
 
-def printer(text, caller=None, end='\n> '): 
+
+def printer(text, caller=None, end='\n> '):
     """
     Adds the given text and caller to the 'to_print' variable
     """
@@ -40,6 +46,7 @@ def printer(text, caller=None, end='\n> '):
         except:
             caller = f"{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
     to_print.append([caller, text, end])
+
 
 def screen_handler():
     """
@@ -54,7 +61,9 @@ def screen_handler():
                 break
             if not muted:
                 try:
-                    output.write(to_print[0][1], to_print[0][0], end=to_print[0][2])
+                    output.write(to_print[0][1], to_print[0]
+                                 [0], end=to_print[0][2])
                 except Exception as ex:
                     output.write(f'{type(ex)} --> {ex}', 'Print handler Error')
             del to_print[0]
+        sleep(0.5)

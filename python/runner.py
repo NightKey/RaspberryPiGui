@@ -41,15 +41,15 @@ def main():
             # When the server requires a restart changing it's runmode between developper and normal mode
             if path.exists('Restart'):
                 remove('Restart')
-                if arg == '':
-                    arg = '-d'
+                if '-d' in arg:
+                    arg.remove('-d')
                 else:
-                    arg = ''
+                    arg.append('-d')
                 server.kill()
                 while server.poll() is None:
                     pass
                 print(
-                    f"Restarting in {'developper' if arg == '-d' else 'background'} mode...")
+                    f"Restarting in {'developper' if '-d' in arg else 'background'} mode...")
                 server = subprocess.Popen([interpreter, 'server.py', arg])
             if path.exists('KILL'):  # When the server requires to be killed by the runner
                 remove('KILL')

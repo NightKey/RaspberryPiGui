@@ -1,9 +1,9 @@
 from print_handler import printer, screen_handler, verbose
 import asyncio
 import websockets
+from websockets.legacy.server import WebSocketServerProtocol
 from smdb_logger import Logger
 import threading
-import sys
 import os
 import psutil
 import pin_controll
@@ -26,7 +26,7 @@ if os.name == "nt":
     File_Folder = "E:/Windows_stuff/var/RPS"  # Change for your prefered log folder
 logger = Logger("RaspberryPiServerLog.log", File_Folder, level="INFO",
                 storage_life_extender_mode=True, max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True)
-temp_logger = Logger("Temperatires.log", storage_life_extender_mode=True,
+temp_logger = Logger("Temperatures.log", storage_life_extender_mode=True,
                      max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=False)
 # flags
 last_activity = last_updated = datetime.now()
@@ -221,79 +221,77 @@ def rgb(values):
             verbose(f'Exception: {ex}')
 
 
-async def handler(websocket, path):
+async def handler(websocket: WebSocketServerProtocol, path):
     global is_connected
     global last_activity
     global clock_showing
     external_ip = get_ip()
-    while True:
-        print('alive')
-        try:
+    try:
+        if killswitch:
+            exit()
+        global ws
+        global tmp_room
+        global temp_sent
+        ws = websocket
+        verbose('Incoming connection')
+        is_connected = True
+        tmp = controller.status
+        color = []
+        for item in tmp['rgb']:
+            color.append(hex(item).replace('0x', ''))
+            if len(color[-1]) == 1:
+                color[-1] = f"0{color[-1]}"
+        verbose(f"Status: {tmp}")
+        verbose(f'Colors: {color}')
+        if tmp['room']:
+            verbose('Sending room')
+            await websocket.send('room')
+        if tmp['bath_tub']:
+            verbose('Sending bath_tub')
+            await websocket.send('bath_tub')
+        if tmp['cabinet']:
+            verbose('Sending cabinet')
+            await websocket.send('cabinet')
+        if tmp['fan']:
+            verbose('Sending fan')
+            await websocket.send('fan')
+            temp_sent = True
+        await websocket.send(f"color|{color}")
+        await websocket.send(f"brightness|{tmp['brightness']}")
+        await websocket.send(f"volume|{int(usb_player.volume * 100)}")
+        await websocket.send("finished")
+        await websocket.send(f'music|{usb_player.now_playing}')
+        await websocket.send(f'ip|{external_ip}')
+        await websocket.send(f'version|{version}')
+        await websocket.send(f'door|{"ignored" if door_manual_ignore_flag else "checked"}')
+        del tmp
+        del color
+        while True:
+            data = await websocket.recv()
+            last_activity = datetime.now()
+            logger.debug(f'Data retreaved: {data}')
+            if data == 'keep lit':
+                tmp_room = False
+                verbose("tmp_room set to false, got message 'keep lit'")
+                continue
+            if data == "clock_off":
+                clock_showing = False
+                continue
+            data = data.split(',')
+            options[data[0]](data[1])
+            save()
+            await ws.send('Accepted')
             if killswitch:
+                websocket.close()
+                await websocket.wait_closed()
                 exit()
-            global ws
-            global tmp_room
-            global temp_sent
-            ws = websocket
-            verbose('Incoming connection')
-            is_connected = True
-            tmp = controller.status
-            color = []
-            for item in tmp['color']:
-                color.append(hex(item).replace('0x', ''))
-                if len(color[-1]) == 1:
-                    color[-1] = f"0{color[-1]}"
-            verbose(f"Status: {tmp}")
-            verbose(f'Colors: {color}')
-            if tmp['room']:
-                verbose('Sending room')
-                await websocket.send('room')
-            if tmp['bath_tub']:
-                verbose('Sending bath_tub')
-                await websocket.send('bath_tub')
-            if tmp['cabinet']:
-                verbose('Sending cabinet')
-                await websocket.send('cabinet')
-            if tmp['fan']:
-                verbose('Sending fan')
-                await websocket.send('fan')
-                temp_sent = True
-            await websocket.send(f"color|{color}")
-            await websocket.send(f"brightness|{tmp['brightness']}")
-            await websocket.send(f"volume|{int(usb_player.volume * 100)}")
-            await websocket.send("finished")
-            await websocket.send(f'music|{usb_player.now_playing}')
-            await websocket.send(f'ip|{external_ip}')
-            await websocket.send(f'version|{version}')
-            await websocket.send(f'door|{"ignored" if door_manual_ignore_flag else "checked"}')
-            del tmp
-            del color
-            while True:
-                data = await websocket.recv()
-                last_activity = datetime.now()
-                logger.debug(f'Data retreaved: {data}')
-                if data == 'keep lit':
-                    tmp_room = False
-                    verbose("tmp_room set to false, got message 'keep lit'")
-                    continue
-                if data == "clock_off":
-                    clock_showing = False
-                    continue
-                data = data.split(',')
-                options[data[0]](data[1])
-                save()
-                await ws.send('Accepted')
-                if killswitch:
-                    websocket.close()
-                    await websocket.wait_closed()
-                    exit()
-        except Exception as ex:
-            websocket.ws_server.unregister(websocket)
-            logger.error('Connection lost')
-            logger.error(f"Exception: {ex}")
-            is_connected = False
-            print('Connection lost')
-            print(f'Exception: {ex}')
+    except Exception as ex:
+        websocket.ws_server.unregister(websocket)
+        logger.error('Connection lost')
+        logger.error(f"Exception: {ex}")
+        is_connected = False
+        print('Connection lost')
+        print(f'Exception: {ex}')
 
 
 async def message_sender(message):
@@ -541,6 +539,10 @@ def fan_emulator(_=None):
     manual_send('fan')
 
 
+def set_animation(animation):
+    controller.animate(int(animation))
+
+
 def emulate(what):
     things = {
         'door': door_open_callback,
@@ -632,7 +634,7 @@ def killer():
 
 if __name__ == "__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
-    print_handler.name = "Printer"
+    print_handler_thread.name = "Printer"
     print_handler_thread.start()
     version = os.sys.argv[os.sys.argv.index("--version") + 1]
     try:
@@ -654,7 +656,7 @@ if __name__ == "__main__":
         # Global functions
         print('Setting up the global functions...')
         controller = pin_controll.controller(
-            door_callback, load())
+            door_callback, logger, load())
         if load() != None:
             if len(load()) != len(controller.status):
                 print("Key error detected, reseting setup...")
@@ -694,7 +696,8 @@ if __name__ == "__main__":
             'vars': print_vars,
             'rgb': rgb,
             'invert': invert,
-            'restart': restart
+            'restart': restart,
+            'animate': set_animation
         }
         # Menu end
         try:
