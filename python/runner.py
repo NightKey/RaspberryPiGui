@@ -26,7 +26,7 @@ def main():
     print(f'Current version: {current}')
     arg = [argv[-1] if argv[-1] != 'runner.py' else '']
     arg.append("--version")
-    arg.append(str(current))
+    arg.append(current.to_version_string('|'))
     # Creates a child process with the 'server.py' script
     server = subprocess.Popen([interpreter, 'server.py', *arg])
     t = True

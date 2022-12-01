@@ -3,6 +3,7 @@ import asyncio
 import websockets
 from websockets.legacy.server import WebSocketServerProtocol
 from smdb_logger import Logger
+from version import version_info
 import threading
 import os
 import psutil
@@ -170,7 +171,7 @@ def temp_checker(test=False):
 
 def update(_=None):
     print('Checking for updates')
-    updater.update()
+    updater.update(version)
 
 
 def timer(time, to_call, _with=None):
@@ -636,7 +637,8 @@ if __name__ == "__main__":
     print_handler_thread = threading.Thread(target=screen_handler)
     print_handler_thread.name = "Printer"
     print_handler_thread.start()
-    version = os.sys.argv[os.sys.argv.index("--version") + 1]
+    version = version_info(
+        os.sys.argv[os.sys.argv.index("--version") + 1].split('|'))
     try:
         print('Server started!')
         periodic_flusher()
