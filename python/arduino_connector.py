@@ -92,7 +92,7 @@ class ArduinoController:
                     count = 0
                     start = time()
             except IOError as ex:
-                Logger.info("Arduino disconnected!")
+                self.logger.info("Arduino disconnected!")
 
     def __get_rgb(self, data: str) -> List[int]:
         data = data.split(';')[1:]
