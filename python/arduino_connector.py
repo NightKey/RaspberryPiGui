@@ -57,39 +57,42 @@ class ArduinoController:
         start = time()
         count = 0
         while self.run_listener:
-            if (self.serial_connection is None or (not self.serial_connection.is_open and self.connection_initialized)):
-                sleep(2)
-                continue
-            elif (self.serial_connection is None or not self.serial_connection.is_open):
-                self.init_connection()
-            if (self.serial_connection.in_waiting >= 5):
-                data = self.serial_connection.read(
-                    self.serial_connection.in_waiting)
-                self.serial_connection.reset_input_buffer()
-                data = data.decode("utf-8").strip("\r\n")
-                if (data != "alive"):
-                    self.logger.debug(f"Incoming Data: {data}")
-                count += 1
-                if len(data) < 1:
+            try:
+                if (self.serial_connection is None or (not self.serial_connection.is_open and self.connection_initialized)):
+                    sleep(2)
                     continue
-                if data[0] == 'C':
-                    tmp = self.__get_rgb(data)
-                    for i in range(3):
-                        if tmp[i] != self.color[i]:
-                            self.logger.error(
-                                f"Data missmach in color: {tmp} -> {self.color}")
-            if (time() - start > 2):
-                if count < self.minimum_alive_count_over_two_seconds:
-                    self.alive_timer_miss += 1
-                else:
-                    self.alive_timer_miss = 0
-                if self.alive_timer_miss > 5:
-                    self.logger.error(
-                        f"Arduino alive is not matching set minimum of {self.minimum_alive_count_over_two_seconds}\
-                        under two seconds for {self.alive_timer_miss} times")
-                    self.run_listener = False
-                count = 0
-                start = time()
+                elif (self.serial_connection is None or not self.serial_connection.is_open):
+                    self.init_connection()
+                if (self.serial_connection.in_waiting >= 5):
+                    data = self.serial_connection.read(
+                        self.serial_connection.in_waiting)
+                    self.serial_connection.reset_input_buffer()
+                    data = data.decode("utf-8").strip("\r\n")
+                    if (data != "alive"):
+                        self.logger.debug(f"Incoming Data: {data}")
+                    count += 1
+                    if len(data) < 1:
+                        continue
+                    if data[0] == 'C':
+                        tmp = self.__get_rgb(data)
+                        for i in range(3):
+                            if tmp[i] != self.color[i]:
+                                self.logger.error(
+                                    f"Data missmach in color: {tmp} -> {self.color}")
+                if (time() - start > 2):
+                    if count < self.minimum_alive_count_over_two_seconds:
+                        self.alive_timer_miss += 1
+                    else:
+                        self.alive_timer_miss = 0
+                    if self.alive_timer_miss > 5:
+                        self.logger.error(
+                            f"Arduino alive is not matching set minimum of {self.minimum_alive_count_over_two_seconds}\
+                            under two seconds for {self.alive_timer_miss} times")
+                        self.run_listener = False
+                    count = 0
+                    start = time()
+            except IOError as ex:
+                Logger.info("Arduino disconnected!")
 
     def __get_rgb(self, data: str) -> List[int]:
         data = data.split(';')[1:]
