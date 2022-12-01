@@ -31,7 +31,7 @@ class ArduinoController:
         available_port_data = list_ports.comports()
         for data in available_port_data:
             if "Arduino" in data.description:
-                self.serial_to_listen_to = data.name
+                self.serial_to_listen_to = data.device
         if (self.serial_to_listen_to == None):
             self.logger.warning("No arduino port found!")
             return False
