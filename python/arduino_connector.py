@@ -16,34 +16,38 @@ class Animation(Enum):
 class ArduinoController:
     def __init__(self, logger: Logger, minimum_alive_count_over_two_seconds: int = 3):
         self.logger = logger
-        self.color = []
         self.minimum_alive_count_over_two_seconds = minimum_alive_count_over_two_seconds
         self.alive_timer_miss = 0
         self.run_listener = True
         self.connection_initialized = False
         self.serial_connection = None
         self.serial_to_listen_to = None
+        self.color = [0, 0, 0]
+        self.brightness = 0
+        self.animation = Animation(0)
 
     def is_available(self):
         return self.serial_connection is not None and self.serial_connection.is_open
 
     def init_connection(self) -> bool:
-        available_port_data = list_ports.comports()
-        for data in available_port_data:
-            if "Arduino" in data.description:
-                self.serial_to_listen_to = data.device
-        if (self.serial_to_listen_to == None):
-            self.logger.warning("No arduino port found!")
-            return False
-        self.logger.debug(
-            f"Potential arduino port: {self.serial_to_listen_to}")
-        self.serial_connection = Serial(self.serial_to_listen_to)
         try:
-            self.serial_connection.open()
+            available_port_data = list_ports.comports()
+            for data in available_port_data:
+                if "Arduino" in data.description:
+                    self.serial_to_listen_to = data.device
+            if (self.serial_to_listen_to == None):
+                self.logger.warning("No arduino port found!")
+                return False
+            self.logger.debug(
+                f"Potential arduino port: {self.serial_to_listen_to}")
+            self.serial_connection = Serial(self.serial_to_listen_to)
+            if (not self.serial_connection.is_open):
+                self.serial_connection.open()
             self.connection_initialized = True
-        except:
+        except Exception as ex:
             self.logger.warning(
                 f"Failed to open the serial connection to the arduino on port {self.serial_to_listen_to}!")
+            self.logger.error(f"Exception: {ex}")
         finally:
             return self.connection_initialized
 
@@ -58,18 +62,21 @@ class ArduinoController:
         count = 0
         while self.run_listener:
             try:
-                if (self.serial_connection is None or (not self.serial_connection.is_open and self.connection_initialized)):
+                if (self.connection_initialized and self.connection_initialized is None):
                     sleep(2)
                     continue
                 elif (self.serial_connection is None or not self.serial_connection.is_open):
-                    self.init_connection()
+                    sleep(10)
+                    if (not self.init_connection()):
+                        continue
+                    self.set_color(*self.color)
+                    self.set_brightness(self.brightness)
+                    self.set_animation(self.animation)
                 if (self.serial_connection.in_waiting >= 5):
                     data = self.serial_connection.read(
                         self.serial_connection.in_waiting)
                     self.serial_connection.reset_input_buffer()
                     data = data.decode("utf-8").strip("\r\n")
-                    if (data != "alive"):
-                        self.logger.debug(f"Incoming Data: {data}")
                     count += 1
                     if len(data) < 1:
                         continue
@@ -92,7 +99,10 @@ class ArduinoController:
                     count = 0
                     start = time()
             except IOError as ex:
+                self.logger.debug(ex)
+                self.serial_connection.close()
                 self.serial_connection = None
+                self.connection_initialized = False
                 self.logger.info("Arduino disconnected!")
 
     def __get_rgb(self, data: str) -> List[int]:
@@ -109,16 +119,19 @@ class ArduinoController:
             brightness = 0
         if (brightness > 255):
             brightness = 255
+        self.brightness = brightness
         self.__send_serial(f'B;{int(brightness):0>3};'.encode('utf-8'))
 
     def set_animation(self, animation: Animation) -> None:
         self.__send_serial(f'A;{animation.value};'.encode('utf-8'))
+        self.animation = animation
 
     def show(self) -> None:
         self.__send_serial("S;".encode('utf-8'))
 
     def clear(self) -> None:
         self.__send_serial("R;".encode("utf-8"))
+        self.color = [0, 0, 0]
 
     def __send_serial(self, data: bytes) -> None:
         if self.serial_connection is None or not self.serial_connection.is_open:
@@ -141,3 +154,17 @@ class ArduinoController:
         self.run_listener = False
         self.th.join()
         self.serial_connection.close()
+
+
+if __name__ == "__main__":
+    logger = Logger(".TEST.log", clear=True,
+                    level="DEBUG", log_to_console=True)
+    test = ArduinoController(logger)
+    test.init_connection()
+    logger.header("Listener start")
+    test.start_listener()
+    try:
+        while True:
+            sleep(1)
+    finally:
+        test.close_connection()

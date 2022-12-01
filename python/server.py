@@ -25,8 +25,8 @@ to_print = []
 File_Folder = "/var/RPS"
 if os.name == "nt":
     File_Folder = "E:/Windows_stuff/var/RPS"  # Change for your prefered log folder
-logger = Logger("RaspberryPiServerLog.log", File_Folder, level="INFO",
-                storage_life_extender_mode=True, max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True)
+logger = Logger("RaspberryPiServerLog.log", File_Folder, level="DEBUG",
+                storage_life_extender_mode=True, max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=True)
 temp_logger = Logger("Temperatures.log", storage_life_extender_mode=True,
                      max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=False)
 # flags
@@ -237,11 +237,7 @@ async def handler(websocket: WebSocketServerProtocol, path):
         verbose('Incoming connection')
         is_connected = True
         tmp = controller.status
-        color = []
-        for item in tmp['rgb']:
-            color.append(hex(item).replace('0x', ''))
-            if len(color[-1]) == 1:
-                color[-1] = f"0{color[-1]}"
+        color = tmp['rgb']
         verbose(f"Status: {tmp}")
         verbose(f'Colors: {color}')
         if tmp['room']:
