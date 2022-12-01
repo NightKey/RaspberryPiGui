@@ -92,6 +92,7 @@ class ArduinoController:
                     count = 0
                     start = time()
             except IOError as ex:
+                self.serial_connection = None
                 self.logger.info("Arduino disconnected!")
 
     def __get_rgb(self, data: str) -> List[int]:
