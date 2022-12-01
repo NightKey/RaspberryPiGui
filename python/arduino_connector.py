@@ -25,7 +25,7 @@ class ArduinoController:
         self.serial_to_listen_to = None
 
     def is_available(self):
-        return self.serial_connection.is_open
+        return self.serial_connection is not None and self.serial_connection.is_open
 
     def init_connection(self) -> bool:
         available_port_data = list_ports.comports()
@@ -57,7 +57,7 @@ class ArduinoController:
         start = time()
         count = 0
         while self.run_listener:
-            if (self.serial_connection is None or not self.serial_connection.is_open and self.connection_initialized):
+            if (self.serial_connection is None or (not self.serial_connection.is_open and self.connection_initialized)):
                 sleep(2)
                 continue
             elif (self.serial_connection is None or not self.serial_connection.is_open):
@@ -117,7 +117,7 @@ class ArduinoController:
         self.__send_serial("R;".encode("utf-8"))
 
     def __send_serial(self, data: bytes) -> None:
-        if not self.serial_connection.is_open:
+        if self.serial_connection is None or not self.serial_connection.is_open:
             return
         self.serial_connection.write(data)
         self.logger.debug(f"Sending data: {data}")
