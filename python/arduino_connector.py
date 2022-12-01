@@ -57,10 +57,10 @@ class ArduinoController:
         start = time()
         count = 0
         while self.run_listener:
-            if (not self.serial_connection.is_open and self.connection_initialized):
+            if (self.serial_connection is None or not self.serial_connection.is_open and self.connection_initialized):
                 sleep(2)
                 continue
-            elif (not self.serial_connection.is_open):
+            elif (self.serial_connection is None or not self.serial_connection.is_open):
                 self.init_connection()
             if (self.serial_connection.in_waiting >= 5):
                 data = self.serial_connection.read(

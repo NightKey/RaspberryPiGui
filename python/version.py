@@ -61,6 +61,14 @@ class Required_action():
         if isinstance(other, Required_action):
             return self.action == other.action
 
+    def __gt__(self, other):
+        if isinstance(other, int):
+            return self.action > other
+        if isinstance(other, str):
+            return self.string > other
+        if isinstance(other, Required_action):
+            return self.action > other.action
+
 
 class version_info():
     """
