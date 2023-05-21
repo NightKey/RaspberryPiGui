@@ -1,5 +1,6 @@
 import json
 from typing import Union
+from os.path import join
 
 
 class Configuration:
@@ -12,6 +13,6 @@ class Configuration:
         self.path_to_arduino_project = path_to_arduino_project
 
     def load() -> "Configuration":
-        with open("..\config.conf", "r") as fp:
+        with open(join("..", "config.conf"), "r") as fp:
             data = json.load(fp)
         return Configuration(data["ip"], data["port"], data["board name"], data["path to arduino IDE"], data["path to arduino project"])
