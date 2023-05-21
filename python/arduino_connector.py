@@ -1,7 +1,7 @@
 from enum import Enum
 from time import sleep, time
 from typing import List
-from serial import Serial
+import serial
 from serial.tools import list_ports
 from threading import Thread
 from smdb_logger import Logger
@@ -57,7 +57,7 @@ class ArduinoController:
                 return False
             self.logger.debug(
                 f"Potential arduino port: {self.serial_to_listen_to}")
-            self.serial_connection = Serial(self.serial_to_listen_to)
+            self.serial_connection = serial.Serial(self.serial_to_listen_to)
             if (not self.serial_connection.is_open):
                 self.serial_connection.open()
             self.connection_initialized = True
@@ -172,7 +172,7 @@ class ArduinoController:
 
     def continue_serial(self) -> None:
         if (self.serial_connection is None):
-            self.serial_connection = Serial(self.serial_to_listen_to)
+            self.serial_connection = serial.Serial(self.serial_to_listen_to)
         self.serial_connection.open()
         self.status = ArduinoStatus.Ready
 
