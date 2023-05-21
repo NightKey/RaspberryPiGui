@@ -1,8 +1,7 @@
-from print_handler import printer, screen_handler, verbose
 import asyncio
 import websockets
 from websockets.legacy.server import WebSocketServerProtocol
-from smdb_logger import Logger
+from smdb_logger import Logger, LEVEL
 from pins import pins
 from version import version_info
 import threading
@@ -14,8 +13,6 @@ import usb_player
 import json
 from time import sleep
 from datetime import datetime, timedelta
-import print_handler
-import inspect
 from config import Configuration
 from os import path, remove
 
@@ -26,7 +23,7 @@ to_print = []
 File_Folder = "/var/RPS"
 if os.name == "nt":
     File_Folder = "E:/Windows_stuff/var/RPS"  # Change for your prefered log folder
-logger = Logger("RaspberryPiServerLog.log", File_Folder, level="DEBUG",
+logger = Logger("RaspberryPiServerLog.log", File_Folder, level=LEVEL.INFO,
                 storage_life_extender_mode=True, max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=True)
 temp_logger = Logger("Temperatures.log", storage_life_extender_mode=True,
                      max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=False)
@@ -47,22 +44,8 @@ door_wait_timer = 1  # Time to wait after detecting a falling edge in the door s
 door_open = False
 
 
-def print_combiner(text, end='\n> ', no_log=False):
-    try:
-        caller = f"{inspect.getouterframes(inspect.currentframe().f_back, 2)[1][3]}->{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
-    except:
-        caller = f"{inspect.getouterframes(inspect.currentframe(), 2)[1][3]}"
-    caller = caller.replace('<module>', 'Main')
-    printer(text, caller, end)
-    if not no_log:
-        logger.info(text)
-
-
-print = print_combiner
-
-
 def periodic_flusher():
-    print("Flushed!")
+    logger.debug("Flushed!")
     logger.flush_buffer()
     new_timer = threading.Thread(target=timer, args=[7200, periodic_flusher])
     new_timer.name = "Periodic flush timer"
@@ -70,34 +53,11 @@ def periodic_flusher():
 
 
 def temp_flusher():
-    print("Flushed!")
+    logger.debug("Flushed!")
     temp_logger.flush_buffer()
     new_timer = threading.Thread(target=timer, args=[14800, temp_flusher])
     new_timer.name = "Periodic flush timer"
     new_timer.start()
-
-
-def get_status():
-    try:
-        temp = psutil.sensors_temperatures(
-        )['cpu-thermal'][0]._asdict()['current']
-        print(f'CPU Temperature: {temp}')
-    except Exception as ex:
-        print(f'Error in status check: {ex}')
-    try:
-        pins = controller.get_status()
-        for key, value in pins.items():
-            if type(value) is not list:
-                print(f'{key} pin status: {value}')
-            else:
-                if key == 'rgb':
-                    print(f'Red pin: {value[0]}%')
-                    print(f'Green pin: {value[1]}%')
-                    print(f'Blue pin: {value[2]}%')
-                else:
-                    print(f'{key} is the following: {value}')
-    except Exception as ex:
-        print(f'Error in status check: {ex}')
 
 
 def usb_listener():
@@ -110,16 +70,17 @@ def usb_listener():
             if killswitch:
                 break
             if failcount > 5:
-                print('USB listener failed too many times, shutting off.')
+                logger.warning(
+                    'USB listener failed too many times, shutting off.')
                 break
             drives = os.listdir(USB_Dir)
             if drives != []:
-                verbose(f'Drives found: {drives}')
+                logger.debug(f'Drives found: {drives}')
                 for drive in drives:
                     USB_name = drive
                     controller.load(load())
                     save()
-                    verbose(f'USB drive found at {drive}')
+                    logger.debug(f'USB drive found at {drive}')
                     controller._12V()
                     usb_player.start(os.path.join(USB_Dir, drive))
                     controller.check_for_need()
@@ -206,19 +167,19 @@ def tmp_room_check():
     global manual_room
     global door_ignore_flag
     if tmp_room:
-        verbose('Lights off')
+        logger.debug('Lights off')
         controller.room('false')
         door_ignore_flag = True
         to_send.append('room')
         to_send.append('close')
         sleep(1)
         tmp_room = False
-        verbose("tmp_room set to false count down finished")
+        logger.debug("tmp_room set to false count down finished")
         manual_room = False
 
 
 def rgb(values):
-    verbose(f"RGB was called with '{values}' values.")
+    logger.debug(f"RGB was called with '{values}' values.")
     rgb = values.split(',')
     pins = [controller.red, controller.green, controller.blue]
     for value, pin in zip(rgb, pins):
@@ -226,7 +187,7 @@ def rgb(values):
             controller.set_pwm(pin, int(value))
         except Exception as ex:
             print(f'Falied with the value: {value}')
-            verbose(f'Exception: {ex}')
+            logger.debug(f'Exception: {ex}')
 
 
 async def handler(websocket: WebSocketServerProtocol, path):
@@ -241,23 +202,23 @@ async def handler(websocket: WebSocketServerProtocol, path):
         global tmp_room
         global temp_sent
         ws = websocket
-        verbose('Incoming connection')
+        logger.debug('Incoming connection')
         is_connected = True
         tmp = controller.status
         color = tmp['rgb']
-        verbose(f"Status: {tmp}")
-        verbose(f'Colors: {color}')
+        logger.debug(f"Status: {tmp}")
+        logger.debug(f'Colors: {color}')
         if tmp['room']:
-            verbose('Sending room')
+            logger.debug('Sending room')
             await websocket.send('room')
         if tmp['bath_tub']:
-            verbose('Sending bath_tub')
+            logger.debug('Sending bath_tub')
             await websocket.send('bath_tub')
         if tmp['cabinet']:
-            verbose('Sending cabinet')
+            logger.debug('Sending cabinet')
             await websocket.send('cabinet')
         if tmp['fan']:
-            verbose('Sending fan')
+            logger.debug('Sending fan')
             await websocket.send('fan')
             temp_sent = True
         await websocket.send(f"color|{color}")
@@ -276,7 +237,7 @@ async def handler(websocket: WebSocketServerProtocol, path):
             logger.debug(f'Data retreaved: {data}')
             if data == 'keep lit':
                 tmp_room = False
-                verbose("tmp_room set to false, got message 'keep lit'")
+                logger.debug("tmp_room set to false, got message 'keep lit'")
                 continue
             if data == "clock_off":
                 clock_showing = False
@@ -299,7 +260,7 @@ async def handler(websocket: WebSocketServerProtocol, path):
 
 
 async def message_sender(message):
-    verbose(f"Sending message '{message}'")
+    logger.debug(f"Sending message '{message}'")
     await ws.send(message)
 
 
@@ -434,67 +395,6 @@ def listener_starter():
     exit(0)
 
 
-def _exit():
-    global killswitch
-    logger.debug("Stopped by user")
-    killswitch = True
-    try:
-        if usb_player.now_playing != "none":
-            verbose("USB stop calling")
-            usb_player.stop()
-    except:
-        pass
-    listener_loop.stop()
-    sender_loop.stop()
-    print('!stop')
-    logger.close()
-    with open('KILL', 'w') as _:
-        pass
-
-
-def developer_mode():
-    if temp_sent:
-        controller.fan(False)
-        to_send.append('fan')
-        print('Fan stopped!')
-    print('--------LOG START--------', no_log=True)
-    for line in logger.get_buffer():
-        print(line.replace("\n", ''), no_log=True)
-    print('------LOG END------', no_log=True)
-
-
-def help(what=None):
-    if what == None:
-        text = """Avaleable commands:
-developer - Disables the fan pin, and prints the last 5 element of the logs
-emulate - Emulates something. Type in 'help emulate' for options
-exit - Stops the server
-help - This help message
-invert - Temporrly inverts the pwm's
-mute - Mutes the server output (to the console)
-restart - Restart the server, swapping between developper and normal mode
-rgb - Set's the rgb pwm values 0-100. The values are given in the following fassion: R,G,B
-status - Reports about the pin, and temperature status
-swap - Swaps the colors: R = R->B->G->R, G = G->R->B->G, B = B->G->R->B
-update - Update from github
-vars - Prints all of the global variables
-verbose - Prints more info from runtime"""
-    elif what == 'emulate':
-        text = """Options:
-bath_tub - Emulates the bathtub switch turning on/off
-cabinet - Emulates the cabinet switch turning on/off
-close - Closes the current error/message box shown
-door - Emulates a door opening
-fan - Turns on/off the raspberry fan
-room - Emulates the lighting switch turnong on/off
-Refresh - Emulates a refresh request for the webpage (from SD card)
-temp - Emulates a high temperature on the pi (only for display)
-update - Emulates an update request for the weather bar"""
-    else:
-        text = f"The selected modul '{what}' has no help page!"
-    print(text)
-
-
 def load():
     _from = USB_name if USB_name != None else 'status'
     if os.path.exists(f"{os.path.join(File_Folder, _from)}.json"):
@@ -567,8 +467,8 @@ def emulate(what):
 
 
 def room_controll(state):
-    verbose(f'Room controll called with {state}')
-    verbose(f'Room current status: {controller.get_status("room")}')
+    logger.debug(f'Room controll called with {state}')
+    logger.debug(f'Room current status: {controller.get_status("room")}')
     global door_ignore_flag
     global manual_room
     global tmp_room
@@ -579,7 +479,7 @@ def room_controll(state):
         manual_room = True
         door_ignore_flag = True
     elif controller.status['room']:
-        verbose(f'Status: {controller.get_status()}')
+        logger.debug(f'Status: {controller.get_status()}')
         if tmp_room:
             return
         if not manual_room:
@@ -591,7 +491,7 @@ def room_controll(state):
             global to_send
             if tmp_room:
                 tmp_room = False
-                verbose(
+                logger.debug(
                     "tmp_room set to false, lights switched off, with no other lights avaleable")
                 controller.room(state)
                 return
@@ -637,9 +537,6 @@ def killer():
 
 
 if __name__ == "__main__":
-    print_handler_thread = threading.Thread(target=screen_handler)
-    print_handler_thread.name = "Printer"
-    print_handler_thread.start()
     version = version_info(
         os.sys.argv[os.sys.argv.index("--version") + 1].split('|'))
     print("Loading configuration")
@@ -671,7 +568,6 @@ if __name__ == "__main__":
         listener_loop = asyncio.new_event_loop()
         sender_loop = asyncio.new_event_loop()
         # Global functions end
-        print('Setting up the mappings...')
         # Option switch board
         options = {
             'cabinet': controller.cabinet,
@@ -689,57 +585,24 @@ if __name__ == "__main__":
             'reboot': reboot
         }
         # Option switch board end
-        # Menu
-        menu = {
-            "developer": developer_mode,
-            "emulate": emulate,
-            "exit": _exit,
-            'help': help,
-            'swap': controller.swap_color,
-            'status': get_status,
-            "mute": print_handler.mute,
-            "update": update,
-            'verbose': print_handler.ch_verbose,
-            'vars': print_vars,
-            'rgb': rgb,
-            'invert': invert,
-            'restart': restart,
-            'animate': set_animation
-        }
-        # Menu end
         try:
-            logger.debug("Main thred started!")
-            print('Creating threads...')
+            logger.info("Main thred started!")
+            logger.debug('Creating threads...')
             listener = threading.Thread(target=listener_starter)
             sender = threading.Thread(target=sender_starter)
             usb_thread = threading.Thread(target=usb_listener)
             usb_thread.name = 'USB'
             listener.name = "Listener"
             sender.name = "Sender"
-            print('Starting up the threads...')
+            logger.debug('Starting up the threads...')
             listener.start()
             sender.start()
             usb_thread.start()
-            lights_command = False
-            print('Server started!')
+            logger.info('Server started!')
             temp_flusher()
             if "-d" in os.sys.argv:
-                with open('Ready', 'w') as f:
-                    pass
-                while not killswitch:
-                    text = input()
-                    try:
-                        if ' ' in text:
-                            menu[text.split(' ')[0]](text.split(' ')[1])
-                        else:
-                            menu[text]()
-                    except KeyError as ke:
-                        print("It's not a valid command!")
-                logger.debug('Stopping...')
-            elif "-v" in os.sys.argv:
-                sender.join()
-            else:
-                print('!stop')
+                logger.set_level(LEVEL.DEBUG)
+            if "-v" in os.sys.argv:
                 sender.join()
         except Exception as ex:
             logger.error(str(ex), True)

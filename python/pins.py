@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class pins(Enum):
     """This class contains all of the pin numbers the different things will be connected to.
     """
@@ -10,12 +11,15 @@ class pins(Enum):
     green_pin = 13
     red_pin = 12
     blue_pin = 23
-    fan_controll = 19
+    chassis_fan = 19
+    cpu_fan = 26
     _12V = 9
+
 
 class encoder():
     """This class contains the rotory encoder's different pin numbers.
     """
+
     def __init__(self):
         self.turn_left = -1
         self.turn_right = -1

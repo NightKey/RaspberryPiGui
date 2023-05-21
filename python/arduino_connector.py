@@ -1,10 +1,11 @@
 from enum import Enum
 from time import sleep, time
 from typing import List
-from serial import Serial
+import serial
 from serial.tools import list_ports
 from threading import Thread
 from smdb_logger import Logger
+import subprocess
 
 
 class Animation(Enum):
@@ -13,8 +14,22 @@ class Animation(Enum):
     Breathing = 2
 
 
+class ArduinoStatus(Enum):
+    Ready = 0
+    Updating = 1
+    Verifying = 2
+    VerificationFailed = 3
+    UploadFailed = 4
+    NotConnected = 5
+
+
+class ArduinoException(Exception):
+    def __init__(self, return_code: str, status: ArduinoStatus) -> None:
+        self.message = f"Exception in Updating the Arduino board: {status.name}. Return code: {return_code}"
+
+
 class ArduinoController:
-    def __init__(self, logger: Logger, minimum_alive_count_over_two_seconds: int = 3):
+    def __init__(self, logger: Logger, minimum_alive_count_over_two_seconds: int = 3, board_type: str = "arduino:avr:micro"):
         self.logger = logger
         self.minimum_alive_count_over_two_seconds = minimum_alive_count_over_two_seconds
         self.alive_timer_miss = 0
@@ -24,10 +39,12 @@ class ArduinoController:
         self.serial_to_listen_to = None
         self.color = [0, 0, 0]
         self.brightness = 0
-        self.animation = Animation(0)
+        self.animation = Animation.Homogane
+        self.status = ArduinoStatus.NotConnected
+        self.board_type = board_type
 
     def is_available(self):
-        return self.serial_connection is not None and self.serial_connection.is_open
+        return self.status in [ArduinoStatus.Ready, ArduinoStatus.Verifying, ArduinoStatus.Updating]
 
     def init_connection(self) -> bool:
         try:
@@ -40,10 +57,12 @@ class ArduinoController:
                 return False
             self.logger.debug(
                 f"Potential arduino port: {self.serial_to_listen_to}")
-            self.serial_connection = Serial(self.serial_to_listen_to)
+            self.serial_connection = serial.Serial(self.serial_to_listen_to)
             if (not self.serial_connection.is_open):
                 self.serial_connection.open()
             self.connection_initialized = True
+            if (self.serial_connection.is_open):
+                self.status = ArduinoStatus.Ready
         except Exception as ex:
             self.logger.warning(
                 f"Failed to open the serial connection to the arduino on port {self.serial_to_listen_to}!")
@@ -62,7 +81,7 @@ class ArduinoController:
         count = 0
         while self.run_listener:
             try:
-                if (self.connection_initialized and self.connection_initialized is None):
+                if ((self.connection_initialized and self.connection_initialized is None) or self.status in [ArduinoStatus.Updating, ArduinoStatus.Verifying]):
                     sleep(2)
                     continue
                 elif (self.serial_connection is None or not self.serial_connection.is_open):
@@ -91,10 +110,12 @@ class ArduinoController:
                         self.alive_timer_miss += 1
                     else:
                         self.alive_timer_miss = 0
+                        self.status = ArduinoStatus.Ready
                     if self.alive_timer_miss > 5:
                         self.logger.error(
                             f"Arduino alive is not matching set minimum of {self.minimum_alive_count_over_two_seconds}\
                             under two seconds for {self.alive_timer_miss} times")
+                        self.status = ArduinoStatus.NotConnected
                         self.run_listener = False
                     count = 0
                     start = time()
@@ -103,6 +124,7 @@ class ArduinoController:
                 self.serial_connection.close()
                 self.serial_connection = None
                 self.connection_initialized = False
+                self.status = ArduinoStatus.NotConnected
                 self.logger.info("Arduino disconnected!")
 
     def __get_rgb(self, data: str) -> List[int]:
@@ -144,11 +166,37 @@ class ArduinoController:
         self.start_listener()
         self.show()
 
-    def suspend_serial(self) -> None:
+    def suspend_serial(self, status: ArduinoStatus = ArduinoStatus.NotConnected) -> None:
         self.serial_connection.close()
+        self.status = status
 
     def continue_serial(self) -> None:
-        self.serial_connection = Serial(self.serial_to_listen_to)
+        if (self.serial_connection is None):
+            self.serial_connection = serial.Serial(self.serial_to_listen_to)
+        self.serial_connection.open()
+        self.status = ArduinoStatus.Ready
+
+    def update_program(self, path_to_file: str, path_to_IDE: str) -> None:
+        try:
+            self.suspend_serial(ArduinoStatus.Verifying)
+            arduino_command = f"{path_to_IDE} --$ACTION --board {self.board_type} --port {self.serial_to_listen_to} {path_to_file}"
+
+            self.run_update(arduino_command.replace(
+                "$ACTION", "verify"), ArduinoStatus.VerificationFailed)
+
+            self.status = ArduinoStatus.Updating
+            self.run_update(arduino_command.replace(
+                "$ACTION", "update"), ArduinoStatus.UploadFailed)
+
+        except ArduinoException as AEx:
+            logger.error(AEx)
+        finally:
+            self.continue_serial()
+
+    def run_update(self, string: str, status: ArduinoStatus) -> None:
+        return_code = subprocess.call(string.split(" "))
+        if return_code != 0:
+            raise ArduinoException(return_code, status)
 
     def close_connection(self) -> None:
         self.run_listener = False

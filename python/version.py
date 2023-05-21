@@ -89,6 +89,7 @@ class version_info():
     def check_against(self, inp):
         """
         returns the following:
+       -1 - newer version (DEVELOPMENT ONLY)
         0 - same version
         1 - server restart required
         2 - browser refresh required
@@ -96,11 +97,11 @@ class version_info():
         4 - too old, system restart required
         """
         if isinstance(inp, version_info):
-            tmp = None
+            tmp = -1
             if self.current_version <= inp.server_restart:
                 tmp = 1
             if self.current_version <= inp.browser_restart:
-                if tmp == None:
+                if tmp == -1:
                     tmp = 2
                 else:
                     tmp = 3

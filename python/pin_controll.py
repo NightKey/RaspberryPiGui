@@ -11,18 +11,21 @@ from arduino_connector import ArduinoController, Animation
 
 class controller():
 
-    def __init__(self, door_callback, logger, _initial=None, _inverted=False, _12V=False):
-        self.arduino = ArduinoController(logger)
+    def __init__(self, door_callback, logger, board_name, _initial=None, _inverted=False, _12V=False):
+        self.arduino = ArduinoController(logger, board_type=board_name)
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        GPIO.setup(pins.lamp_pin.value, GPIO.OUT, initial=GPIO.LOW)  # Lamp
+        GPIO.setup(pins.lamp_pin.value, GPIO.OUT,
+                   initial=GPIO.LOW)  # Lamp
         GPIO.setup(pins.tub_pin.value, GPIO.OUT,
                    initial=GPIO.LOW)  # Bathtub leds
         GPIO.setup(pins.cabinet_pin.value, GPIO.OUT,
                    initial=GPIO.LOW)  # cabinet leds
-        GPIO.setup(pins.fan_controll.value, GPIO.OUT,
+        GPIO.setup(pins.chassis_fan.value, GPIO.OUT,
                    initial=GPIO.LOW)  # Fancontroller
+        GPIO.setup(pins.cpu_fan.value, GPIO.OUT,
+                   initial=GPIO.LOW)  # CPUFan
         GPIO.setup(pins._12V.value, GPIO.OUT,
                    initial=GPIO.HIGH)  # 12 V Powersuply
         GPIO.setup(pins.door_pin.value, GPIO.IN,
@@ -143,15 +146,17 @@ class controller():
         self.status['rgb'] = color_v
         self.arduino.set_color(color_v[0], color_v[1], color_v[2])
 
-    def fan(self, status=None):
-        if status == None:
+    def fan(self, status=None, selector=pins.chassis_fan):
+        if status == None and selector == pins.chassis_fan:
             self.status['fan'] = not self.status['fan']
-            status = self.status
+            status = self.status['fan']
         verbose("Fan pin was set to {}".format(
             (GPIO.HIGH if status else GPIO.LOW)))
-        GPIO.output(pins.fan_controll.value,
+        verbose("Selected fan: {}".format(selector.name))
+        GPIO.output(selector.value,
                     (GPIO.HIGH if status else GPIO.LOW))
-        self.status['fan'] = status
+        if selector == pins.chassis_fan:
+            self.status['fan'] = status
 
     def animate(self, animation: int):
         self.arduino.set_animation(Animation(animation))
