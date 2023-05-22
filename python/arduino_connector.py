@@ -1,7 +1,7 @@
 from enum import Enum
 from time import sleep, time
 from typing import List
-import serial
+from serial import Serial
 from serial.tools import list_ports
 from threading import Thread
 from smdb_logger import Logger
@@ -23,9 +23,17 @@ class ArduinoStatus(Enum):
     NotConnected = 5
 
 
+class ArduinoReturnCodes(Enum):
+    Success = 0
+    Build_Or_Upload_Failed = 1
+    Sketch_Not_Found = 2
+    Invalid_Commandline_Option = 3
+    Preference_Does_Not_Exist = 4
+
+
 class ArduinoException(Exception):
-    def __init__(self, return_code: str, status: ArduinoStatus) -> None:
-        self.message = f"Exception in Updating the Arduino board: {status.name}. Return code: {return_code}"
+    def __init__(self, return_code: ArduinoReturnCodes, status: ArduinoStatus) -> None:
+        self.message = f"Exception in Updating the Arduino board: {status.name}. Return code: {return_code.name.replace('_', ' ')}({return_code.value})"
 
 
 class ArduinoController:
@@ -57,7 +65,7 @@ class ArduinoController:
                 return False
             self.logger.debug(
                 f"Potential arduino port: {self.serial_to_listen_to}")
-            self.serial_connection = serial.Serial(self.serial_to_listen_to)
+            self.serial_connection = Serial(self.serial_to_listen_to)
             if (not self.serial_connection.is_open):
                 self.serial_connection.open()
             self.connection_initialized = True
@@ -172,11 +180,16 @@ class ArduinoController:
 
     def continue_serial(self) -> None:
         if (self.serial_connection is None):
-            self.serial_connection = serial.Serial(self.serial_to_listen_to)
+            self.serial_connection = Serial(self.serial_to_listen_to)
         self.serial_connection.open()
         self.status = ArduinoStatus.Ready
 
     def update_program(self, path_to_file: str, path_to_IDE: str) -> None:
+        # Refferences for the update function:
+        # - https://github.com/arduino/Arduino/blob/ide-1.5.x/build/shared/manpage.adoc
+        # - https://forum.arduino.cc/t/reprograming-arduino-without-ide/325938
+        # - https://forum.arduino.cc/t/upload-sketches-directly-from-geany/286641/2
+        # Installation URL: https://www.arduino.cc/en/software
         try:
             self.suspend_serial(ArduinoStatus.Verifying)
             arduino_command = f"{path_to_IDE} --$ACTION --board {self.board_type} --port {self.serial_to_listen_to} {path_to_file}"
@@ -196,7 +209,7 @@ class ArduinoController:
     def run_update(self, string: str, status: ArduinoStatus) -> None:
         return_code = subprocess.call(string.split(" "))
         if return_code != 0:
-            raise ArduinoException(return_code, status)
+            raise ArduinoException(ArduinoReturnCodes(return_code), status)
 
     def close_connection(self) -> None:
         self.run_listener = False
