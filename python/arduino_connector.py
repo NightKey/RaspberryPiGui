@@ -106,6 +106,7 @@ class ArduinoController:
         self.board_type = board_type
         self.logger.debug("Creating CLI status")
         self.cli_status = ArduinoCLIStatus.from_file()
+        self.listener_status = ArduinoStatus.NotConnected
         if (self.status not in [ArduinoCLIStatusCode.CantBeInstalled, ArduinoCLIStatusCode.Completed]):
             self.logger.debug("Installing CLI")
             self.install_cli()
@@ -178,15 +179,18 @@ class ArduinoController:
         while self.run_listener:
             try:
                 if ((self.connection_initialized and self.connection_initialized is None) or self.status in [ArduinoStatus.Updating, ArduinoStatus.Verifying]):
+                    self.listener_status = ArduinoStatus.Updating
                     sleep(2)
                     continue
                 elif (self.serial_connection is None or not self.serial_connection.is_open):
+                    self.listener_status = ArduinoStatus.NotConnected
                     sleep(10)
                     if (not self.init_connection()):
                         continue
                     self.set_color(*self.color)
                     self.set_brightness(self.brightness)
                     self.set_animation(self.animation)
+                self.listener_status = ArduinoStatus.Ready
                 if (self.serial_connection.in_waiting >= 5):
                     data = self.serial_connection.read(
                         self.serial_connection.in_waiting)
@@ -265,8 +269,12 @@ class ArduinoController:
     def suspend_serial(self, status: ArduinoStatus = ArduinoStatus.NotConnected) -> None:
         self.logger.info(
             f"Suspending serial communication on port '{self.serial_to_listen_to}'")
-        self.serial_connection.close()
         self.status = status
+        self.logger.debug("Waiting on listener...")
+        while self.listener_status != ArduinoStatus.Updating:
+            sleep(1)
+        self.serial_connection.close()
+        self.logger.debug("Connection closed!")
 
     def continue_serial(self) -> None:
         self.logger.info(
