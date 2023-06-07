@@ -32,9 +32,9 @@ def update(current: version_info):
 
 def update_arduino(path_to_arduino_project: str) -> bool:
     rep = subprocess.check_output(
-        f"git pull", shell=True, cwd=path_to_arduino_project)
-    print(rep.decode("utf-8"))
-    c = rep.decode("utf-8").split('\n')
+        f"git pull", shell=True, cwd=path_to_arduino_project, stderr=subprocess.STDOUT).decode()
+    print(rep)
+    c = rep.split('\n')
     return len(c) > 2
 
 
