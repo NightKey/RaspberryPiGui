@@ -263,10 +263,14 @@ class ArduinoController:
         self.show()
 
     def suspend_serial(self, status: ArduinoStatus = ArduinoStatus.NotConnected) -> None:
+        self.logger.info(
+            f"Suspending serial communication on port '{self.serial_to_listen_to}'")
         self.serial_connection.close()
         self.status = status
 
     def continue_serial(self) -> None:
+        self.logger.info(
+            f"Continuing serial communication on port '{self.serial_to_listen_to}'")
         if (self.serial_connection is None):
             self.serial_connection = Serial(self.serial_to_listen_to)
         self.serial_connection.open()
