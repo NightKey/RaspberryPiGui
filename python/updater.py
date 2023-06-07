@@ -33,6 +33,7 @@ def update(current: version_info):
 def update_arduino(path_to_arduino_project: str) -> bool:
     rep, _ = subprocess.Popen(
         f"cd {path_to_arduino_project} && git pull", shell=True, stdout=subprocess.PIPE).communicate()
+    print(rep.decode("utf-8"))
     c = rep.decode("utf-8").split('\n')
     return len(c) > 2
 
