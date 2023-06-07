@@ -292,11 +292,12 @@ class ArduinoController:
                 "$ACTION", "upload").replace("$PORT", f"-p {self.serial_to_listen_to}"), ArduinoStatus.UploadFailed)  # arduino-cli upload -p /dev/ttyACM0 -b arduino:avr:micro ~/TMP/RaspberryPiGui_Arduino/ArduinoScetch
 
         except ArduinoException as AEx:
-            logger.error(AEx)
+            self.logger.error(AEx)
         finally:
             self.continue_serial()
 
     def run_update(self, string: str, fail_status: ArduinoStatus) -> None:
+        self.logger.info(f"Running command: {string}")
         return_code = subprocess.call(string.split(" "))
         if return_code != 0:
             raise ArduinoException(
