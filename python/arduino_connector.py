@@ -62,7 +62,7 @@ class ArduinoCLIStatus:
         self.to_file()
 
     def __eq__(self, __value: object) -> bool:
-        if (not isinstance(__value, ArduinoCLIStatusCode)):
+        if (isinstance(__value, ArduinoCLIStatusCode)):
             return self.status_code == __value
         if (isinstance(__value, ArduinoCLIStatus)):
             return self.status_code == __value.status_code
@@ -79,7 +79,7 @@ class ArduinoCLIStatus:
     @staticmethod
     def from_file() -> "ArduinoCLIStatus":
         cli_status: ArduinoCLIStatus = None
-        if (system() == "Windows"):
+        if (system() == 'Windows'):
             cli_status = ArduinoCLIStatus(ArduinoCLIStatusCode.CantBeInstalled)
         if (not path.exists(ArduinoCLIStatus.status_file_path)):
             cli_status = ArduinoCLIStatus()
