@@ -5,6 +5,9 @@ from serial import Serial
 from serial.tools import list_ports
 from threading import Thread
 from smdb_logger import Logger
+from platform import system
+from os import path
+from os import system as run
 import subprocess
 
 
@@ -36,6 +39,57 @@ class ArduinoException(Exception):
         self.message = f"Exception in Updating the Arduino board: {status.name}. Return code: {return_code.name.replace('_', ' ')}({return_code.value})"
 
 
+class ArduinoCLIStatusCode(Enum):
+    Completed = 0
+    Installed = 1
+    Downloaded = 2
+    NotInstalled = 3
+    CantBeInstalled = 4  # On Windows
+
+
+class ArduinoCLIStatus:
+    cli_install_command = "curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh"
+    user_path_file = "~/.bashrc"
+    cli_path_origin = "~/arduino-cli"
+    cli_path_sub_dir = "bin"
+    status_file_path = "../arduinoCLIStatusFile"
+
+    def __init__(self, status_code: ArduinoCLIStatusCode = ArduinoCLIStatusCode.NotInstalled) -> None:
+        self.status_code = status_code
+
+    def set_status(self, status_code: ArduinoCLIStatusCode):
+        self.status_code = status_code
+        self.to_file()
+
+    def __eq__(self, __value: object) -> bool:
+        if (not isinstance(__value, ArduinoCLIStatusCode)):
+            return self.status_code == __value
+        if (isinstance(__value, ArduinoCLIStatus)):
+            return self.status_code == __value.status_code
+        raise ValueError(
+            f"Right hand side '{type(__value)}' is not type of 'ArduinoCLIStatus' not 'ArduinoCLIStatusCode'")
+
+    def __ne__(self, __value: object) -> bool:
+        return not self == __value
+
+    def to_file(self) -> None:
+        with open(ArduinoCLIStatus.status_file_path, 'w') as fp:
+            fp.write(self.status_code.value)
+
+    @staticmethod
+    def from_file() -> "ArduinoCLIStatus":
+        cli_status: ArduinoCLIStatus = None
+        if (system() == "Windows"):
+            cli_status = ArduinoCLIStatus(ArduinoCLIStatusCode.CantBeInstalled)
+        if (not path.exists(ArduinoCLIStatus.status_file_path)):
+            cli_status = ArduinoCLIStatus()
+        with open(ArduinoCLIStatus.status_file_path, 'r') as fp:
+            val = fp.read()
+            cli_status = ArduinoCLIStatus(ArduinoCLIStatusCode(int(val)))
+        cli_status.to_file()
+        return cli_status
+
+
 class ArduinoController:
     def __init__(self, logger: Logger, minimum_alive_count_over_two_seconds: int = 3, board_type: str = "arduino:avr:micro"):
         self.logger = logger
@@ -50,6 +104,40 @@ class ArduinoController:
         self.animation = Animation.Homogane
         self.status = ArduinoStatus.NotConnected
         self.board_type = board_type
+        self.logger.debug("Creating CLI status")
+        self.cli_status = ArduinoCLIStatus.from_file()
+        if (self.status not in [ArduinoCLIStatusCode.CantBeInstalled, ArduinoCLIStatusCode.Completed]):
+            self.logger.debug("Installing CLI")
+            self.install_cli()
+
+    def install_cli(self):
+        if (self.cli_status == ArduinoCLIStatusCode.Completed):
+            return
+        if (self.cli_status == ArduinoCLIStatusCode.NotInstalled):
+            self.__download_cli()
+        if (self.cli_status == ArduinoCLIStatusCode.Downloaded):
+            self.__install_cli()
+        if (self.cli_status == ArduinoCLIStatusCode.Installed):
+            self.__setup_cli()
+
+    def __download_cli(self):
+        subprocess.call(
+            f"mkdir {ArduinoCLIStatus.cli_path_origin} && cd {ArduinoCLIStatus.cli_path_origin} && {ArduinoCLIStatus.cli_install_command}", shell=True)
+        self.cli_status.set_status(ArduinoCLIStatusCode.Downloaded)
+
+    def __install_cli(self):
+        with open(ArduinoCLIStatus.user_path_file, "a") as fp:
+            fp.write(
+                f"\nexport PATH=$PATH:{ArduinoCLIStatus.cli_path_origin}/{ArduinoCLIStatus.cli_path_sub_dir}")
+        self.cli_status.set_status(ArduinoCLIStatusCode.Installed)
+        run("sudo reboot")
+
+    def __setup_cli(self):
+        subprocess.call(["arduino-cli", "config", "init"])
+        subprocess.call(["arduino-cli", "core", "install",
+                        ":".join(self.board_type.split(":")[:-1])])
+        subprocess.call(["arduino-cli", "lib", "install", "FastLED"])
+        self.cli_status.set_status(ArduinoCLIStatusCode.Completed)
 
     def is_available(self):
         return self.status in [ArduinoStatus.Ready, ArduinoStatus.Verifying, ArduinoStatus.Updating]
@@ -184,32 +272,34 @@ class ArduinoController:
         self.serial_connection.open()
         self.status = ArduinoStatus.Ready
 
-    def update_program(self, path_to_file: str, path_to_IDE: str) -> None:
+    def update_program(self, path_to_folder: str) -> None:
         # Refferences for the update function:
         # - https://github.com/arduino/Arduino/blob/ide-1.5.x/build/shared/manpage.adoc
         # - https://forum.arduino.cc/t/reprograming-arduino-without-ide/325938
         # - https://forum.arduino.cc/t/upload-sketches-directly-from-geany/286641/2
         # Installation URL: https://www.arduino.cc/en/software
+        # Installation URL 2: https://siytek.com/arduino-cli-raspberry-pi/
         try:
             self.suspend_serial(ArduinoStatus.Verifying)
-            arduino_command = f"{path_to_IDE} --$ACTION --board {self.board_type} --port {self.serial_to_listen_to} {path_to_file}"
+            arduino_command = f"arduino-cli $ACTION  $PORT -b {self.board_type} {path_to_folder}"
 
             self.run_update(arduino_command.replace(
-                "$ACTION", "verify"), ArduinoStatus.VerificationFailed)
+                "$ACTION", "copile").replace("$PORT ", ""), ArduinoStatus.VerificationFailed)  # arduino-cli compile -b arduino:avr:micro ~/TMP/RaspberryPiGui_Arduino/ArduinoScetch
 
             self.status = ArduinoStatus.Updating
             self.run_update(arduino_command.replace(
-                "$ACTION", "update"), ArduinoStatus.UploadFailed)
+                "$ACTION", "upload").replace("$PORT", f"-p {self.serial_to_listen_to}"), ArduinoStatus.UploadFailed)  # arduino-cli upload -p /dev/ttyACM0 -b arduino:avr:micro ~/TMP/RaspberryPiGui_Arduino/ArduinoScetch
 
         except ArduinoException as AEx:
             logger.error(AEx)
         finally:
             self.continue_serial()
 
-    def run_update(self, string: str, status: ArduinoStatus) -> None:
+    def run_update(self, string: str, fail_status: ArduinoStatus) -> None:
         return_code = subprocess.call(string.split(" "))
         if return_code != 0:
-            raise ArduinoException(ArduinoReturnCodes(return_code), status)
+            raise ArduinoException(
+                ArduinoReturnCodes(return_code), fail_status)
 
     def close_connection(self) -> None:
         self.run_listener = False
