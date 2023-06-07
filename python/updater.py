@@ -3,6 +3,7 @@ from os import remove, getcwd
 import urllib.request
 import urllib.parse
 import urllib.error
+import subprocess
 from version import version_info
 
 
@@ -31,9 +32,9 @@ def update(current: version_info):
 
 def update_arduino(path_to_arduino_project: str) -> bool:
     arduino_path = path_to_arduino_project.split('\\')[:-2]
-    run(f"cd {arduino_path} && git pull > {getcwd()}\\update.lg")
-    with open('update.lg', 'r') as f:
-        c = f.read(-1).split('\n')
+    rep, _ = subprocess.Popen(
+        f"cd {arduino_path} && git pull", shell=True, stdout=subprocess.PIPE).communicate()
+    c = rep.decode("utf-8").split('\n')
     remove('update.lg')
     return len(c) > 2
 
