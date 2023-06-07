@@ -84,7 +84,7 @@ class ArduinoCLIStatus:
         if (not path.exists(ArduinoCLIStatus.status_file_path)):
             cli_status = ArduinoCLIStatus()
         with open(ArduinoCLIStatus.status_file_path, 'r') as fp:
-            val = fp.read()
+            val = fp.read(-1)
             cli_status = ArduinoCLIStatus(ArduinoCLIStatusCode(int(val)))
         cli_status.to_file()
         return cli_status
