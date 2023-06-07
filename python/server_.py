@@ -545,7 +545,6 @@ if __name__ == "__main__":
     try:
         print('Server started!')
         periodic_flusher()
-        update()
         tmp = datetime.now()
         tmp += timedelta(days=1)
         tmp = tmp.replace(hour=1, minute=0, second=0)
@@ -587,6 +586,7 @@ if __name__ == "__main__":
         }
         # Option switch board end
         try:
+            update()
             logger.info("Main thred started!")
             logger.debug('Creating threads...')
             listener = threading.Thread(target=listener_starter)
