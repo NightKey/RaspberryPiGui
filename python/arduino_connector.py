@@ -285,7 +285,7 @@ class ArduinoController:
             arduino_command = f"arduino-cli $ACTION  $PORT -b {self.board_type} {path_to_folder}"
 
             self.run_update(arduino_command.replace(
-                "$ACTION", "copile").replace("$PORT ", ""), ArduinoStatus.VerificationFailed)  # arduino-cli compile -b arduino:avr:micro ~/TMP/RaspberryPiGui_Arduino/ArduinoScetch
+                "$ACTION", "compile").replace("$PORT ", ""), ArduinoStatus.VerificationFailed)  # arduino-cli compile -b arduino:avr:micro ~/TMP/RaspberryPiGui_Arduino/ArduinoScetch
 
             self.status = ArduinoStatus.Updating
             self.run_update(arduino_command.replace(
