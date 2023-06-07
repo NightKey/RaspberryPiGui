@@ -282,7 +282,7 @@ class ArduinoController:
         try:
             self.logger.info("Updating Arduino")
             self.suspend_serial(ArduinoStatus.Verifying)
-            arduino_command = f"arduino-cli $ACTION  $PORT -b {self.board_type} {path_to_folder}"
+            arduino_command = f"arduino-cli $ACTION $PORT -b {self.board_type} {path_to_folder}"
 
             self.run_update(arduino_command.replace(
                 "$ACTION", "compile").replace("$PORT ", ""), ArduinoStatus.VerificationFailed)  # arduino-cli compile -b arduino:avr:micro ~/TMP/RaspberryPiGui_Arduino/ArduinoScetch
