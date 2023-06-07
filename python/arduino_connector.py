@@ -220,7 +220,7 @@ class ArduinoController:
                     count = 0
                     start = time()
             except IOError as ex:
-                self.logger.debug(ex)
+                self.logger.error(ex)
                 self.serial_connection.close()
                 self.serial_connection = None
                 self.connection_initialized = False
