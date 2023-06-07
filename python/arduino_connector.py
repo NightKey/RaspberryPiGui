@@ -278,7 +278,7 @@ class ArduinoController:
         self.logger.debug("Connection closed!")
 
     def continue_serial(self) -> None:
-        sleep(1)
+        sleep(5)
         if not self.init_connection():
             self.logger.error(
                 "Could not reinitalize the connection to the Arduino!")
