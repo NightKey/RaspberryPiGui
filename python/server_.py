@@ -137,8 +137,10 @@ def update(_=None):
     print('Checking for updates')
     updater.update(version)
     if (config.can_update_arduino):
+        logger.info("Arduino can be updated")
         if updater.update_arduino(config.path_to_arduino_project):
             controller.arduino.update_program(config.path_to_arduino_project)
+    logger.info("Update finished")
 
 
 def timer(time, to_call, _with=None):

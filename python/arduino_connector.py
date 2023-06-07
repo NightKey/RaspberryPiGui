@@ -280,6 +280,7 @@ class ArduinoController:
         # Installation URL: https://www.arduino.cc/en/software
         # Installation URL 2: https://siytek.com/arduino-cli-raspberry-pi/
         try:
+            self.logger.info("Updating Arduino")
             self.suspend_serial(ArduinoStatus.Verifying)
             arduino_command = f"arduino-cli $ACTION  $PORT -b {self.board_type} {path_to_folder}"
 
