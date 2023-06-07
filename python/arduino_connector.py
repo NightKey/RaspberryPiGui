@@ -278,10 +278,13 @@ class ArduinoController:
         self.logger.debug("Connection closed!")
 
     def continue_serial(self) -> None:
-        sleep(5)
+        sleep(2.5)
         if not self.init_connection():
             self.logger.error(
                 "Could not reinitalize the connection to the Arduino!")
+        else:
+            self.logger.info(
+                f"Reconnected to the arduino on port {self.serial_to_listen_to}")
         self.status = ArduinoStatus.Ready
 
     def update_program(self, path_to_folder: str) -> None:
