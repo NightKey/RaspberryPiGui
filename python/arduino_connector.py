@@ -74,7 +74,7 @@ class ArduinoCLIStatus:
 
     def to_file(self) -> None:
         with open(ArduinoCLIStatus.status_file_path, 'w') as fp:
-            fp.write(self.status_code.value)
+            fp.write(str(self.status_code.value))
 
     @staticmethod
     def from_file() -> "ArduinoCLIStatus":
