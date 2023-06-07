@@ -35,7 +35,6 @@ def update_arduino(path_to_arduino_project: str) -> bool:
     rep, _ = subprocess.Popen(
         f"cd {arduino_path} && git pull", shell=True, stdout=subprocess.PIPE).communicate()
     c = rep.decode("utf-8").split('\n')
-    remove('update.lg')
     return len(c) > 2
 
 
