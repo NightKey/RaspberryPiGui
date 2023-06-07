@@ -138,8 +138,7 @@ def update(_=None):
     updater.update(version)
     if (config.can_update_arduino):
         if updater.update_arduino(config.path_to_arduino_project):
-            controller.arduino.update_program(
-                config.path_to_arduino_project, config.path_to_arduino_IDE)
+            controller.arduino.update_program(config.path_to_arduino_project)
 
 
 def timer(time, to_call, _with=None):
