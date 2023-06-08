@@ -5,13 +5,14 @@ except:
 
 from pins import *
 from time import sleep
-from print_handler import verbose
+from smdb_logger import Logger
 from arduino_connector import ArduinoController, Animation
 
 
 class controller():
 
     def __init__(self, door_callback, logger, board_name, _initial=None, _inverted=False, _12V=False):
+        self.logger: Logger = logger
         self.arduino = ArduinoController(logger, board_type=board_name)
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
@@ -91,12 +92,6 @@ class controller():
     def get_door_status(self):
         return bool(GPIO.input(pins.door_pin.value))
 
-    def swap_color(self):
-        tmp = self.red
-        self.red = self.blue
-        self.blue = self.green
-        self.green = tmp
-
     def translate(self, value, inmin, inmax, outmin, outmax):
         """
         Translates the value from range inmin - inmax into the range outmin - outmax. Returns an integer!
@@ -110,30 +105,31 @@ class controller():
         return round(outmin + (scaled * outspan), 2)
 
     def brightness(self, value):
-        verbose(f"Incoming for brightness {value}")
-        brightness = int(value)
+        self.logger.debug(f"Incoming for brightness {value}")
+        brightness = self.translate(int(value), 1, 100, 0, 255)
+        self.logger.debug(f"Translated brightness: {brightness}")
         self.status['brightness'] = brightness
         self.arduino.set_brightness(brightness)
 
     def room(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The room lights should {}be on!".format(
-            '' if (is_on) else 'not '))
+        self.logger.debug(
+            f"The room lights should be {'on' if is_on else 'off'}!")
         GPIO.output(pins.lamp_pin.value, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['room'] = is_on
 
     def bath_tub(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The bath tub lights should {}be on!".format(
-            '' if (is_on) else 'not '))
+        self.logger.debug(
+            f"The bath tub lights should be {'on' if is_on else 'off'}!")
         GPIO.output(pins.tub_pin.value, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['bath_tub'] = is_on
         self.arduino.show()
 
     def cabinet(self, is_on):
         is_on = (is_on == 'true')
-        verbose("The cabinet lights should {}be on!".format(
-            '' if (is_on) else 'not '))
+        self.logger.debug(
+            f"The cabinet lights should be {'on' if is_on else 'off'}!")
         GPIO.output(pins.cabinet_pin.value, (GPIO.HIGH if is_on else GPIO.LOW))
         self.status['cabinet'] = is_on
         self.arduino.show()
@@ -142,7 +138,7 @@ class controller():
         color_v = color_v.replace('#', '')
         color_v = [int(color_v[:2], 16), int(
             color_v[2:4], 16), int(color_v[4:], 16)]
-        verbose(f"The color of the led's should be #{color_v}")
+        self.logger.debug(f"The color of the led's should be #{color_v}")
         self.status['rgb'] = color_v
         self.arduino.set_color(color_v[0], color_v[1], color_v[2])
 
@@ -150,9 +146,9 @@ class controller():
         if status == None and selector == pins.chassis_fan:
             self.status['fan'] = not self.status['fan']
             status = self.status['fan']
-        verbose("Fan pin was set to {}".format(
+        self.logger.debug("Fan pin was set to {}".format(
             (GPIO.HIGH if status else GPIO.LOW)))
-        verbose("Selected fan: {}".format(selector.name))
+        self.logger.debug("Selected fan: {}".format(selector.name))
         GPIO.output(selector.value,
                     (GPIO.HIGH if status else GPIO.LOW))
         if selector == pins.chassis_fan:

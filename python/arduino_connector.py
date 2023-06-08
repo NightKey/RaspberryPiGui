@@ -322,17 +322,3 @@ class ArduinoController:
         self.run_listener = False
         self.th.join()
         self.serial_connection.close()
-
-
-if __name__ == "__main__":
-    logger = Logger(".TEST.log", clear=True,
-                    level="DEBUG", log_to_console=True)
-    test = ArduinoController(logger)
-    test.init_connection()
-    logger.header("Listener start")
-    test.start_listener()
-    try:
-        while True:
-            sleep(1)
-    finally:
-        test.close_connection()

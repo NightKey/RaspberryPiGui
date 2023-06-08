@@ -28,7 +28,7 @@ def main():
     arg.append("--version")
     arg.append(current.to_version_string('|'))
     # Creates a child process with the 'server.py' script
-    server = subprocess.Popen([interpreter, 'server_.py', *arg])
+    server = subprocess.Popen([interpreter, 'server.py', *arg])
     t = True
     while server.poll() is None:  # Works while the child process runs
         try:
