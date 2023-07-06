@@ -15,18 +15,15 @@ from time import sleep
 from datetime import datetime, timedelta
 from config import Configuration
 from os import path, remove
+from smdb_web_interface import WebCLIServer, Settings, UserCommand
 
 ws = None
 config: Configuration = None
 to_send = []
 to_print = []
-File_Folder = "/var/RPS"
-if os.name == "nt":
-    File_Folder = "E:/Windows_stuff/var/RPS"  # Change for your prefered log folder
-logger = Logger("RaspberryPiServerLog.log", File_Folder, level=LEVEL.INFO,
-                storage_life_extender_mode=True, max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=True)
-temp_logger = Logger("Temperatures.log", storage_life_extender_mode=True,
-                     max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=False)
+logger: Logger = None
+temp_logger: Logger = None
+usb_player: USBPlayer = None
 # flags
 last_activity = last_updated = datetime.now()
 clock_showing = True
@@ -42,7 +39,12 @@ door_ignore_flag = False
 door_manual_ignore_flag = False
 door_wait_timer = 1  # Time to wait after detecting a falling edge in the door sensore
 door_open = False
-usb_player = USBPlayer(logger)
+
+# region TEST
+web_cli: WebCLIServer = None
+current_command: UserCommand = None
+
+# endregion
 
 
 def periodic_flusher():
@@ -63,7 +65,6 @@ def temp_flusher():
 
 def usb_listener():
     logger.debug('USB listener started')
-    USB_Dir = '/media/pi'
     failcount = 0
     global USB_name
     while True:
@@ -74,7 +75,7 @@ def usb_listener():
                 logger.warning(
                     'USB listener failed too many times, shutting off.')
                 break
-            drives = os.listdir(USB_Dir)
+            drives = os.listdir(config.usb_dir)
             if drives != []:
                 logger.debug(f'Drives found: {drives}')
                 for drive in drives:
@@ -83,14 +84,11 @@ def usb_listener():
                     save()
                     logger.debug(f'USB drive found at {drive}')
                     controller._12V()
-                    usb_player.start(os.path.join(USB_Dir, drive))
+                    usb_player.start(os.path.join(config.usb_dir, drive))
                     controller.check_for_need()
                     to_send.append('music|none')
         except Exception as ex:
             failcount += 1
-            if failcount == 3:
-                logger.debug('Trying test path')
-                USB_Dir = './test/'
             logger.warning(f'Exception: {ex}')
         finally:
             if USB_name != None:
@@ -98,7 +96,7 @@ def usb_listener():
                 save()
                 controller.load(load())
                 logger.debug('Finally reached!')
-                sleep(0.5)
+            sleep(5)
 
 
 def temp_checker(test=False):
@@ -160,7 +158,7 @@ def save():
     _to = USB_name if USB_name != None else 'status'
     status = controller.status
     status['volume'] = usb_player.volume
-    with open(f"{os.path.join(File_Folder, _to)}.json", 'w') as f:
+    with open(f"{os.path.join(config.file_folder, _to)}.json", 'w') as f:
         json.dump(status, f)
 
 
@@ -224,7 +222,7 @@ async def handler(websocket: WebSocketServerProtocol, path):
             logger.debug('Sending fan')
             await websocket.send('fan')
             temp_sent = True
-        await websocket.send(f"color|{[hex(c).replace('0x', '') for c in color]}")
+        await websocket.send(f"color|{[hex(c).replace('0x', '') if c > 15 else '0{}'.format(hex(c).replace('0x', '')) for c in color]}")
         await websocket.send(f"brightness|{tmp['brightness']}")
         await websocket.send(f"volume|{int(usb_player.volume * 100)}")
         await websocket.send("finished")
@@ -396,9 +394,9 @@ def listener_starter():
 
 def load():
     _from = USB_name if USB_name != None else 'status'
-    if os.path.exists(f"{os.path.join(File_Folder, _from)}.json"):
+    if os.path.exists(f"{os.path.join(config.file_folder, _from)}.json"):
         try:
-            with open(f"{os.path.join(File_Folder, _from)}.json", 'r') as s:
+            with open(f"{os.path.join(config.file_folder, _from)}.json", 'r') as s:
                 status = json.load(s)
             usb_player.volume = status["volume"]
             del status["volume"]
@@ -486,11 +484,121 @@ def killer():
         reboot()
 
 
+# region TEST
+
+def web_print(data: str) -> None:
+    web_cli.push_data(data, current_command)
+
+def help(what=None):
+    if what == None:
+        text = """Avaleable commands:
+developer - Disables the fan pin, and prints the last 5 element of the logs
+emulate - Emulates something. Type in 'help emulate' for options
+help - This help message
+restart - Restart the server, swapping between developper and normal mode
+rgb - Set's the rgb pwm values 0-100. The values are given in the following fassion: R,G,B
+status - Reports about the pin, and temperature status
+update - Update from github
+vars - Prints all of the global variables"""
+    elif what == 'emulate':
+        text = """Options:
+bath_tub - Emulates the bathtub switch turning on/off
+cabinet - Emulates the cabinet switch turning on/off
+close - Closes the current error/message box shown
+door - Emulates a door opening
+fan - Turns on/off the raspberry fan
+room - Emulates the lighting switch turnong on/off
+Refresh - Emulates a refresh request for the webpage (from SD card)
+temp - Emulates a high temperature on the pi (only for display)
+update - Emulates an update request for the weather bar"""
+    else:
+        text = f"The selected modul '{what}' has no help page!"
+    web_print(text.split("\n"))
+
+
+def print_vars():
+    tmp = globals()
+    for key, value in tmp.items():
+        if '__' not in key and key != 'tmp' and key not in ['menu', 'options', 'ws', 'seep', 'item']:
+            if isinstance(value, (str, int, bool, list, dict, datetime)) or value is None:
+                web_print(f'{key} = {value}')
+            elif isinstance(value, threading.Thread):
+                web_print(f'{key}: {value.is_alive()}')
+    del tmp
+    web_print(f"The door value is {controller.get_door_status()}")
+
+def developer_mode():
+    web_print('--------LOG START--------')
+    for line in logger.get_buffer():
+        web_print(line.replace("\n", ''))
+    web_print('------LOG END------')
+
+def manual_send(what):
+    global to_send
+    to_send.append(what)
+
+def emulate(what):
+    things = {
+        'door': door_open_callback,
+        'room': manual_send,
+        'cabinet': manual_send,
+        'bath_tub': manual_send,
+        'temp': manual_send,
+        'fan': manual_send,
+        'close': manual_send,
+        'Refresh': manual_send,
+        'update': manual_send,
+    }
+    if what in things:
+        things[what](what)
+        web_print('Emulated')
+    else:
+        web_print('Not a valid command!')
+
+def backend(command: UserCommand) -> None:
+    global current_command
+    current_command = command
+    menu = {
+        "developer": developer_mode,
+        "emulate": emulate,
+        "restart": restart,
+        "status": lambda: web_cli.push_data([f"{key}: {value}" for key, value in controller.status.items()], command),
+        'help': help,
+        'vars': print_vars,
+        'rgb': rgb,
+        'update': update,
+        'pause': usb_player.pause
+    }
+    text = command.command
+    try:
+        if ' ' in text:
+            menu[text.split(' ')[0]](text.split(' ')[1])
+        else:
+            menu[text]()
+    except KeyError:
+        web_print("It's not a valid command!")
+    except TypeError as te:
+        web_print(str(te))
+
+# endregion
+
 if __name__ == "__main__":
+    config = Configuration.load()
+    if (config is None):
+        logger.warning("Configuration file was not found, using default values! If you want to change these settings, please edit the file 'config.conf' in the root folder.")
+    logger = Logger("RaspberryPiServerLog.log", config.file_folder, level=LEVEL.INFO,
+                    storage_life_extender_mode=True, max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=True)
+    temp_logger = Logger("Temperatures.log", storage_life_extender_mode=True,
+                         max_logfile_size=200, max_logfile_lifetime=730, use_caller_name=True, use_file_names=True, log_to_console=False)
+    usb_player = USBPlayer(logger)
+
+    if (not path.exists(path.join("..", Settings.DEFAULT_SETTINGS_FILE_NAME))):
+        Settings(str(get_ip()), name="RPiGUI").to_file()
+        logger.debug("Web interface settings created!")
+    web_interface_settings = Settings.from_file(path.join("..", Settings.DEFAULT_SETTINGS_FILE_NAME))
+    logger.info("Config red, loggers and usb player created!")
     version = version_info(
         os.sys.argv[os.sys.argv.index("--version") + 1].split('|'))
-    logger.debug("Loading configuration")
-    config = Configuration.load()
     try:
         logger.info('Server started!')
         periodic_flusher()
@@ -502,10 +610,12 @@ if __name__ == "__main__":
         death_timer = threading.Thread(target=timer, args=[tmp, killer])
         death_timer.name = 'Restarter'
         death_timer.start()
-        logger.debug(f"Checking the '{File_Folder}' path")
+        web_cli = WebCLIServer(Settings(str(get_ip()), name="RPiGUI"), backend)
+        web_cli.start()
+        logger.debug(f"Checking the '{config.file_folder}' path")
         # Creating needed folders in /var
-        if not os.path.exists(File_Folder):
-            os.mkdir(File_Folder)
+        if not os.path.exists(config.file_folder):
+            os.mkdir(config.file_folder)
         # Global functions
         logger.debug('Setting up the global functions...')
         controller = pin_controll.controller(

@@ -1,4 +1,5 @@
 pygame
 websockets
 smdb_logger
+smdb_web_interface
 pyserial

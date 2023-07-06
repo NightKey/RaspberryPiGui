@@ -136,3 +136,4 @@ dmypy.json
 *launch.json
 
 *arduinoCLIStatusFile
+*web-cli_settings.conf
