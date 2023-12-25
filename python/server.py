@@ -610,7 +610,7 @@ if __name__ == "__main__":
         death_timer = threading.Thread(target=timer, args=[tmp, killer])
         death_timer.name = 'Restarter'
         death_timer.start()
-        web_cli = WebCLIServer(web_interface_settings), backend)
+        web_cli = WebCLIServer(web_interface_settings, backend)
         web_cli.start()
         logger.debug(f"Checking the '{config.file_folder}' path")
         # Creating needed folders in /var
