@@ -83,6 +83,7 @@ class ArduinoCLIStatus:
             cli_status = ArduinoCLIStatus(ArduinoCLIStatusCode.CantBeInstalled)
         if (not path.exists(ArduinoCLIStatus.status_file_path)):
             cli_status = ArduinoCLIStatus()
+            cli_status.to_file()
         with open(ArduinoCLIStatus.status_file_path, 'r') as fp:
             val = fp.read(-1)
             cli_status = ArduinoCLIStatus(ArduinoCLIStatusCode(int(val)))
