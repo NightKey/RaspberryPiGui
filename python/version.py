@@ -5,43 +5,54 @@ Version file:
     browser_until x.y.z
     total x.y.z
 """
+
+
 class version_no():
     """
     Stores the version noumbers in 3 variables. Only exists for making comparison easyer.
     """
+
     def __init__(self, no):
         self.major = int(no[0])
         self.minor = int(no[1])
         self.sub = int(no[2])
+
     def __gt__(self, other):
         if isinstance(other, version_no):
             return ((self.major > other.major) or (self.major == other.major and self.minor > other.minor) or (self.major == other.major and self.minor == other.minor and self.sub > other.sub))
+
     def __lt__(self, other):
         if isinstance(other, version_no):
             return ((self.major < other.major) or (self.major == other.major and self.minor < other.minor) or (self.major == other.major and self.minor == other.minor and self.sub < other.sub))
+
     def __eq__(self, other):
         if isinstance(other, version_no):
             return (not self.__lt__(other) and not self.__gt__(other))
+
     def __ge__(self, other):
         if isinstance(other, version_no):
             return (self.__gt__(other) or self.__eq__(other))
+
     def __le__(self, other):
         if isinstance(other, version_no):
             return (self.__lt__(other) or self.__eq__(other))
+
     def __str__(self):
         return f'{self.major}.{self.minor}.{self.sub}'
+
 
 class Required_action():
     """
     Class for helping determine what action required after the update
     """
+
     def __init__(self, value):
         self.action = value
         self.string = 'Nothing' if value == 0 else 'Server restart' if value == 1 else 'Browser refresh' if value == 2 else 'Server and browser restart' if value == 3 else 'Hardware restart'
-    
+
     def __str__(self):
         return f"{self.action} - {self.string}"
-    
+
     def __eq__(self, other):
         if isinstance(other, int):
             return other == self.action
@@ -49,6 +60,15 @@ class Required_action():
             return other == self.string
         if isinstance(other, Required_action):
             return self.action == other.action
+
+    def __gt__(self, other):
+        if isinstance(other, int):
+            return self.action > other
+        if isinstance(other, str):
+            return self.string > other
+        if isinstance(other, Required_action):
+            return self.action > other.action
+
 
 class version_info():
     """
@@ -59,14 +79,17 @@ class version_info():
     browser_restart: [version_no]  -   The closest version a browser restart is required from (Something changed with the page/GUI)
     total_restart: [version_no]    -   The closest version a total restart is required from (Something changed with the runner script or other parts)
     """
+
     def __init__(self, inp):
         self.current_version = version_no(inp[0].split(' ')[-1].split('.'))
         self.server_restart = version_no(inp[1].split(' ')[-1].split('.'))
         self.browser_restart = version_no(inp[2].split(' ')[-1].split('.'))
         self.total_restart = version_no(inp[3].split(' ')[-1].split('.'))
+
     def check_against(self, inp):
         """
         returns the following:
+       -1 - newer version (DEVELOPMENT ONLY)
         0 - same version
         1 - server restart required
         2 - browser refresh required
@@ -74,11 +97,11 @@ class version_info():
         4 - too old, system restart required
         """
         if isinstance(inp, version_info):
-            tmp = None
+            tmp = -1
             if self.current_version <= inp.server_restart:
                 tmp = 1
             if self.current_version <= inp.browser_restart:
-                if tmp == None:
+                if tmp == -1:
                     tmp = 2
                 else:
                     tmp = 3
@@ -87,8 +110,13 @@ class version_info():
             if self.current_version <= inp.total_restart:
                 tmp = 4
             return Required_action(tmp)
+
+    def to_version_string(self, sep: str):
+        return f"{self.current_version}{sep}{self.server_restart}{sep}{self.browser_restart}{sep}{self.total_restart}{sep}"
+
     def __str__(self):
         return str(self.current_version)
+
 
 if __name__ == '__main__':
     current = version_info(['a 2.3.4', 'b 2.3.3', 'c 2.2.4', 'd 1.3.4'])

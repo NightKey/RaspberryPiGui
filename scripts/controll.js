@@ -284,6 +284,7 @@ window.onload = function () {
     }
 
     brightness_text.innerHTML = bvalue;
+    var brightness_timer;
 
     /* Event handlers */
     brightness.addEventListener("input", function () {
@@ -297,7 +298,14 @@ window.onload = function () {
         brightness_text.innerHTML = bvalue;
         let data = 'brightness,' + bvalue;
         if (!init) {
-            connection.send(data);
+            if (brightness_timer) {
+                clearTimeout(brightness_timer);
+            }
+
+            brightness_timer = setTimeout(function () {
+                connection.send(data);
+                console.log(data)
+            }, 100);
         }
     }, false);
 

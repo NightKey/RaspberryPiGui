@@ -28,6 +28,12 @@ body {
     border-left-width: 1;
 }
 
+.b {
+    border-bottom-style: solid;
+    border-bottom-color: #303030;
+    border-bottom-width: 1;
+}
+
 #weather,
 #weather_hider {
     grid-row-end: gap;
