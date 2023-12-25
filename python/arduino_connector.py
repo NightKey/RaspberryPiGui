@@ -51,7 +51,6 @@ class ArduinoCLIStatus:
     cli_install_command = "curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/home/pi/arduino-cli sh"
     user_path_file = "/home/pi/.bashrc"
     cli_path_origin = "/home/pi/arduino-cli"
-    cli_path_sub_dir = "bin"
     status_file_path = "../arduinoCLIStatusFile"
 
     def __init__(self, status_code: ArduinoCLIStatusCode = ArduinoCLIStatusCode.NotInstalled) -> None:
@@ -107,6 +106,7 @@ class ArduinoController:
         self.board_type = board_type
         self.logger.debug("Creating CLI status")
         self.cli_status = ArduinoCLIStatus.from_file()
+        self.cli_executable = path.join(ArduinoCLIStatus.cli_path_origin, "arduino-cli")
         self.listener_status = ArduinoStatus.NotConnected
         if (self.status not in [ArduinoCLIStatusCode.CantBeInstalled, ArduinoCLIStatusCode.Completed]):
             self.logger.debug("Installing CLI")
@@ -130,15 +130,15 @@ class ArduinoController:
     def __install_cli(self):
         with open(ArduinoCLIStatus.user_path_file, "a") as fp:
             fp.write(
-                f"\nexport PATH=$PATH:{ArduinoCLIStatus.cli_path_origin}/{ArduinoCLIStatus.cli_path_sub_dir}")
+                f"\nexport PATH=$PATH:{ArduinoCLIStatus.cli_path_origin}")
         self.cli_status.set_status(ArduinoCLIStatusCode.Installed)
         run("sudo reboot")
 
     def __setup_cli(self):
-        subprocess.call(["arduino-cli", "config", "init"])
-        subprocess.call(["arduino-cli", "core", "install",
+        subprocess.call([self.cli_executable, "config", "init"])
+        subprocess.call([self.cli_executable, "core", "install",
                         ":".join(self.board_type.split(":")[:-1])])
-        subprocess.call(["arduino-cli", "lib", "install", "FastLED"])
+        subprocess.call([self.cli_executable, "lib", "install", "FastLED"])
         self.cli_status.set_status(ArduinoCLIStatusCode.Completed)
 
     def is_available(self):
@@ -298,7 +298,7 @@ class ArduinoController:
         try:
             self.logger.info("Updating Arduino")
             self.suspend_serial(ArduinoStatus.Verifying)
-            arduino_command = f"arduino-cli $ACTION $PORT -b {self.board_type} {path_to_folder}"
+            arduino_command = f"{self.cli_executable} $ACTION $PORT -b {self.board_type} {path_to_folder}"
 
             self.run_update(arduino_command.replace(
                 "$ACTION", "compile").replace("$PORT ", ""), ArduinoStatus.VerificationFailed)  # arduino-cli compile -b arduino:avr:micro ~/TMP/RaspberryPiGui_Arduino/ArduinoScetch
