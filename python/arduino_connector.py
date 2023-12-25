@@ -48,9 +48,9 @@ class ArduinoCLIStatusCode(Enum):
 
 
 class ArduinoCLIStatus:
-    cli_install_command = "curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh"
+    cli_install_command = "curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/home/pi/arduino-cli sh"
     user_path_file = "/home/pi/.bashrc"
-    cli_path_origin = "~/arduino-cli"
+    cli_path_origin = "/home/pi/arduino-cli"
     cli_path_sub_dir = "bin"
     status_file_path = "../arduinoCLIStatusFile"
 
